@@ -24,7 +24,11 @@ import mes.app.definition.service.material.UnitPriceService;
 import mes.app.sales.service.SujuUploadService;
 import mes.config.Settings;
 import mes.domain.entity.*;
+import mes.domain.entity.bogo.suju_option;
+import mes.domain.entity.bogo.suju_remark;
 import mes.domain.repository.*;
+import mes.domain.repository.bogo.SujuOptionRepository;
+import mes.domain.repository.bogo.SujuRemarkRepository;
 import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -81,8 +85,14 @@ public class SujuController {
 
 	@Autowired
 	UnitRepository unitRepository;
-    @Autowired
-    private SujuRepository sujuRepository;
+	@Autowired
+	private SujuRepository sujuRepository;
+
+	@Autowired
+	SujuOptionRepository sujuOptionRepository;
+
+	@Autowired
+	SujuRemarkRepository sujuRemarkRepository;
 
 	// 수주 목록 조회 
 	@GetMapping("/read")
@@ -148,18 +158,11 @@ public class SujuController {
 		String companyName = (String) payload.get("CompanyName");
 		Integer companyId = Integer.parseInt(payload.get("Company_id").toString());
 		String sujuType = (String) payload.get("SujuType");
-		String description = (String) payload.get("Description");
+		String transcltnm = (String) payload.get("transcltnm");
 		String projectId = (String) payload.get("projectHidden");
 		String spjangcd = (String) payload.get("spjangcd");
-		String amountStr = payload.get("totalAmountSum").toString().replace(",", "");
+
 		double totalAmount = 0.0;
-		try {
-			if (amountStr != null && !amountStr.trim().isEmpty()) {
-				totalAmount = Double.parseDouble(amountStr.trim().replace(",", ""));
-			}
-		} catch (NumberFormatException e) {
-			// 무시하고 0 유지
-		}
 		List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
 
 		SujuHead head;
@@ -180,70 +183,115 @@ public class SujuController {
 		head.set_audit(user);
 		head.setSujuType(sujuType);
 		head.setTotalPrice(totalAmount);
-		head.setDescription(description);
+		head.setContractnm(payload.get("contractnm").toString());	//계약자
+		head.setHpnumber(payload.get("hpnumber").toString());
+		head.setContaddres(payload.get("contaddres").toString());
+		head.setMatcolor(payload.get("matcolor").toString());
+		head.setModifytext(payload.get("modifytext").toString());
+		head.setTranscltnm(transcltnm);	//운수회사
 		head.set_status("manual");
 		head = sujuHeadRepository.save(head);
 
-		for (Map<String, Object> item : items) {
-			Suju suju;
+		Suju suju;
+		if (payload.containsKey("suju_id") && payload.get("suju_id") != null && !payload.get("suju_id").toString().isEmpty()) {
+			Integer sujuId = Integer.parseInt(payload.get("suju_id").toString());
+			suju = SujuRepository.findById(sujuId).orElse(new Suju());
+		} else {
+			suju = new Suju();
+			suju.setJumunNumber(head.getJumunNumber());
+		}
 
-			// ✅ 수정인지 확인
-			if (item.containsKey("suju_id") && item.get("suju_id") != null && !item.get("suju_id").toString().isEmpty()) {
-				Integer sujuId = Integer.parseInt(item.get("suju_id").toString());
-				suju = SujuRepository.findById(sujuId).orElse(new Suju());
-			} else {
-				suju = new Suju(); // 신규일 경우
-				suju.setJumunNumber(head.getJumunNumber());
+		suju.setSujuHeadId(head.getId());
+		suju.setJumunDate(jumunDate);
+		suju.setDueDate(dueDate);
+		suju.setCompanyId(companyId);
+		suju.setCompanyName(companyName);
+		suju.setSpjangcd(spjangcd);
+		suju.set_status("manual");
+		suju.setState("received");
+		suju.set_audit(user);
+
+		suju.setMaterialId(Integer.parseInt(payload.get("Material_id").toString()));
+		suju.setSujuQty(Integer.parseInt(payload.get("quantity").toString()));
+		suju.setUnitPrice(Integer.parseInt(payload.get("UnitPrice").toString())); //기본가격
+		suju.setPrice(Integer.parseInt(payload.get("price").toString()));
+		suju.setDcPrice(Integer.parseInt(payload.get("dcPrice").toString()));
+		suju.setOptPrice(Integer.parseInt(payload.get("optPrice").toString()));
+		suju.setSujuQty2(0); suju.setConfirm("0");
+
+		SujuRepository.save(suju);
+
+		// ---------- 옵션 리스트 저장 ----------
+		Object optObj = payload.get("items");
+		if (optObj instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<Map<String, Object>> optionRows = (List<Map<String, Object>>) optObj;
+
+			int seq = 1;
+			for (Map<String, Object> row : optionRows) {
+				String sjoption = stringOrNull(row.get("sjoption")); // ← 프론트 키와 일치
+				Integer optamt  = intOrNull(row.get("optamt"));      // ← 프론트 키와 일치
+
+				// 모두 빈 값이면 skip
+				if ((sjoption == null || sjoption.isBlank()) && (optamt == null || optamt == 0)) continue;
+
+				suju_option opt = new suju_option(); // 또는 suju_option
+				opt.setSujuId(head.getId());
+				opt.setJumunDate(jumunDateStr);
+				opt.setReseq(seq++);
+				opt.setSjOption(sjoption);
+				opt.setOptAmt(optamt);
+				opt.set_audit(user);
+				sujuOptionRepository.save(opt);
 			}
+		}
 
-			// 공통 필드 설정
-			suju.setSujuHeadId(head.getId());
-			suju.setJumunDate(jumunDate);
-			suju.setDueDate(dueDate);
-			suju.setCompanyId(companyId);
-			suju.setCompanyName(companyName);
-			suju.setSpjangcd(spjangcd);
-			suju.setProject_id(projectId);
-			suju.set_status("manual");
-			suju.setState("received");
-			suju.set_audit(user);
+// ---------- 특이사항 리스트 저장 ----------
+		Object remarksObj = payload.get("sjremark");
+		if (remarksObj instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<Object> remarkRows = (List<Object>) remarksObj;
 
-			String invatyn = item.get("VatIncluded").toString();
+			int rseq = 1;
+			for (Object o : remarkRows) {
+				String text = null;
+				if (o instanceof Map) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> row = (Map<String, Object>) o;
+					text = stringOrNull(row.get("sjremark"));
+				} else if (o != null) {
+					text = o.toString(); // 순수 문자열 배열인 경우
+				}
+				if (text == null || text.isBlank()) continue;
 
-			suju.setMaterialId(Integer.parseInt(item.get("Material_id").toString()));
-			suju.setSujuQty(Integer.parseInt(item.get("quantity").toString()));
-			suju.setSujuQty2(Integer.parseInt(item.get("quantity").toString()));
-			suju.setUnitPrice(Integer.parseInt(item.get("unitPrice").toString()));
-			suju.setPrice(Integer.parseInt(item.get("supplyAmount").toString()));
-			suju.setVat(Integer.parseInt(item.get("VatAmount").toString()));
-			suju.setTotalAmount(Integer.parseInt(item.get("totalAmount").toString()));
-			suju.setProject_id(item.get("projectHidden").toString());
-			suju.setInVatYN(invatyn);
-			suju.setDescription((String) item.get("description"));
-			suju.setConfirm("0");
-
-			// 단가 변경 시 처리
-			Boolean unitPriceChanged = (Boolean) item.get("unitPriceChanged");
-			if (unitPriceChanged != null && unitPriceChanged) {
-				MultiValueMap<String, Object> priceData = new LinkedMultiValueMap<>();
-				priceData.add("Material_id", suju.getMaterialId());
-				priceData.add("Company_id", companyId);
-				priceData.add("UnitPrice", suju.getUnitPrice());
-				priceData.add("ApplyStartDate", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-				priceData.add("type", "02");
-				priceData.add("ChangerName", user.getUsername());
-				priceData.add("user_id", user.getId());
-
-				unitPriceService.saveCompanyUnitPrice(priceData);
+				suju_remark rm = new suju_remark(); // 또는 suju_remark
+				rm.setSujuId(head.getId());
+				rm.setJumunDate(jumunDateStr);
+				rm.setReseq(rseq++);
+				rm.setSjremark(text);
+				rm.set_audit(user);
+				sujuRemarkRepository.save(rm);
 			}
-
-			SujuRepository.save(suju);
 		}
 
 
 		AjaxResult result = new AjaxResult();
 		result.success = true;
 		return result;
+	}
+	private static String stringOrNull(Object o) {
+		return (o == null) ? null : o.toString();
+	}
+
+	private static Integer intOrNull(Object o) {
+		if (o == null) return null;
+		try {
+			String s = o.toString().replaceAll(",", "").trim();
+			if (s.isEmpty()) return null;
+			return Integer.parseInt(s);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 

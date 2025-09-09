@@ -275,54 +275,46 @@
         </style>
         <div class="content_wrap popup" id="div_excel_upload">
             <div class="table-wrap">
-            <form id="sujuForm">
-                <table class="write-table">
-                  <colgroup>
-                    <col style="width: 120px;">
-                    <col style="width: 200px;">
-                    <col style="width: 120px;">
-                    <col style="width: 200px;">
-                  </colgroup>
-                  <tbody>
-                    <tr>
-                      <th>수주일</th>
-                      <td><input type="date" name="JumunDate"></td>
-                      <th>출고예정일</th>
-                      <td><input type="date" name="DueDate"></td>
-                    </tr>
-                    <tr>
-                      <th>상호(차주)</th>
-                      <td>
+                <form id="sujuForm">
+                    <table class="write-table">
+                      <tbody>
+                        <tr>
+                          <th>수주일</th>
+                          <td><input type="date" name="JumunDate"></td>
+                          <th>출고예정일</th>
+                          <td><input type="date" name="DueDate"></td>
+                        </tr>
+                        <tr>
+                          <th>상호(차주)</th>
+                          <td>
 
-                      <input id="cboCompany" name="Company_id" type="hidden">
-                        <input class="form-control2" type="text" id="CompanyName" name="CompanyName"
-                        placeholder="상호(차주) 검색 버튼을 클릭하여 검색하세요" readonly/>
-                        &nbsp;
-                        <a class="btn btn-delete" title="검색" id="btnCompanySearch">
-                            <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
-                            상호 검색
-                        </a>
+                          <input id="cboCompany" name="Company_id" type="hidden">
+                            <input class="form-control2" type="text" id="CompanyName" name="CompanyName"
+                            placeholder="상호(차주) 검색 버튼을 클릭하여 검색하세요" readonly/>
+                            <a class="btn btn-delete" title="검색" id="btnCompanySearch">
+                                <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                상호 검색
+                            </a>
 
-                      </td>
-                      <th>계약자</th>
-                      <td><input type="text" name="contractnm" placeholder="계약자" ></td>
-                    </tr>
-                    <tr>
-                      <th>주소</th>
-                      <td><input type="text" name="contaddres" placeholder="주소"></td>
-                      <th>H.P</th>
-                      <td><input type="text" name="hpnumber" placeholder="전화번호"></td>
-                    </tr>
-                    <tr>
-                      <th>운수회사</th>
-                      <td><input type="text" name="transcltnm" placeholder="운수회사"></td>
-                      <th>색상</th>
-                      <td><input type="text" name="matcolor" placeholder="색상"></td>
-                    </tr>
-                    <tr>
-                      <th>차종</th>
-                      <td>
-
+                          </td>
+                          <th>계약자</th>
+                          <td><input type="text" name="contractnm" placeholder="계약자" ></td>
+                        </tr>
+                        <tr>
+                          <th>주소</th>
+                          <td><input type="text" name="contaddres" placeholder="주소" style="width:95%"></td>
+                          <th>H.P</th>
+                          <td><input type="text" name="hpnumber" placeholder="전화번호" inputmode="tel" autocomplete="tel" maxlength="14"></td>
+                        </tr>
+                        <tr>
+                          <th>운수회사</th>
+                          <td><input type="text" name="transcltnm" placeholder="운수회사" style="width:95%" ></td>
+                          <th>색상</th>
+                          <td><input type="text" name="matcolor" placeholder="색상"></td>
+                        </tr>
+                        <tr>
+                          <th>차종</th>
+                          <td>
                             <input type="hidden" name="suju_id" />
                             <input type="hidden" name="product_code"/>
                             <input type="text" name="txtProductName" placeholder="코드 또는 차종 입력 후 엔터" autocomplete="off" />
@@ -332,112 +324,111 @@
                                 <img src="/images/icon/btn-srch-black.svg" alt="검색 아이콘" />
                                 차종 검색
                             </a>
+                          </td>
+                          <th>대수</th>
+                          <td><input type="number" name="quantity" placeholder="대수"></td>
+                        </tr>
+                        <tr>
+                          <th>수정 사양</th>
+                          <td colspan="3"><textarea name="modifytext" style="height:60px;" placeholder="수정 사양"></textarea></td>
+                        </tr>
+                        <tr>
+                          <th>기본 가격</th>
+                          <td><input type="text" name="UnitPrice" style="text-align:right;width:95%;" placeholder="기본가격(별도)" ></td>
+                          <th>옵션가격</th>
+                          <td ><input type="text" name="TotalOptPrice" style="text-align:right;" placeholder="총 옵션가격"></td>
+                        </tr>
+                        <tr>
+                          <th>D/C</th>
+                          <td ><input type="text" name="dcPrice" style="text-align:right; width:95%;" placeholder="D/C" ></td>
 
-                      </td>
-                      <th>대수</th>
-                      <td><input type="number" name="quantity" placeholder="대수"></td>
-                    </tr>
-                    <tr>
-                      <th>수정 사양</th>
-                      <td colspan="3"><textarea name="modifytext" style="height:60px;" placeholder="수정 사양"></textarea></td>
-                    </tr>
-                    <tr>
-                      <th>기본 가격</th>
-                      <td><input type="text" name="UnitPrice" style="text-align:right;" placeholder="기본가격(별도)"></td>
-                      <th>총가격</th>
-                      <td><input type="text" name="Price" style="text-align:right;" placeholder="총가격(별도)"></td>
-                    </tr>
-                    <tr>
-                      <th>D/C</th>
-                      <td ><input type="text" name="TotalDcPrice" style="text-align:right;" placeholder="D/C"></td>
-                      <th>옵션가격</th>
-                      <td ><input type="text" name="TotalOptPrice" style="text-align:right;" placeholder="총 옵션가격"></td>
-                    </tr>
-                    <tr>
-                     <th>계약가격</th>
-                      <td ><input type="text" name="ContractPrice" style="text-align:right;" placeholder="계약가격(포함)"></td>
-                    </tr>
-                    <tr>
-                       <th>수주구분</th>
-                        <td>
-                            <select id="cboSujuType" name="SujuType"></select>
-                        </td>
-                      <th>상태</th>
-                      <td ><input type="text" id="StateName" name="StateName" readonly placeholder="상태"></td>
-                    </tr>
-                  </tbody>
-                </table>
-                <!-- 옵션사항 + 특이사항 나란히 배치 -->
-                <div style="display:flex; gap:10px; margin-top:10px; width:100%;">
-                  <!-- 옵션사항 테이블 -->
-                  <table class="item-table" style="flex:2;">
-                    <colgroup>
-                      <col style="width: 30%">
-                      <col style="width: 20%">
-                      <col style="width: 20%">
-                      <col style="width: 30%">
-                      <col style="width: 5%">
-                    </colgroup>
-                    <thead>
-                      <tr id="itemHeaderRow">
-                        <th>옵션사항</th>
-                        <th>옵션가격</th>
-                        <th>D/C</th>
-                        <th>비고</th>
-                        <th>
-                          <a class="btn in_btn plus" id="addOptionRow" title="추가">
-                            <img src="/images/icon/ico-plus.svg" alt="등록 아이콘" />
-                          </a>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <!-- 템플릿 행 -->
-                      <tr class="item-template-row" style="display: none;">
-                        <td><input type="text" name="Option"  placeholder="옵션사항" /></td>
-                        <td><input type="text" name="optPrice" placeholder="옵션가격" /></td>
-                        <td><input type="text" name="dcPrice" placeholder="D/C"/></td>
-                        <td><input type="text" name="description" placeholder="비고"/></td>
-                        <td class="al_c item_border">
-                          <a class="btn in_btn" title="삭제" onclick="removeItemRow(this)">
-                            <img src="/images/icon/ico-delete.svg" alt="삭제 아이콘" />
-                          </a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                          <th>총가격</th>
+                          <td><input type="text" name="Price" style="text-align:right;" placeholder="총가격(별도)"></td>
+                        </tr>
+                        <tr>
+                         <th>계약가격</th>
+                          <td ><input type="text" name="ContractPrice" style="text-align:right; width:95%;" placeholder="계약가격(포함)"></td>
+                          <th></th>
+                           <td></td>
+                        </tr>
+                        <tr>
+                           <th>수주구분</th>
+                            <td>
+                                <select id="cboSujuType" name="SujuType"></select>
+                            </td>
+                          <th>상태</th>
+                          <td ><input type="text" id="StateName" name="StateName" readonly placeholder="상태"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <!-- 옵션사항 + 특이사항 나란히 배치 -->
+                    <div style="display:flex; gap:10px; margin-top:10px; width:100%;">
+                      <!-- 옵션사항 테이블 -->
+                      <table class="item-table" style="flex:1;">
+                        <colgroup>
+                          <col style="width: 30%">
+                          <col style="width: 20%">
+                          <col style="width: 30%">
+                          <col style="width: 5%">
+                        </colgroup>
+                        <thead>
+                          <tr id="itemHeaderRow">
+                            <th>옵션사항</th>
+                            <th>옵션가격</th>
+                            <th>비고</th>
+                            <th>
+                              <a class="btn in_btn plus" id="addOptionRow" title="추가">
+                                <img src="/images/icon/ico-plus.svg" alt="등록 아이콘" />
+                              </a>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <!-- 템플릿 행 -->
+                          <tr class="item-template-row" style="display: none;">
+                            <td><input type="text" name="sjoption"  placeholder="옵션사항" /></td>
+                            <td><input type="text" name="optamt"  placeholder="옵션가격" /></td>
+                            <td><input type="text" name="description" placeholder="비고"/></td>
+                            <td class="al_c item_border">
+                              <a class="btn in_btn" title="삭제" onclick="removeItemRow(this)">
+                                <img src="/images/icon/ico-delete.svg" alt="삭제 아이콘" />
+                              </a>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
 
-                  <!-- 특이사항 테이블 -->
-                  <table class="SuJu_remark-table notes-table" style="flex:1;">
-                    <colgroup>
-                      <col style="width:95%">
-                      <col style="width:5%">
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th>특이사항</th>
-                        <th>
-                          <a class="btn in_btn plus" id="addRemarkRow" title="추가">
-                            <img src="/images/icon/ico-plus.svg" alt="등록 아이콘" />
-                          </a>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="remark-template-row" style="display: none;">
-                        <td>
-                          <textarea name="sjremark" style="width:100%; height:60px;" placeholder="특이사항 입력"></textarea>
-                        </td>
-                        <td class="al_c item_border">
-                          <a class="btn in_btn" title="삭제" onclick="removeRemarkRow(this)">
-                            <img src="/images/icon/ico-delete.svg" alt="삭제 아이콘" />
-                          </a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-            </form>
+                      <!-- 특이사항 테이블 -->
+                      <table class="SuJu_remark-table notes-table" style="flex:1;">
+                        <colgroup>
+                          <col style="width:95%">
+                          <col style="width:5%">
+                        </colgroup>
+                        <thead>
+                          <tr>
+                            <th>특이사항</th>
+                            <th>
+                              <a class="btn in_btn plus" id="addRemarkRow" title="추가">
+                                <img src="/images/icon/ico-plus.svg" alt="등록 아이콘" />
+                              </a>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="remark-template-row" style="display: none;">
+                            <td>
+                              <textarea name="sjremark" style="width:100%; height:60px;" placeholder="특이사항 입력"></textarea>
+                            </td>
+                            <td class="al_c item_border">
+                              <a class="btn in_btn" title="삭제" onclick="removeRemarkRow(this)">
+                                <img src="/images/icon/ico-delete.svg" alt="삭제 아이콘" />
+                              </a>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                </form>
             </div>
             <div id="notUpdate" style="display:none;">*계획 또는 출하가 진행된 수주는 수정이 불가합니다.</div>
             <div class="popup-button">
@@ -519,13 +510,6 @@
             nextSujuListIndex() {
                 return this.sujuListIndex++;
             }
-            // ✅ remark 전용 인덱서 (1부터 시작)
-            resetRemarkListIndex() {
-                this.RemarkListIndex = 0;
-            }
-            nextRemarkIndex() {
-                return ++this.RemarkListIndex;
-            }
 
             init() {
                 let _this = this;
@@ -549,9 +533,9 @@
                         {binding: 'UnitPrice', header: '기본가격', width: 120, align: 'right', format: 'n0'},
                         {binding: 'Price', header: '계약가격', width: 120, align: 'right', format: 'n0'},
                         {binding: 'matcolor', header: '색상', width: 120, align: 'right', format: 'n0'},
-                        {binding: 'State', header: '상태', width: 120, align: 'right', format: 'n0'},
-                        {binding: 'vechidno', header: '차대번호', width: 120, align: 'right', format: 'n0'},
-                        {binding: 'contaddres', header: '주소', width: 120, align: 'right', format: 'n0'},
+                        {binding: 'StateName', header: '작업상태', width: 100, align: 'center'},
+                        {binding: 'vechidno', header: '차대번호', width: 120, align: 'center'},
+                        {binding: 'contaddres', header: '주소', width: 200, align: 'center'},
                     ],
                     itemsSource: this.viewData, // 데이터를 설정할 배열
                 });
@@ -669,6 +653,7 @@
                 if (data.mode === 'new') {
                     $btnProductSearch.removeAttr('disabled');
                 }
+                page.resetRemarkListIndex();
 
                 $content.find('#btnCompanySearch').click(function () {
                     let poppage = new PopCompComponent();
@@ -725,15 +710,15 @@
                         return;
                     }
 
-                    if (!data.Material_id_0) {
-                        Alert.alert('', '품목을 선택하세요.');
+                    if (!data.product_code) {
+                        Alert.alert('', '차종을 선택하세요.');
                         return;
                     }
 
-                    // 2. 각 행의 유효성 체크
+                   /* // 2. 각 행의 유효성 체크
                     let index = 0;
                     while (true) {
-                        const materialId = data[`Material_id_${index}`];
+                        const materialId = data[`product_code${index}`];
 
                         if (materialId === undefined) break; // 끝까지 체크
 
@@ -748,54 +733,54 @@
                         }
 
                         index++;
-                    }
+                    }*/
 
                     Alert.confirm('', '저장하시겠습니까?', function () {
                         const items = [];
                         const sjremark = [];
                         for (let i = 0; i < page.sujuListIndex; i++) {
-                            const materialId = data[`Material_id_${i}`];
-                            if (!materialId) continue;
+                            const sjoption = data[`sjoption_${i}`] || '';
+                            const optamt   = (data[`optamt_${i}`] || '0').replace(/,/g, '');
+                            const desc     = data[`description_${i}`] || '';
 
-                            items.push({
-                                suju_id: data[`suju_id_${i}`] || '',
-                                Material_id: materialId,
-                                MaterialGroupName: data[`MaterialGroupName_${i}`] || '',
-                                product_code: data[`product_code_${i}`] || '',
-                                txtProductName: data[`txtProductName_${i}`] || '',
-                                quantity: (data[`quantity_${i}`] || '0').replace(/,/g, ''),
-                                unitPrice: (data[`unitPrice_${i}`] || '0').replace(/,/g, ''),
-                                supplyAmount: (data[`supplyAmount_${i}`] || '0').replace(/,/g, ''),
-                                VatAmount: data[`VatAmount_${i}`] === '면세' ? '0' : (data[`VatAmount_${i}`] || '0').replace(/,/g, ''),
-                                totalAmount: (data[`totalAmount_${i}`] || '0').replace(/,/g, ''),
-                                description: data[`description_${i}`] || '',
-                                VatIncluded: data[`VatIncluded_${i}`] === 'on' ? 'Y' : 'N',
-                                unitPriceChanged: (() => {
-                                    const ori = parseFloat(data[`originalUnitPrice_${i}`] || '0');
-                                    const cur = parseFloat((data[`unitPrice_${i}`] || '0').replace(/,/g, ''));
-                                    return ori !== cur;
-                                })()
-                            });
-                            sjremark.push({
-                                sjremark:data[`sjremark_${i}`] || ''
-                            });
+                            // 값이 있으면 items에 추가
+                            if (sjoption || desc || Number(optamt) > 0) {
+                                items.push({
+                                    sjoption: sjoption,
+                                    optamt: optamt,
+                                    description: desc
+                                });
+                            }
+
+                            // 특이사항도 내용이 있으면 추가
+                            const remark = data[`sjremark_${i}`] || '';
+                            if (remark) {
+                                sjremark.push({ sjremark: remark });
+                            }
                         }
-
 
                         // 공통 정보 + 리스트 전송
                         const payload = {
                             id: data.id,
+                            spjangcd: data.spjangcd,
                             JumunDate: data.JumunDate,
                             DueDate: data.DueDate,
                             Company_id: data.Company_id,
                             CompanyName: data.CompanyName,
-                            contaddres: data.contaddres,
-                            spjangcd: data.spjangcd,
-                            hpnumber: data.hpnumber,
-                            transcltnm: data.transcltnm,
-                            matcolor: data.matcolor,
+                            SujuType: data.SujuType,
+                            contaddres: data.contaddres, //주소
+                            contractnm:data.contractnm ,//계약자
+                            hpnumber: data.hpnumber,    //핸드폰
+                            transcltnm: data.transcltnm,    //운수회사
+                            matcolor: data.matcolor,    //색상
                             txtProductName: data.txtProductName,
-                            product_code: data.product_code,
+                            Material_id: (data.Material_id|| '0').replace(/,/g, ''),
+                            modifytext:data.modifytext, //수정사양
+                            UnitPrice:(data.UnitPrice || '0').replace(/,/g, ''), //기본가격(단가)
+                            price:(data.Price || '0').replace(/,/g, ''), //총가격
+                            dcPrice:(data.dcPrice || '0').replace(/,/g, ''), //dc 가격
+                            optPrice: (data.TotalOptPrice || '0').replace(/,/g, ''),//총 옵션가격
+                            quantity: (data.quantity || '0').replace(/,/g, ''), //대수
                             items: items,
                             sjremark: sjremark
                         };
@@ -917,6 +902,7 @@
                     isInternalFormatting = false;
                 }
 
+
                 function calculateTotalSum() {
                     let sum = 0;
 
@@ -936,9 +922,104 @@
                     $content.find('#totalAmountSum').val(sum > 0 ? sum.toLocaleString() : '');
                 }
 
+                // === [옵션 합계 + 상단 금액 계산 전용 모듈] ===
+                (function () {
+                    // 팝업 컨테이너 참조(상황에 따라 $content가 이미 있음)
+                    const $scope = (typeof $content !== 'undefined' && $content.length)
+                        ? $content
+                        : $('#div_excel_upload');
+
+                    // 숫자 파서 (콤마/공백 제거)
+                    function num(v) {
+                        if (v == null) return 0;
+                        const n = parseFloat(String(v).replace(/[^\d.-]/g, ''));
+                        return Number.isFinite(n) ? n : 0;
+                    }
+
+                    // 출력값 세터 (프로젝트의 formatNumberInput 있으면 우선 사용)
+                    function setVal($inp, value) {
+                        if (!$inp || !$inp.length) return;
+                        if (typeof formatNumberInput === 'function') {
+                            formatNumberInput(String(value || 0), $inp[0]);
+                        } else {
+                            $inp.val(value ? value.toLocaleString() : '');
+                        }
+                    }
+
+                    // 1) 옵션행 optamt_ 합계 → TotalOptPrice
+                    function recalcOptionTotal() {
+                        let sum = 0;
+                        // 템플릿은 name="optamt" (언더스코어 없음)이라 자동 제외
+                        $scope.find('.item-table tbody input[name^="optamt_"]').each(function () {
+                            sum += num($(this).val());
+                        });
+                        setVal($scope.find('input[name="TotalOptPrice"]'), sum);
+                        return sum;
+                    }
+
+                    // 2) 기본가격 + 옵션가격 = 총가격
+                    // 3) 총가격 - D/C = 계약가격
+                    function recalcHeaderTotals() {
+                        const unit  = num($scope.find('input[name="UnitPrice"]').val());       // 기본가격
+                        const opts  = num($scope.find('input[name="TotalOptPrice"]').val());   // 옵션가격(합계)
+                        const dc    = num($scope.find('input[name="dcPrice"]').val());         // D/C
+
+                        const price    = unit + opts;        // 총가격
+                        const contract = price - dc;         // 계약가격
+
+                        setVal($scope.find('input[name="Price"]'), price);
+                        setVal($scope.find('input[name="ContractPrice"]'), contract);
+                    }
+
+                    // 이벤트 바인딩
+                    function wire() {
+                        // 옵션가격 입력 변화 시: 합계→헤더 재계산
+                        $scope
+                            .off('input.opt change.opt', '.item-table tbody input[name^="optamt_"]')
+                            .on('input.opt change.opt',  '.item-table tbody input[name^="optamt_"]', function () {
+                                recalcOptionTotal();
+                                recalcHeaderTotals();
+                            });
+
+                        // 행 추가 버튼 클릭 후에도 재계산 (기존 로직 뒤에서 호출되도록 setTimeout)
+                        $('#addOptionRow')
+                            .off('click.opt')
+                            .on('click.opt', function () {
+                                setTimeout(function () {
+                                    recalcOptionTotal();
+                                    recalcHeaderTotals();
+                                });
+                            });
+
+                        // 삭제 함수 훅킹(이미 전역 removeItemRow가 있으면 래핑)
+                        window.removeItemRow = (function (orig) {
+                            return function (el) {
+                                if (typeof orig === 'function') orig(el);
+                                else $(el).closest('tr').remove();
+                                recalcOptionTotal();
+                                recalcHeaderTotals();
+                            };
+                        })(window.removeItemRow);
+
+                        // 상단 입력값 변화 시 총/계약가격 재계산
+                        $scope
+                            .off('input.head change.head', 'input[name="UnitPrice"], input[name="TotalOptPrice"], input[name="dcPrice"]')
+                            .on('input.head change.head',  'input[name="UnitPrice"], input[name="TotalOptPrice"], input[name="dcPrice"]', function () {
+                                recalcHeaderTotals();
+                            });
+                    }
+
+                    // 초기 1회 바인딩 & 계산
+                    wire();
+                    recalcOptionTotal();
+                    recalcHeaderTotals();
+                })();
+
+
 
                 // 숫자 포맷 (input 중 formatting)
-                $content.on('input', 'input[name^="quantity_"], input[name^="unitPrice_"], input[name^="supplyAmount_"], input[name^="VatAmount_"], input[name^="totalAmount_"]', function () {
+                $content.on('input', 'input[name^="Price"], input[name^="UnitPrice"], input[name^="dcPrice"], input[name^="TotalOptPrice"],' +
+                    'input[name^="ContractPrice"], input[name^="optamt_"]', function () {
                     if (isInternalFormatting) return;
                     isInternalFormatting = true;
 
@@ -978,7 +1059,7 @@
                         $productId.val(item.id);
                         $productCode.val(item.Code);
                         $materialGroup.val(item.group_name);
-                        tryShowPrice($row);
+                        //tryShowPrice($row);
                     });
 
 
@@ -1033,12 +1114,12 @@
                 });
 
                 // 품목명 지우면 코드들도 같이 지워지게
-                $content.on('input', 'input[name^="txtProductName_"]', function () {
+                $content.on('input', 'input[name^="txtProductName"]', function () {
                     const $field = $(this);
                     const $row = $field.closest('tr');
 
-                    const $productId = $row.find('input[name^="Material_id_"]');
-                    const $productCode = $row.find('input[name^="product_code_"]');
+                    const $productId = $row.find('input[name^="Material_id"]');
+                    const $productCode = $row.find('input[name^="product_code"]');
 
                     if ($field.val().trim() === '') {
                         // 값이 비었을 경우 연관된 필드 초기화
@@ -1135,9 +1216,8 @@
                     const nameAttr = $input.attr('name') || '';
 
                     const focusOrder = [
-                        'Option_',
-                        'optPrice_',
-                        'dcPrice_',
+                        'sjoption_',
+                        'optamt_',
                         'description_',
                     ];
 
@@ -1207,6 +1287,21 @@
                     }
                 });
 
+                // 단일 필드라면
+                $content.find('input[name="hpnumber"]')
+                    .off('input')
+                    .on('input', function () {
+                        this.value = formatKoreanPhone(this.value);
+                    })
+                    .each(function () {
+                        if ($(this).val()) this.value = formatKoreanPhone($(this).val());
+                    });
+
+                // 템플릿 행이 동적으로 추가되는 경우(이벤트 위임 권장)
+                $content.on('input', 'input[name="hpnumber"]', function () {
+                    this.value = formatKoreanPhone(this.value);
+                });
+
                 function ensureMinRemarkRows(min = 2) {
                     const $tbody   = $content.find('.SuJu_remark-table tbody');
                     const current  = $tbody.find('tr:visible').not('.remark-template-row').length;
@@ -1218,7 +1313,7 @@
                     }
                 }
 
-            }
+            }//shwoSujuForm
 
             deleteSujuData(id, state, ShipmentStateName) {
                 let _this = this;
@@ -1382,6 +1477,51 @@
             $targetRow.remove();
         }
 
+        function formatKoreanPhone(value) {
+            const d = value.replace(/\D/g, '').slice(0, 12); // 숫자만, 최대 12자리(050x 등)
+
+            // 대표번호(1588/1661/1800 등): 4-4
+            if (/^(15|16|18)\d{0,}$/.test(d)) {
+                if (d.length <= 4) return d;
+                return d.slice(0, 4) + '-' + d.slice(4, 8);
+            }
+
+            // 프리픽스 길이 결정
+            const prefixLen =
+                d.startsWith('02') ? 2 :
+                    (d.startsWith('050') && d.length >= 4) ? 4 : 3;
+
+            if (d.length <= prefixLen) return d;
+
+            const p = d.slice(0, prefixLen);
+            const rest = d.slice(prefixLen);
+
+            // 02 지역번호
+            if (prefixLen === 2) {
+                if (d.length <= 5)        return `${p}-${rest}`;                          // 02-XXX
+                if (d.length <= 9)        return `${p}-${rest.slice(0,3)}-${rest.slice(3)}`; // 02-XXX-XXXX
+                return `${p}-${rest.slice(0,4)}-${rest.slice(4,8)}`;                      // 02-XXXX-XXXX
+            }
+
+            // 050x(가상번호)
+            if (prefixLen === 4) {
+                if (rest.length <= 4)     return `${p}-${rest}`;
+                return `${p}-${rest.slice(0,4)}-${rest.slice(4,8)}`;                      // 050x-XXXX-XXXX
+            }
+
+            // 그 외(010/011/016~019, 031~064, 070 등)
+            if (rest.length <= 3)       return `${p}-${rest}`;
+            if (d.length <= 10)         return `${p}-${rest.slice(0,3)}-${rest.slice(3,7)}`; // 3-3-4
+            return `${p}-${rest.slice(0,4)}-${rest.slice(4,8)}`;                         // 3-4-4
+        }
+
+        // 유효성 체크(선택)
+        function isValidKoreanPhone(value) {
+            const d = value.replace(/\D/g, '');
+            return /^(01[0-9]\d{7,8}|02\d{7,8}|0[3-9]\d{8}|070\d{8}|050\d{8,9}|1[568]\d{7})$/.test(d);
+        }
+
+
 
         let page = null;
 
@@ -1415,8 +1555,8 @@
                 page.showPopupExcelUpload(data);
             });
 
-            page.resetRemarkListIndex = function () { this.RemarkListIndex = 0; };
-            page.nextRemarkIndex      = function () { return ++this.RemarkListIndex; };
+            page.resetRemarkListIndex = function () { page.RemarkListIndex = 0; };
+            page.nextRemarkIndex      = function () { return page.RemarkListIndex++; };
 
 
         })

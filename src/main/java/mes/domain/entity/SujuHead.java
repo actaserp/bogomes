@@ -54,4 +54,21 @@ public class SujuHead extends AbstractAuditModel {
 	@Column(name="\"Description\"")
 	String Description;
 
+	@Column(name="contractnm")
+	String contractnm;
+
+	@Column(name="transcltnm")
+	String transcltnm;	//운수회사
+
+	@Column(name="hpnumber")
+	String hpnumber;
+
+	@Column(name="contaddres")
+	String contaddres;	//주소
+
+	@Column(name="matcolor")
+	String matcolor; 		//색상
+
+	@Column(name="modifytext")
+	String modifytext;	//수정 사양
 }

@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ import mes.domain.entity.Suju;
 import mes.domain.repository.SujuRepository;
 import mes.domain.services.CommonUtil;
 import mes.domain.services.SqlRunner;
-
+@Slf4j
 @Service
 public class SujuService {
 
@@ -150,10 +151,7 @@ public class SujuService {
 				order by sh."DeliveryDate" desc,  sh.id desc
 			""";
 		}
-
-
 		List<Map<String, Object>> itmes = this.sqlRunner.getRows(sql, dicParam);
-		
 		return itmes;
 	}
 	
