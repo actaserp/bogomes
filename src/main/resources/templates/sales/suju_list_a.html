@@ -348,7 +348,13 @@
                       <td><input type="text" name="Price" style="text-align:right;" placeholder="총가격(별도)"></td>
                     </tr>
                     <tr>
-                      <th>계약가격</th>
+                      <th>D/C</th>
+                      <td ><input type="text" name="TotalDcPrice" style="text-align:right;" placeholder="D/C"></td>
+                      <th>옵션가격</th>
+                      <td ><input type="text" name="TotalOptPrice" style="text-align:right;" placeholder="총 옵션가격"></td>
+                    </tr>
+                    <tr>
+                     <th>계약가격</th>
                       <td ><input type="text" name="ContractPrice" style="text-align:right;" placeholder="계약가격(포함)"></td>
                     </tr>
                     <tr>
@@ -1408,6 +1414,10 @@
                 };
                 page.showPopupExcelUpload(data);
             });
+
+            page.resetRemarkListIndex = function () { this.RemarkListIndex = 0; };
+            page.nextRemarkIndex      = function () { return ++this.RemarkListIndex; };
+
 
         })
 
