@@ -80,7 +80,7 @@ public class Suju extends AbstractAuditModel {
 	Integer planDataPk;
 	
 	@Column(name="\"PlanTableName\"")
-	String planTableName;
+	String planTableName;		//옵션사항
 	
 	@Column(name="\"State\"")
 	String state;
@@ -98,7 +98,7 @@ public class Suju extends AbstractAuditModel {
 	String inVatYN;
 
 	@Column(name="\"TotalAmount\"")
-	Integer totalAmount;
+	Integer totalAmount;	//계약가격
 
 	@Column(name="\"project_id\"")
 	String project_id;
@@ -108,4 +108,9 @@ public class Suju extends AbstractAuditModel {
 	@Column(name="confirm")
 	String confirm;
 
+	@Column(name="optPrice")
+	double optPrice; //옵션가격
+
+	@Column(name="dcPrice")
+	double dcPrice;	//DC가격
 }
