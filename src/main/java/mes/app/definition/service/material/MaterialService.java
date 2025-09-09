@@ -79,6 +79,11 @@ public class MaterialService {
                 , m."Mtyn" as mtyn
                 , m."Useyn" as useyn
                 , m."Avrqty" as avrqty
+                , m."fouraxis"
+                , m."fiveaxis"
+                , m."overaxis"
+                , m."bodylength"
+                , m."botlength"
                 , CASE
 					 WHEN b."Material_id" IS NOT NULL THEN 1
 					 ELSE 0
@@ -156,6 +161,11 @@ public class MaterialService {
             , m."Mtyn" as mtyn
             , m."Useyn" as useyn
             , m."Avrqty" as avrqty
+            , m."fouraxis"
+			, m."fiveaxis"
+			, m."overaxis"
+			, m."bodylength"
+			, m."botlength"
             from material m
             inner join mat_grp mg on m."MaterialGroup_id" = mg.id
             left join unit u on u.id = m."Unit_id"
