@@ -538,12 +538,12 @@
                         {binding: 'DueDate', header: '출고예정일', width: 120, align: 'center'},
                         {binding: 'product_name', header: '차종', width: 350},
                         {binding: 'SujuQty', header: '대수', width: 50, align: 'center', format: 'n0'},
-                        {binding: 'UnitPrice', header: '기본가격', width: 120, align: 'right', format: 'n0'},
-                        {binding: 'Price', header: '계약가격', width: 120, align: 'right', format: 'n0'},
-                        {binding: 'matcolor', header: '색상', width: 90, align: 'center', format: 'n0'},
+                        {binding: 'UnitPrice', header: '기본가격', width: 150, align: 'right', format: 'n0'},
+                        {binding: 'Price', header: '계약가격', width: 150, align: 'right', format: 'n0'},
+                        {binding: 'matcolor', header: '색상', width: 200, align: 'center', format: 'n0'},
                         {binding: 'StateName', header: '작업상태', width: 100, align: 'center'},
-                        {binding: 'vechidno', header: '차대번호', width: 150, align: 'center'},
-                        {binding: 'contaddres', header: '주소', width: 250, align: 'center'},
+                        {binding: 'vechidno', header: '차대번호', width: 200, align: 'center'},
+                        {binding: 'contaddres', header: '주소', width: 270, align: 'center'},
                     ],
                     itemsSource: this.viewData, // 데이터를 설정할 배열
                 });
@@ -880,39 +880,48 @@
                     const $tbody    = $scope.find('.item-table tbody');
                     const $template = $tbody.find('.item-template-row');
 
-                    // 템플릿 숨김 보장 + 기존 표시 행 제거(템플릿 제외)
+                    // 템플릿 숨김 + 기존 표시 행 제거(템플릿 제외)
                     $template.hide();
                     $tbody.find('tr:visible').not('.item-template-row').remove();
 
-                    // 인덱스(프로젝트 전역 로직 사용)
+                    // 인덱스 초기화
                     if (typeof page.resetSujuListIndex === 'function') page.resetSujuListIndex();
 
-                    rows.forEach(row => {
+                    // ✅ 최소 3행 보장
+                    const total = Math.max(Array.isArray(rows) ? rows.length : 0, 3);
+
+                    for (let i = 0; i < total; i++) {
+                        const row = rows[i] || {}; // 부족분은 빈 행으로
+
                         const idx = page.nextSujuListIndex();
                         const $tr = $template.clone(true, true).removeClass('item-template-row').show();
 
                         // name 인덱싱: sjoption → sjoption_#, optamt → optamt_#, description → description_#
                         $tr.find('input,textarea,select').each(function () {
-                            const $el = $(this);
+                            const $el  = $(this);
                             const base = ($el.attr('name') || '').replace(/_\d+$/, '');
                             if (base) $el.attr('name', `${base}_${idx}`);
                         });
 
-                        // 값 세팅 (option_id도 hidden에 저장)
+                        // 숫자 안전 포맷팅(콤마 포함 문자열도 처리)
+                        const toLocale = v => {
+                            if (v === null || v === undefined || v === '') return '';
+                            const num = parseFloat(String(v).replace(/,/g, ''));
+                            return Number.isFinite(num) ? num.toLocaleString() : '';
+                        };
+
+                        // 값 세팅 (option_id hidden 포함)
                         $tr.find(`input[name="option_id_${idx}"]`).val(row.option_id || '');
                         $tr.find(`input[name="sjoption_${idx}"]`).val(row.sjoption || '');
-                        $tr.find(`input[name="optamt_${idx}"]`).val(
-                            (row.optamt ?? '') !== '' ? Number(row.optamt).toLocaleString() : ''
-                        );
+                        $tr.find(`input[name="optamt_${idx}"]`).val(toLocale(row.optamt));
                         $tr.find(`input[name="description_${idx}"]`).val(row.description || '');
 
                         // 삭제 버튼 id 충돌 방지
                         $tr.find('a[title="삭제"]').attr('id', `btnDelItem_${idx}`);
 
                         $tbody.append($tr);
-                    });
+                    }
                 }
-
 
                 // --- 특이사항 테이블 주입 ---
                 function populateRemarkRows($scope, rows) {

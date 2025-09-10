@@ -214,7 +214,8 @@ public class SujuController {
 		suju.setPrice(Integer.parseInt(payload.get("price").toString()));
 		suju.setDcPrice(Integer.parseInt(payload.get("dcPrice").toString()));
 		suju.setOptPrice(Integer.parseInt(payload.get("optPrice").toString()));
-		suju.setSujuQty2(0); suju.setConfirm("0");
+		suju.setSujuQty2(Integer.parseInt(payload.get("quantity").toString()));
+		suju.setConfirm("0");
 
 		// 단가 변경 시 처리
 		Boolean unitPriceChanged = (Boolean) payload.get("unitPriceChanged");
