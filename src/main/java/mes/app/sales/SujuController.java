@@ -159,12 +159,9 @@ public class SujuController {
 		Integer companyId = Integer.parseInt(payload.get("Company_id").toString());
 		String sujuType = (String) payload.get("SujuType");
 		String transcltnm = (String) payload.get("transcltnm");
-		String projectId = (String) payload.get("projectHidden");
 		String spjangcd = (String) payload.get("spjangcd");
 
 		double totalAmount = 0.0;
-		List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
-
 		SujuHead head;
 
 		// ✅ suju_head 수정 여부 확인
@@ -219,9 +216,25 @@ public class SujuController {
 		suju.setOptPrice(Integer.parseInt(payload.get("optPrice").toString()));
 		suju.setSujuQty2(0); suju.setConfirm("0");
 
+		// 단가 변경 시 처리
+		Boolean unitPriceChanged = (Boolean) payload.get("unitPriceChanged");
+		if (unitPriceChanged != null && unitPriceChanged) {
+			MultiValueMap<String, Object> priceData = new LinkedMultiValueMap<>();
+			priceData.add("Material_id", suju.getMaterialId());
+			priceData.add("Company_id", companyId);
+			priceData.add("UnitPrice", suju.getUnitPrice());
+			priceData.add("ApplyStartDate", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			priceData.add("type", "02");
+			priceData.add("ChangerName", user.getUsername());
+			priceData.add("user_id", user.getId());
+
+			unitPriceService.saveCompanyUnitPrice(priceData);
+		}
+
 		SujuRepository.save(suju);
 
 		// ---------- 옵션 리스트 저장 ----------
+		sujuOptionRepository.deleteBySujuId(head.getId());
 		Object optObj = payload.get("items");
 		if (optObj instanceof List) {
 			@SuppressWarnings("unchecked")
@@ -247,6 +260,7 @@ public class SujuController {
 		}
 
 // ---------- 특이사항 리스트 저장 ----------
+		sujuRemarkRepository.deleteBySujuId(head.getId());
 		Object remarksObj = payload.get("sjremark");
 		if (remarksObj instanceof List) {
 			@SuppressWarnings("unchecked")
@@ -346,7 +360,8 @@ public class SujuController {
 			result.message = "출하된 수주는 삭제할 수 없습니다";
 			return result;
 		}
-
+		sujuOptionRepository.deleteBySujuId(id);
+		sujuRemarkRepository.deleteBySujuId(id);;
 		SujuRepository.deleteBySujuHeadId(id);
 		sujuHeadRepository.deleteById(id);
 		

@@ -277,12 +277,14 @@
             <div class="table-wrap">
                 <form id="sujuForm">
                     <table class="write-table">
+                     <caption>수주등록 테이블</caption>
+                     <input type="hidden" id="id" name="id">
                       <tbody>
                         <tr>
                           <th>수주일</th>
-                          <td><input type="date" name="JumunDate"></td>
+                          <td><input type="date" id="JumunDate" name="JumunDate"></td>
                           <th>출고예정일</th>
-                          <td><input type="date" name="DueDate"></td>
+                          <td><input type="date" id="DueDate" name="DueDate"></td>
                         </tr>
                         <tr>
                           <th>상호(차주)</th>
@@ -334,7 +336,10 @@
                         </tr>
                         <tr>
                           <th>기본 가격</th>
-                          <td><input type="text" name="UnitPrice" style="text-align:right;width:95%;" placeholder="기본가격(별도)" ></td>
+                          <td>
+                            <input type="text" name="UnitPrice" style="text-align:right;width:95%;" placeholder="기본가격(별도)" >
+                            <input type="hidden" name="originalUnitPrice" />
+                          </td>
                           <th>옵션가격</th>
                           <td ><input type="text" name="TotalOptPrice" style="text-align:right;" placeholder="총 옵션가격"></td>
                         </tr>
@@ -386,7 +391,10 @@
                         <tbody>
                           <!-- 템플릿 행 -->
                           <tr class="item-template-row" style="display: none;">
-                            <td><input type="text" name="sjoption"  placeholder="옵션사항" /></td>
+                            <td>
+                             <input type="hidden" name="option_id" />
+                             <input type="text" name="sjoption"  placeholder="옵션사항" />
+                            </td>
                             <td><input type="text" name="optamt"  placeholder="옵션가격" /></td>
                             <td><input type="text" name="description" placeholder="비고"/></td>
                             <td class="al_c item_border">
@@ -416,7 +424,7 @@
                         </thead>
                         <tbody>
                           <tr class="remark-template-row" style="display: none;">
-                            <td>
+                            <td><input type="hidden" name="remark_id" />
                               <textarea name="sjremark" style="width:100%; height:60px;" placeholder="특이사항 입력"></textarea>
                             </td>
                             <td class="al_c item_border">
@@ -526,16 +534,16 @@
                     },
                     columns: [
                         {binding: 'CompanyName', header: ' 상호(차주)', width: 150, align: 'center'},
-                        {binding: 'JumunDate', header: '수주일', width: 130, align: 'center'},
-                        {binding: 'DueDate', header: '출고예정일', width: 130, align: 'center'},
+                        {binding: 'JumunDate', header: '수주일', width: 120, align: 'center'},
+                        {binding: 'DueDate', header: '출고예정일', width: 120, align: 'center'},
                         {binding: 'product_name', header: '차종', width: 350},
-                        {binding: 'SujuQty', header: '대수', width: 50, align: 'right', format: 'n0'},
+                        {binding: 'SujuQty', header: '대수', width: 50, align: 'center', format: 'n0'},
                         {binding: 'UnitPrice', header: '기본가격', width: 120, align: 'right', format: 'n0'},
                         {binding: 'Price', header: '계약가격', width: 120, align: 'right', format: 'n0'},
-                        {binding: 'matcolor', header: '색상', width: 120, align: 'right', format: 'n0'},
+                        {binding: 'matcolor', header: '색상', width: 90, align: 'center', format: 'n0'},
                         {binding: 'StateName', header: '작업상태', width: 100, align: 'center'},
-                        {binding: 'vechidno', header: '차대번호', width: 120, align: 'center'},
-                        {binding: 'contaddres', header: '주소', width: 200, align: 'center'},
+                        {binding: 'vechidno', header: '차대번호', width: 150, align: 'center'},
+                        {binding: 'contaddres', header: '주소', width: 250, align: 'center'},
                     ],
                     itemsSource: this.viewData, // 데이터를 설정할 배열
                 });
@@ -652,6 +660,15 @@
 
                 if (data.mode === 'new') {
                     $btnProductSearch.removeAttr('disabled');
+                }else {
+                    // 버튼 숨김
+                    $content.find('#btnProductSearch').hide();
+                    $content.find('#btnCompanySearch').hide();
+                    // 입력창 읽기전용 + 포커스/탭 방지 + 스타일(선택)
+                    $content.find('input[name="txtProductName"]')
+                        .prop('readonly', true)
+                        .attr('tabindex', '-1')
+                        .addClass('readonly'); // CSS로 배경/커서 처리 가능
                 }
                 page.resetRemarkListIndex();
 
@@ -676,15 +693,57 @@
                 //수주구분
                 AjaxUtil.fillSelectOptions($cboSujuType, 'system_code', 'choose', 'sales', 'suju_type');
 
-                setTimeout(() => {
-                    FormUtil.BindDataSujuForm(data, $sujuForm);
-                    ensureMinRemarkRows(2);
-                    $content.find('tr:visible').each(function () {
-                        calculateAmounts($(this), 'unit');
+                function sanitizeHeadForForm(data) {
+                    const head = {...data};
+
+                    // 폼 대상 아님: 리스트/객체 제거
+                    delete head.items;
+                    delete head.sjremark;
+
+                    // null -> '', 숫자/불리언 -> 문자열
+                    Object.keys(head).forEach(k => {
+                        const v = head[k];
+                        if (v == null) head[k] = '';
+                        else if (typeof v === 'object') delete head[k]; // 혹시 남아있는 객체 방지
+                        else if (typeof v !== 'string') head[k] = String(v);
                     });
+
+                    return head;
+                }
+
+                setTimeout(() => {
+                    // 상단 폼 바인딩(등록 모드면 보통 빈값)
+                    FormUtil.BindDataSujuForm(sanitizeHeadForForm(data), $sujuForm);
+
+                    if (data.mode === 'new') {
+                        Remark.fill($content, []);      // 비우고
+                        Remark.ensureMin($content, 2);
+                    } else {
+                        // ✅ 수정 모드면 DB 값 주입
+                        populateOptionRows($content, data.items || []);
+                        populateRemarkRows($content, data.sjremark || []);
+                    }
+
+                    const preFormatSelectors = [
+                        'input[name="UnitPrice"]',
+                        'input[name="Price"]',
+                        'input[name="dcPrice"]',
+                        'input[name="TotalOptPrice"]',
+                        'input[name="ContractPrice"]',
+                        '.item-table tbody input[name^="optamt_"]'
+                    ];
+                    preFormatSelectors.forEach(sel => {
+                        $content.find(sel).each(function () {
+                            const v = $(this).val();
+                            if (v != null && v !== '') {
+                                $(this).trigger('input');   // ↩️ 이미 등록된 input 핸들러로 포맷
+                            }
+                        });
+                    });
+
+                    // 계산/포맷 초기화
+                    initOptionPricing($content);
                 }, 100);
-
-
 
                 if (data.StateName && data.StateName !== '수주') {
                     $('#btnPopSujuSave').hide();
@@ -710,58 +769,36 @@
                         return;
                     }
 
-                    if (!data.product_code) {
+                    if (!data.Material_id) {
                         Alert.alert('', '차종을 선택하세요.');
                         return;
                     }
 
-                   /* // 2. 각 행의 유효성 체크
-                    let index = 0;
-                    while (true) {
-                        const materialId = data[`product_code${index}`];
-
-                        if (materialId === undefined) break; // 끝까지 체크
-
-                        if (materialId !== null && materialId !== '') {
-                            const qty = data[`quantity_${index}`];
-                            const price = data[`unitPrice_${index}`];
-
-                            if (!qty) {
-                                Alert.alert('', `(${index + 1}번째 행) 수량을 입력하세요.`);
-                                return;
-                            }
-                        }
-
-                        index++;
-                    }*/
-
                     Alert.confirm('', '저장하시겠습니까?', function () {
                         const items = [];
-                        const sjremark = [];
+                        // 1) 옵션(items)은 기존대로
                         for (let i = 0; i < page.sujuListIndex; i++) {
                             const sjoption = data[`sjoption_${i}`] || '';
                             const optamt   = (data[`optamt_${i}`] || '0').replace(/,/g, '');
                             const desc     = data[`description_${i}`] || '';
 
-                            // 값이 있으면 items에 추가
                             if (sjoption || desc || Number(optamt) > 0) {
-                                items.push({
-                                    sjoption: sjoption,
-                                    optamt: optamt,
-                                    description: desc
-                                });
-                            }
-
-                            // 특이사항도 내용이 있으면 추가
-                            const remark = data[`sjremark_${i}`] || '';
-                            if (remark) {
-                                sjremark.push({ sjremark: remark });
+                                items.push({ sjoption, optamt, description: desc });
                             }
                         }
+                        const sjremark = [];
+                        Object.keys(data)
+                            .filter(k => k.startsWith('sjremark_'))
+                            .sort((a,b)=>parseInt(a.split('_')[1]||0)-parseInt(b.split('_')[1]||0))
+                            .forEach(k => {
+                                const remark = (data[k] || '').trim();
+                                if (remark) sjremark.push({ sjremark: remark });
+                            });
 
                         // 공통 정보 + 리스트 전송
                         const payload = {
                             id: data.id,
+                            suju_id: data.suju_id,
                             spjangcd: data.spjangcd,
                             JumunDate: data.JumunDate,
                             DueDate: data.DueDate,
@@ -781,6 +818,11 @@
                             dcPrice:(data.dcPrice || '0').replace(/,/g, ''), //dc 가격
                             optPrice: (data.TotalOptPrice || '0').replace(/,/g, ''),//총 옵션가격
                             quantity: (data.quantity || '0').replace(/,/g, ''), //대수
+                            unitPriceChanged: (() => {
+                                const ori = parseFloat(data[`originalUnitPrice`] || '0');
+                                const cur = parseFloat((data[`UnitPrice`] || '0').replace(/,/g, ''));
+                                return ori !== cur;
+                            })(),
                             items: items,
                             sjremark: sjremark
                         };
@@ -801,10 +843,10 @@
 
                 // 단가 정보 가져오기
                 function tryShowPrice($row) {
-                    const mat_pk = $row.find('input[name^="Material_id_"]').val();
+                    const $form = $sujuForm;
+                    const mat_pk = $row.find('input[name^="Material_id"]').val();
                     const company_id = $content.find('#cboCompany').val();
                     const JumunDate = $content.find('#JumunDate').val();
-                    const SujuQty = parseFloat($row.find('input[name^="quantity"]').val().replace(/,/g, '') || '0');
 
                     let url = _this.url + '/readPriceSuju';
                     let data = {
@@ -814,142 +856,113 @@
                     };
 
                     if (mat_pk && company_id && JumunDate) {
-
                         let fnsuccess = function (result) {
-
                             let unitPrice = 0;
-                            if (result != null && result.data && result.data.length > 0) {
-                                unitPrice = parseFloat(result.data[0].UnitPrice);
-                                $row.find('input[name^="unitPrice_"]').val(unitPrice.toLocaleString());
-                                $row.find('input[name^="originalUnitPrice_"]').val(unitPrice.toLocaleString());
+                            if (result && result.data && result.data.length > 0) {
+                                unitPrice = parseFloat(result.data[0].UnitPrice) || 0;
 
+                                $form.find('input[name="UnitPrice"]').val(unitPrice.toLocaleString()).trigger('input');
+                                const $orig = $form.find('input[name="originalUnitPrice"]');
+                                if (!$orig.val()) $orig.val(unitPrice.toLocaleString());
                             } else {
-                                $row.find('input[name^="unitPrice"]').val('0');
-                                $row.find('input[name^="originalUnitPrice"]').val('0');
+                                //단가 없음 처리도 헤더 기준
+                                $form.find('input[name="UnitPrice"]').val('0').trigger('input');
+                                $form.find('input[name="originalUnitPrice"]').val('0');
                             }
-                            calculateAmounts($row);
+                            initOptionPricing($content);
                         };
 
                         AjaxUtil.getAsyncData(url, data, fnsuccess);
                     }
                 }
 
-                function getNumericValue($input) {
-                    if ($input.length === 0) return '';
-                    const val = ($input.val() || '').replace(/[^0-9.]/g, '').trim();
-                    return val ? parseFloat(val) : '';
-                }
+                function populateOptionRows($scope, rows) {
+                    const $tbody    = $scope.find('.item-table tbody');
+                    const $template = $tbody.find('.item-template-row');
 
-                function calculateAmounts($row, source = null) {
-                    if (isInternalFormatting) return;
-                    isInternalFormatting = true;
+                    // 템플릿 숨김 보장 + 기존 표시 행 제거(템플릿 제외)
+                    $template.hide();
+                    $tbody.find('tr:visible').not('.item-template-row').remove();
 
-                    const quantity = getNumericValue($row.find('input[name^="quantity_"]'));
-                    const unitPrice = getNumericValue($row.find('input[name^="unitPrice_"]'));
-                    const isVatIncluded = $row.find('input[name^="VatIncluded_"]').is(':checked');
-                    const isVatExempt = false;
+                    // 인덱스(프로젝트 전역 로직 사용)
+                    if (typeof page.resetSujuListIndex === 'function') page.resetSujuListIndex();
 
-                    let supplyAmount = getNumericValue($row.find('input[name^="supplyAmount_"]'));
-                    let vatAmount = getNumericValue($row.find('input[name^="VatAmount_"]'));
-                    const isSupplyEdited = $row.data('supplyEdited') === true;
-                    const isVatEdited = $row.data('vatEdited') === true;
+                    rows.forEach(row => {
+                        const idx = page.nextSujuListIndex();
+                        const $tr = $template.clone(true, true).removeClass('item-template-row').show();
 
-                    if (source === 'unit' && quantity > 0 && unitPrice >= 0) {
-                        const total = quantity * unitPrice;
+                        // name 인덱싱: sjoption → sjoption_#, optamt → optamt_#, description → description_#
+                        $tr.find('input,textarea,select').each(function () {
+                            const $el = $(this);
+                            const base = ($el.attr('name') || '').replace(/_\d+$/, '');
+                            if (base) $el.attr('name', `${base}_${idx}`);
+                        });
 
-                        if (!isSupplyEdited || !isVatEdited) {
-                            if (isVatExempt) {
-                                supplyAmount = total;
-                                vatAmount = 0;
-                            } else if (isVatIncluded) {
-                                supplyAmount = Math.round(total / 1.1);
-                                vatAmount = total - supplyAmount;
-                            } else {
-                                supplyAmount = total;
-                                vatAmount = Math.floor(supplyAmount * 0.1);
-                            }
-
-                            if (!isSupplyEdited) {
-                                $row.find('input[name^="supplyAmount_"]').val(
-                                    supplyAmount === 0 ? '' : supplyAmount.toLocaleString()
-                                );
-                            }
-                            if (!isVatEdited) {
-                                $row.find('input[name^="VatAmount_"]').val(
-                                    vatAmount === 0 ? '' : (isVatExempt ? '면세' : vatAmount.toLocaleString())
-                                );
-
-                            }
-                        }
-                    }
-
-                    if (!isNaN(supplyAmount) && !isNaN(vatAmount)) {
-                        const total = supplyAmount + vatAmount;
-                        $row.find('input[name^="totalAmount_"]').val(
-                            total === 0 ? '' : total.toLocaleString()
+                        // 값 세팅 (option_id도 hidden에 저장)
+                        $tr.find(`input[name="option_id_${idx}"]`).val(row.option_id || '');
+                        $tr.find(`input[name="sjoption_${idx}"]`).val(row.sjoption || '');
+                        $tr.find(`input[name="optamt_${idx}"]`).val(
+                            (row.optamt ?? '') !== '' ? Number(row.optamt).toLocaleString() : ''
                         );
+                        $tr.find(`input[name="description_${idx}"]`).val(row.description || '');
 
-                    }
+                        // 삭제 버튼 id 충돌 방지
+                        $tr.find('a[title="삭제"]').attr('id', `btnDelItem_${idx}`);
 
-                    if (quantity !== '') {
-                        $row.find('input[name^="quantity_"]').val(quantity.toLocaleString());
-                    }
-                    if (unitPrice !== '') {
-                        $row.find('input[name^="unitPrice_"]').val(unitPrice.toLocaleString());
-                    }
-
-                    calculateTotalSum();
-                    isInternalFormatting = false;
-                }
-
-
-                function calculateTotalSum() {
-                    let sum = 0;
-
-                    $content.find('tr:visible').each(function () {
-                        const $row = $(this);
-                        const $totalInput = $row.find('input[name^="totalAmount_"]');
-
-                        const raw = ($totalInput.val() || '').replace(/[^0-9.]/g, '').trim();
-                        if (raw !== '') {
-                            const total = parseFloat(raw);
-                            if (!isNaN(total)) {
-                                sum += total;
-                            }
-                        }
+                        $tbody.append($tr);
                     });
-
-                    $content.find('#totalAmountSum').val(sum > 0 ? sum.toLocaleString() : '');
                 }
 
-                // === [옵션 합계 + 상단 금액 계산 전용 모듈] ===
-                (function () {
-                    // 팝업 컨테이너 참조(상황에 따라 $content가 이미 있음)
-                    const $scope = (typeof $content !== 'undefined' && $content.length)
-                        ? $content
-                        : $('#div_excel_upload');
 
-                    // 숫자 파서 (콤마/공백 제거)
+                // --- 특이사항 테이블 주입 ---
+                function populateRemarkRows($scope, rows) {
+                    const $tbody    = $scope.find('.SuJu_remark-table tbody');
+                    const $template = $tbody.find('.remark-template-row');
+
+                    rows.forEach(row => {
+                        const idx = page.nextRemarkIndex();
+                        const $tr = $template.clone(true, true).removeClass('remark-template-row').show();
+
+                        // name 인덱싱
+                        $tr.find('textarea,input').each(function () {
+                            const $el = $(this);
+                            const base = ($el.attr('name') || '').replace(/_\d+$/, '');
+                            if (base) $el.attr('name', `${base}_${idx}`);
+                        });
+
+                        // 값 세팅
+                        $tr.find(`textarea[name="sjremark_${idx}"]`).val(row.sjremark || '');
+
+                        // 삭제 버튼 id
+                        $tr.find('a[title="삭제"]').attr('id', `btnDelRemark_${idx}`);
+
+                        $tbody.append($tr);
+                    });
+                }
+
+                // === 옵션 합계 + 상단 금액 계산 모듈 (showSujuForm 내부) ===
+                function initOptionPricing($scope) {
+                    // $scope: 보통 $content (없으면 fallback)
+                    $scope = ($scope && $scope.length) ? $scope : $('#div_excel_upload');
+
                     function num(v) {
                         if (v == null) return 0;
                         const n = parseFloat(String(v).replace(/[^\d.-]/g, ''));
                         return Number.isFinite(n) ? n : 0;
                     }
 
-                    // 출력값 세터 (프로젝트의 formatNumberInput 있으면 우선 사용)
                     function setVal($inp, value) {
                         if (!$inp || !$inp.length) return;
                         if (typeof formatNumberInput === 'function') {
                             formatNumberInput(String(value || 0), $inp[0]);
                         } else {
-                            $inp.val(value ? value.toLocaleString() : '');
+                            $inp.val(value ? Number(value).toLocaleString() : '');
                         }
                     }
 
                     // 1) 옵션행 optamt_ 합계 → TotalOptPrice
                     function recalcOptionTotal() {
                         let sum = 0;
-                        // 템플릿은 name="optamt" (언더스코어 없음)이라 자동 제외
                         $scope.find('.item-table tbody input[name^="optamt_"]').each(function () {
                             sum += num($(this).val());
                         });
@@ -960,20 +973,20 @@
                     // 2) 기본가격 + 옵션가격 = 총가격
                     // 3) 총가격 - D/C = 계약가격
                     function recalcHeaderTotals() {
-                        const unit  = num($scope.find('input[name="UnitPrice"]').val());       // 기본가격
-                        const opts  = num($scope.find('input[name="TotalOptPrice"]').val());   // 옵션가격(합계)
-                        const dc    = num($scope.find('input[name="dcPrice"]').val());         // D/C
+                        const unit = num($scope.find('input[name="UnitPrice"]').val());       // 기본가격
+                        const opts = num($scope.find('input[name="TotalOptPrice"]').val());   // 옵션가격(합계)
+                        const dc   = num($scope.find('input[name="dcPrice"]').val());         // D/C
 
-                        const price    = unit + opts;        // 총가격
-                        const contract = price - dc;         // 계약가격
+                        const price    = unit + opts;  // 총가격
+                        const contract = price - dc;   // 계약가격
 
                         setVal($scope.find('input[name="Price"]'), price);
                         setVal($scope.find('input[name="ContractPrice"]'), contract);
                     }
 
-                    // 이벤트 바인딩
-                    function wire() {
-                        // 옵션가격 입력 변화 시: 합계→헤더 재계산
+                    // 이벤트 바인딩(중복 방지 .opt 네임스페이스)
+                    function bindOptionEvents() {
+                        // 옵션가격 입력 시: 합계→헤더 재계산
                         $scope
                             .off('input.opt change.opt', '.item-table tbody input[name^="optamt_"]')
                             .on('input.opt change.opt',  '.item-table tbody input[name^="optamt_"]', function () {
@@ -981,17 +994,17 @@
                                 recalcHeaderTotals();
                             });
 
-                        // 행 추가 버튼 클릭 후에도 재계산 (기존 로직 뒤에서 호출되도록 setTimeout)
-                        $('#addOptionRow')
-                            .off('click.opt')
-                            .on('click.opt', function () {
+                        // 행 추가 후 재계산 (기존 버튼 로직 뒤 실행)
+                        $scope
+                            .off('click.opt', '#addOptionRow')
+                            .on('click.opt',  '#addOptionRow', function () {
                                 setTimeout(function () {
                                     recalcOptionTotal();
                                     recalcHeaderTotals();
                                 });
                             });
 
-                        // 삭제 함수 훅킹(이미 전역 removeItemRow가 있으면 래핑)
+                        // 삭제 훅킹
                         window.removeItemRow = (function (orig) {
                             return function (el) {
                                 if (typeof orig === 'function') orig(el);
@@ -1009,13 +1022,15 @@
                             });
                     }
 
+                    // 외부에서도 재계산을 요청할 수 있게 노출(선택)
+                    $scope.data('recalcOptionTotal', recalcOptionTotal);
+                    $scope.data('recalcHeaderTotals', recalcHeaderTotals);
+
                     // 초기 1회 바인딩 & 계산
-                    wire();
+                    bindOptionEvents();
                     recalcOptionTotal();
                     recalcHeaderTotals();
-                })();
-
-
+                }
 
                 // 숫자 포맷 (input 중 formatting)
                 $content.on('input', 'input[name^="Price"], input[name^="UnitPrice"], input[name^="dcPrice"], input[name^="TotalOptPrice"],' +
@@ -1059,7 +1074,7 @@
                         $productId.val(item.id);
                         $productCode.val(item.Code);
                         $materialGroup.val(item.group_name);
-                        //tryShowPrice($row);
+                        tryShowPrice($row);
                     });
 
 
@@ -1436,6 +1451,65 @@
 
         }
 
+        // remark.js (showSujuForm 안에 넣어도 OK)
+        const Remark = {
+            resetIndex($scope) { $scope.data('__remarkIdx', 0); },
+            nextIdx($scope)    { const n = ($scope.data('__remarkIdx')||0) + 1; $scope.data('__remarkIdx', n); return n; },
+
+            clear($scope) {
+                const $tb = $scope.find('.SuJu_remark-table tbody');
+                $tb.find('tr:visible').not('.remark-template-row').remove();
+            },
+
+            fill($scope, rows = []) {
+                const $tb  = $scope.find('.SuJu_remark-table tbody');
+                const $tpl = $tb.find('.remark-template-row').hide();
+                this.clear($scope); this.resetIndex($scope);
+
+                rows.forEach(r => {
+                    const idx = this.nextIdx($scope);
+                    const $tr = $tpl.clone(true, true).removeClass('remark-template-row').show();
+                    $tr.find('textarea,input').each(function(){
+                        const $el = $(this);
+                        const base = ($el.attr('name')||'').replace(/_\d+$/, '');
+                        if (base) $el.attr('name', `${base}_${idx}`);
+                    });
+                    $tr.find(`input[name="remark_id_${idx}"]`).val(r.remark_id || '');
+                    $tr.find(`textarea[name="sjremark_${idx}"]`).val(r.sjremark || '');
+                    $tr.find('a[title="삭제"]').attr('id', `btnDelRemark_${idx}`);
+                    $tb.append($tr);
+                });
+            },
+
+            ensureMin($scope, min = 2) {
+                const $tb = $scope.find('.SuJu_remark-table tbody');
+                const cur = $tb.find('tr:visible').not('.remark-template-row').length;
+                const need = Math.max(min - cur, 0);
+                for (let i = 0; i < need; i++) {
+                    const idx = this.nextIdx($scope);
+                    const $tpl = $tb.find('.remark-template-row');
+                    const $tr  = $tpl.clone(true, true).removeClass('remark-template-row').show();
+                    $tr.find('textarea,input').each(function(){
+                        const $el = $(this);
+                        const base = ($el.attr('name')||'').replace(/_\d+$/, '');
+                        if (base) $el.attr('name', `${base}_${idx}`).val('');
+                    });
+                    $tr.find('a[title="삭제"]').attr('id', `btnDelRemark_${idx}`);
+                    $tb.append($tr);
+                }
+            },
+
+            extract($scope) {
+                const out = [];
+                $scope.find('.SuJu_remark-table tbody tr:visible').not('.remark-template-row').each(function(){
+                    const txt = ($(this).find('textarea[name^="sjremark_"]').val()||'').trim();
+                    if (txt) out.push({ sjremark: txt });
+                });
+                return out;
+            }
+        };
+
+
         //행 삭제 함수
         function removeItemRow(el) {
             const $tbody = $(el).closest('tbody');
@@ -1557,8 +1631,6 @@
 
             page.resetRemarkListIndex = function () { page.RemarkListIndex = 0; };
             page.nextRemarkIndex      = function () { return page.RemarkListIndex++; };
-
-
         })
 
 

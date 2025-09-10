@@ -1,5 +1,6 @@
 package mes.app.sales.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.sql.Date;
@@ -37,25 +38,23 @@ public class SujuService {
 		dicParam.addValue("spjangcd", spjangcd);
 		
 		String sql = """
-			WITH suju_state_summary AS (
-			  SELECT
-				sh.id AS suju_head_id,
-				-- 상태 요약 계산
+				WITH suju_state_summary AS (
+				  SELECT
+					sh.id AS suju_head_id,
+					-- 상태 요약 계산
 				CASE
 				  WHEN COUNT(DISTINCT s."State") = 1 THEN MIN(s."State")
 				  WHEN BOOL_AND(s."State" IN ('received', 'planned')) AND BOOL_OR(s."State" = 'planned') THEN 'part_planned'
 				  WHEN BOOL_AND(s."State" IN ('received', 'ordered', 'planned')) AND BOOL_OR(s."State" = 'ordered') THEN 'part_ordered'
 				  ELSE '기타'
-				END AS summary_state
-			   
-			  FROM suju_head sh
-			  JOIN suju s ON s."SujuHead_id" = sh.id
-			   
-			  GROUP BY sh.id
-			),
-			shipment_summary AS (
-				SELECT
-					s."SujuHead_id",
+					END AS summary_state			  
+				  FROM suju_head sh
+				  JOIN suju s ON s."SujuHead_id" = sh.id			  
+				  GROUP BY sh.id
+				),
+				shipment_summary AS (
+					SELECT
+						s."SujuHead_id",
 					SUM(s."SujuQty") AS total_qty,
 					COALESCE(SUM(shp."shippedQty"), 0) AS total_shipped,
 					CASE
@@ -71,83 +70,42 @@ public class SujuService {
 					GROUP BY "SourceDataPk"
 				  ) shp ON shp."SourceDataPk" = s.id
 				  GROUP BY s."SujuHead_id"
-			)
-			   
-			SELECT
-			  sh.id,
-			  sh."JumunNumber",
-			  to_char(sh."JumunDate", 'yyyy-mm-dd') AS "JumunDate",
-			  to_char(sh."DeliveryDate", 'yyyy-mm-dd') AS "DueDate",
-			  sh."Company_id",
-			  c."Name" AS "CompanyName",
-			  sh."TotalPrice",
-			  sh."Description",
-			  sc_state."Value" AS "StateName",
-			  sc_type."Value" AS "SujuTypeName",
-			   
-			  -- 대표 제품명 + 외 N개
-			  CASE
-				WHEN COUNT(DISTINCT s."Material_id") = 1 THEN MAX(m."Name")
-				ELSE CONCAT(MAX(m."Name"), ' 외 ', COUNT(DISTINCT s."Material_id") - 1, '개')
-			  END AS product_name,
-			   
-			  sss.summary_state AS "State",
-			  sc_ship."Value" AS "ShipmentStateName"
-			   
-			FROM suju_head sh
-			JOIN suju s ON s."SujuHead_id" = sh.id
-			JOIN material m ON m.id = s."Material_id"
-			LEFT JOIN (
-			  SELECT "SourceDataPk", SUM("Qty") AS "shippedQty"
-			  FROM shipment
-			  GROUP BY "SourceDataPk"
-			) shp ON shp."SourceDataPk" = s.id
-			LEFT JOIN company c ON c.id = sh."Company_id"
-			LEFT JOIN shipment_summary ss ON ss."SujuHead_id" = sh.id
-			LEFT JOIN suju_state_summary sss ON sss.suju_head_id = sh.id
-			LEFT JOIN sys_code sc_state ON sc_state."Code" = sss.summary_state AND sc_state."CodeType" = 'suju_state'
-			LEFT JOIN sys_code sc_type ON sc_type."Code" = sh."SujuType" AND sc_type."CodeType" = 'suju_type'
-			LEFT JOIN sys_code sc_ship ON sc_ship."Code" = ss.shipment_state AND sc_ship."CodeType" = 'shipment_state'
-            where 1 = 1
-            and sh.spjangcd = :spjangcd
+				)	
+				select
+				sh.id,
+				sh."Company_id" ,
+				c."Name" AS "CompanyName",
+				sh."JumunDate" ,
+				sh."DeliveryDate" as "DueDate",
+				m."Name" as product_name,
+				s."SujuQty",
+				s."UnitPrice",
+				s."Price" ,
+				sh.matcolor,
+				sss.summary_state AS "State",
+				sc_state."Value" AS "StateName",
+				sc_ship."Value" AS "ShipmentStateName",
+				sh.contaddres
+				from suju_head sh
+				LEFT JOIN company c ON c.id = sh."Company_id"
+				left join suju s on sh.id = s."SujuHead_id"
+				left JOIN material m ON m.id = s."Material_id"
+				left JOIN shipment_summary ss ON ss."SujuHead_id" = sh.id
+				LEFT JOIN suju_state_summary sss ON sss.suju_head_id = sh.id
+				LEFT JOIN sys_code sc_state ON sc_state."Code" = sss.summary_state AND sc_state."CodeType" = 'suju_state'
+				LEFT JOIN sys_code sc_ship ON sc_ship."Code" = ss.shipment_state AND sc_ship."CodeType" = 'shipment_state'
+			where 1 = 1
+			and sh.spjangcd = :spjangcd
 			""";
 
 		if (date_kind.equals("sales")) {
 			sql += """
         		and sh."JumunDate" between :start and :end
-				group by
-					 sh.id,
-					 sh."JumunNumber",
-					 sh."JumunDate",
-					 sh."DeliveryDate",
-					 sh."Company_id",
-					 c."Name",
-					 sh."TotalPrice",
-					 sh."Description",
-					 sh."SujuType",
-					 sss.summary_state,
-					 sc_state."Value",
-					 sc_type."Value",
-					 sc_ship."Value"
 				order by sh."JumunDate" desc,  sh.id desc
 			""";
 		} else {
 			sql += """
 				and sh."DeliveryDate" between :start and :end
-				group by
-					 sh.id,
-					 sh."JumunNumber",
-					 sh."JumunDate",
-					 sh."DeliveryDate",
-					 sh."Company_id",
-					 c."Name",
-					 sh."TotalPrice",
-					 sh."Description",
-					 sh."SujuType",
-					 sss.summary_state,
-					 sc_state."Value",
-					 sc_type."Value",
-					 sc_ship."Value"
 				order by sh."DeliveryDate" desc,  sh.id desc
 			""";
 		}
@@ -161,125 +119,70 @@ public class SujuService {
 		MapSqlParameterSource paramMap = new MapSqlParameterSource();
 		paramMap.addValue("id", id);
 
-		String sql = """ 
+		String headSql =  """ 
 			SELECT
-				sh.id,
-				sh."JumunNumber",
-				to_char(sh."JumunDate", 'yyyy-mm-dd') AS "JumunDate",
-				to_char(sh."DeliveryDate", 'yyyy-mm-dd') AS "DueDate",
-				sh."Company_id",
-				c."Name" AS "CompanyName",
-				sh."TotalPrice",
-				sh."Description",
-				sh."SujuType",
-				fn_code_name('suju_type', sh."SujuType") AS "SujuTypeName"
-			FROM suju_head sh
-			LEFT JOIN company c ON c.id = sh."Company_id"
-			WHERE sh.id = :id
+				 sh.id,
+				 sh."JumunNumber",
+				 to_char(sh."JumunDate", 'yyyy-mm-dd') AS "JumunDate",
+				 to_char(sh."DeliveryDate", 'yyyy-mm-dd') AS "DueDate",
+				 sh."Company_id",
+				 c."Name" AS "CompanyName",
+				 sh."TotalPrice" as "ContractPrice",
+				 sh."Description",
+				 sh."SujuType",
+				 sh.contractnm,
+				 sh.transcltnm,
+				 sh.contaddres,
+				 sh.hpnumber,
+				 sh.matcolor,
+				 sh.modifytext,
+				 s.id as suju_id,
+				 s."Material_id",
+				 m."Code" AS "product_code",
+				 m."Name" AS "txtProductName",
+				 mg."Name" AS "MaterialGroupName",
+				 mg.id AS "MaterialGroup_id",
+				 s."SujuQty" as quantity ,
+				 s."UnitPrice" ,
+				 s.optprice as "TotalOptPrice" ,
+				 s.dcprice as "dcPrice" ,
+				 fn_code_name('suju_type', sh."SujuType") AS "SujuTypeName"
+				 FROM suju_head sh
+				 LEFT JOIN company c ON c.id = sh."Company_id"
+				 left join suju s on sh.id = s."SujuHead_id"
+				 INNER JOIN material m ON m.id = s."Material_id"
+				 INNER JOIN mat_grp mg ON mg.id = m."MaterialGroup_id"
+				 WHERE sh.id = :id;
 		""";
 
-		String detailSql = """ 
-			WITH shipment_status AS (
-				     SELECT "SourceDataPk", SUM("Qty") AS shipped_qty
-				     FROM shipment
-				     WHERE "SourceTableName" = 'rela_data'
-				     GROUP BY "SourceDataPk"
-				 ),
-				 suju_with_state AS (
-				     SELECT
-				         s.id AS suju_id,
-				         s."SujuHead_id",
-				         s."Material_id",
-				         m."Code" AS "product_code",
-				         m."Name" AS "txtProductName",
-				         mg."Name" AS "MaterialGroupName",
-				         mg.id AS "MaterialGroup_id",
-				         u."Name" AS "unit",
-				         s."SujuQty" AS "quantity",
-				         to_char(s."JumunDate", 'yyyy-mm-dd') AS "JumunDate",
-				         to_char(s."DueDate", 'yyyy-mm-dd') AS "DueDate",
-				         s."CompanyName",
-				         s."Company_id",
-				         s."SujuType",
-				         s."UnitPrice" AS "unitPrice",
-				         s."Vat" AS "VatAmount",
-				         s."Price" AS "supplyAmount",
-				         s."TotalAmount" AS "totalAmount",
-				         to_char(s."_created", 'yyyy-mm-dd') AS "create_date",
-				         s.project_id AS "projectHidden",
-				         p.projnm AS "project",
-				         s."Description" AS "description",
-				         s."InVatYN" AS "invatyn",
-				         s."SujuQty2",
-				         s."AvailableStock",
-				         s."ReservationStock",
-				         s."State" AS "original_state",
-				         COALESCE(sh.shipped_qty, -1) AS "shipped_qty",
-				         
-				         CASE
-				             WHEN sh.shipped_qty = -1 THEN s."State"
-				             WHEN sh.shipped_qty = 0 THEN 'force_complement'
-				             WHEN sh.shipped_qty >= s."SujuQty" THEN 'shipped'
-				             WHEN sh.shipped_qty < s."SujuQty" THEN 'partial'
-				             ELSE s."State"
-				         END AS final_state
-				 
-				     FROM suju s
-				     INNER JOIN material m ON m.id = s."Material_id"
-				     INNER JOIN mat_grp mg ON mg.id = m."MaterialGroup_id"
-				     LEFT JOIN unit u ON m."Unit_id" = u.id
-				     LEFT JOIN TB_DA003 p ON p."projno" = s.project_id
-				     LEFT JOIN shipment_status sh ON sh."SourceDataPk" = s.id
-				     WHERE s."SujuHead_id" = :id
-				 )
-				 
-				 SELECT
-				     s."suju_id",
-				     s."SujuHead_id",
-				     s."Material_id",
-				     s."product_code",
-				     s."txtProductName",
-				     s."MaterialGroupName",
-				     s."MaterialGroup_id",
-				     s."unit",
-				     s."quantity",
-				     s."JumunDate",
-				     s."DueDate",
-				     s."CompanyName",
-				     s."Company_id",
-				     s."SujuType",
-				     s."unitPrice",
-				     s."VatAmount",
-				     s."supplyAmount",
-				     s."totalAmount",
-				     s.final_state AS "State",
-				     
-				     COALESCE(sc_ship."Value", sc_suju."Value") AS "suju_StateName",
-				 
-				     s."invatyn",
-				     s."SujuQty2",
-				     s."AvailableStock",
-				     s."ReservationStock",
-				     s."create_date",
-				     s."projectHidden",
-				     s."project",
-				     s."description"
-				 
-				 FROM suju_with_state s
-				 LEFT JOIN sys_code sc_ship
-				     ON sc_ship."Code" = s.final_state AND sc_ship."CodeType" = 'shipment_state'
-				 LEFT JOIN sys_code sc_suju
-				     ON sc_suju."Code" = s.final_state AND sc_suju."CodeType" = 'suju_state'
-				 ORDER BY s."JumunDate";
-				 
-		""";
+		String optionSql = """
+				select
+				so.id as option_id,
+				so.reseq,
+				so.sjoption,
+				so.optamt
+				from suju_option so
+				where so.sujuid = :id
+				""";
 
-		Map<String, Object> sujuHead = this.sqlRunner.getRow(sql, paramMap);
-		List<Map<String, Object>> sujuList = this.sqlRunner.getRows(detailSql, paramMap);
+		String remarkSql = """
+				select
+				sr.id as remark_id,
+				sr.reseq ,
+				sr.sjremark
+				from suju_remark sr
+				where sr.sujuid = :id
+				""";
 
-		sujuHead.put("sujuList", sujuList);
-		
-		return sujuHead;
+		Map<String, Object> head = this.sqlRunner.getRow(headSql, paramMap);
+		List<Map<String, Object>> items    = this.sqlRunner.getRows(optionSql, paramMap);
+		List<Map<String, Object>> remarks  = this.sqlRunner.getRows(remarkSql, paramMap);
+
+		if (head == null) head = new HashMap<>();
+		head.put("items", items);       // 👉 item-table 바인딩용
+		head.put("sjremark", remarks);  // 👉 remark-table 바인딩용 (각 원소: {sjremark: "..."} 형태)
+
+		return head;
 	}
 	
 	// 제품 정보 조회
@@ -374,8 +277,9 @@ public class SujuService {
             order by c."Name", mcu."ApplyStartDate" desc
         """;
 
-
 		List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
+//		log.info("단가 정보 SQL: {}", sql);
+//    log.info("SQL : {}", dicParam.getValues());
 		return items;
 	}
 

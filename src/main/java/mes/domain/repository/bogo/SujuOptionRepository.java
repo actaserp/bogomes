@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SujuOptionRepository extends JpaRepository<suju_option, Integer> {
+  void deleteBySujuId(Integer id);
 }
