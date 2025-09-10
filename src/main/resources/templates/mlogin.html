@@ -184,7 +184,7 @@
       <form method="post" class="form" role="form" id="loginFrm" style=" margin: 0 auto;" action="/postLogin">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <div class="login-logo">
-          <h1>(주)엑타스 근태관리</h1>
+          <h1>보고 근무등록</h1>
         </div>
         <div class="login-form" style="width: 100%">
           <dl>
@@ -209,8 +209,8 @@
             <label for="login_chk">아이디 저장</label>
           </div>
           <div style="display: flex">
-          <button type="button" class="btn-login" id="productionManage" style="width: 45%;">생산관리</button>
-          <button type="submit" class="btn-login" id="AttendanceManage" style="width: 45%; margin-left:auto; background-color: #da5959">근태관리</button>
+          <button type="button" class="btn-login" id="productionManage" style="width: 45%;">AS등록</button>
+          <button type="submit" class="btn-login" id="AttendanceManage" style="width: 45%; margin-left:auto; background-color: #da5959">근무등록</button>
           <!--                        <button type="button" class="btn-login" id="testBtn">test</button>-->
           </div>
 <!--          <ul class="btn-login-etc">-->
