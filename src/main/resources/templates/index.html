@@ -86,6 +86,7 @@
             <div class="left">
                 <div class="logo">
                     <img src="/images/logo/bogo_log.png" alt="로고">
+                    <h1>MES</h1>
                 </div>
             </div>
             <div class="right">
@@ -210,9 +211,9 @@
                         </li>
                     </ul>
                     <div class="layout-sidebar-tabcont">
-                        <div style="margin-top: 10px" id="searchkeyword-box">
-                            <input type="text" style="width: 90%" id="searchkeyword" name="searchkeyword" />
-                        </div>
+                        <!--                        <div style="margin-top: 10px" id="searchkeyword-box">-->
+                        <!--                            <input type="text" style="width: 90%" id="searchkeyword" name="searchkeyword" />-->
+                        <!--                        </div>-->
                         <nav class="layout-nav sidebar-tabcont" id="menu">
                             <ul class="dep1">
                                 <li class="dep1-1">
@@ -510,6 +511,13 @@
                                 });
                                 nthTabs.bindBookmarkEvent(objid, _bookmark);
                             }
+
+                            $('.menu_area').addClass('hidden');
+                            $('#navbarBarMenu2 .open_menu').removeClass('menu_open'); // 버튼 상태 초기화
+                            $('.con_area, .tab-content').css({
+                                'width': '100%',
+                                'left': '0'
+                            });
                         });
                     }
                 }
@@ -522,18 +530,43 @@
         });
 
 
+        $(function () {
+            function adjustMenu() {
+                const winWidth = $(window).width();
 
-        $('#navbarBarMenu2 .open_menu').click(function () {
-            $(this).toggleClass('menu_open'); // 메뉴 숨김 토글
+                if (winWidth <= 1024) {
+                    // 태블릿 이하에서는 기본 숨김
+                    $('.menu_area').addClass('hidden');
+                    $('.con_area, .tab-content').css({
+                        'width': '100%',
+                        'left': '0'
+                    });
+                } else {
+                    // PC 사이즈에서는 기본 열림
+                    $('.menu_area').removeClass('hidden');
+                    $('.con_area, .tab-content').css({
+                        'width': 'calc(100% - 250px)',
+                        'left': '250px'
+                    });
+                }
+            }
 
-            $('.menu_area').toggleClass('hidden');
-            const isMenuHidden = $('.menu_area').hasClass('hidden');
+            // 페이지 로드/리사이즈 시 적용
+            $(window).on('load resize', adjustMenu);
 
-            $('.con_area, .tab-content').css({
-                'width': isMenuHidden ? '100%' : 'calc(100% - 250px)', // 메뉴가 닫히면 전체 확장
-                'left': isMenuHidden ? '0' : '250px' // 왼쪽으로 확장
+            // 토글 버튼 이벤트
+            $('#navbarBarMenu2 .open_menu').click(function () {
+                $(this).toggleClass('menu_open');
+                $('.menu_area').toggleClass('hidden');
+
+                const isMenuHidden = $('.menu_area').hasClass('hidden');
+                $('.con_area, .tab-content').css({
+                    'width': isMenuHidden ? '100%' : 'calc(100% - 250px)',
+                    'left': isMenuHidden ? '0' : '250px'
+                });
             });
         });
+
 
         // 북마크 및 default_menu를 한 번에 처리
         $.getJSON('/api/system/bookmark', function (result) {
@@ -771,35 +804,35 @@
     });
 
     //메뉴 검색창 이벤트 등록
-    document.addEventListener('input', function(event){
-        if(event.target){
-            const ele = event.target;
-
-            if(ele.id === 'searchkeyword'){
-                initializeAutocomplete('searchkeyword', 'searchkeyword-box', menuName_list, menu_arr)
-            }
-        }
-    });
+    // document.addEventListener('input', function(event){
+    //     if(event.target){
+    //         const ele = event.target;
+    //
+    //         if(ele.id === 'searchkeyword'){
+    //             initializeAutocomplete('searchkeyword', 'searchkeyword-box', menuName_list, menu_arr)
+    //         }
+    //     }
+    // });
 
     //메뉴 검색바 엔터시 발동함수
-    document.getElementById('searchkeyword').addEventListener("keydown", (e) => {
-        if(e.key === 'Enter'){
-            e.preventDefault();
-
-            const inputValue = $('#searchkeyword').val();
-
-            const matchedItem = menu_arr.find(obj => {
-                const key = Object.keys(obj)[0];
-                return key.trim() === inputValue;
-            })
-
-            if(matchedItem) {
-                const url = matchedItem[inputValue];
-                const target = url.substring(url.lastIndexOf("/")+1);
-                document.querySelector(`[data-objid="${target}"]`)?.click();
-            }
-        }
-    });
+    // document.getElementById('searchkeyword').addEventListener("keydown", (e) => {
+    //     if(e.key === 'Enter'){
+    //         e.preventDefault();
+    //
+    //         const inputValue = $('#searchkeyword').val();
+    //
+    //         const matchedItem = menu_arr.find(obj => {
+    //             const key = Object.keys(obj)[0];
+    //             return key.trim() === inputValue;
+    //         })
+    //
+    //         if(matchedItem) {
+    //             const url = matchedItem[inputValue];
+    //             const target = url.substring(url.lastIndexOf("/")+1);
+    //             document.querySelector(`[data-objid="${target}"]`)?.click();
+    //         }
+    //     }
+    // });
 </script>
 
 <script type="text/javascript">
