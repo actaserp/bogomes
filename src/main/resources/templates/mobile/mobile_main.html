@@ -1,41 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <style>
-  .contents-wrap{
-
-  }
-  .currentData{
-
-  }
-
-  .ip-card{
-    width: 80%;
-    aspect-ratio: 1 / 1;
-    background: linear-gradient(135deg, #4dd0e1, #81c784);
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    margin-bottom: 10px;
-    position: relative;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    margin-left: 10%;
-    font-size: large;
-  }
-
-  .office-card{
-    text-align: center;
-    padding: 10px;
-    margin-bottom: 5px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   .btnArea{
     position: fixed;
     bottom: 0px;
@@ -116,7 +81,7 @@
         </a>
       </div>
       <div class="left" style="margin-left:35px; font-size: 25px;">
-        <h2>출퇴근등록</h2>
+        <h2>근무등록</h2>
       </div>
       <div class="right">
         <a href="#" title="전체메뉴" class="btn-menu">
@@ -142,54 +107,56 @@
 <!--          <div style="width: 100%; display: flex; justify-content: center; margin: 30px 0 30px 0;">-->
 <!--            <img src="/assets_mobile/images/logo/actas_log.png" alt="로고 이미지" style="width: 70%">-->
 <!--          </div>-->
-          <div class="ip-card">
-            <input type="hidden" id="postno">
-            <!--현재 정보 카드-->
-            <!-- 현재 날자 출력 -->
-            <div style="margin-bottom: 10px">
-              <div id="searchDate" class="currentData" style="text-align: justify;"></div>
-              <div id="userInfo" class="currentData" style="text-align: end">생산부 홍길동 사원</div>
-            </div>
-            <!-- ip 검색 시간(현재시간) -->
-            <div>
-              <span id="searchTime" class="currentData" style="height: 100px; font-size: 40px;"></span>
-            </div>
-            <!-- 현재ip -->
-            <div>
-              <span id="ipAddress" class="currentData" style="border-radius: 0 0 10px 10px;"></span>
-            </div>
+          <div>
+            <dl>
+              <dt>근무일자</dt>
+              <dd>
+                <div style="display: flex; gap: 10px">
+                  <div style="width: 100%">
+                    <input type="date" id="searchDate">
+                  </div>
+                </div>
+              </dd>
+            </dl>
+            <dl>
+              <dt>근무시간</dt>
+              <dd>
+                <div style="display: flex; gap: 10px">
+                  <div style="width: 45%">
+                    <input type="time" id="searchFromTime">
+                  </div>
+                  ~
+                  <div style="width: 45%">
+                    <input type="time" id="searchToTime">
+                  </div>
+                </div>
+              </dd>
+            </dl>
+            <dl>
+              <dt>근무구분</dt>
+              <dd>
+                <div style="display: flex; gap: 10px">
+                  <div style="width: 100%">
+                    <select id="selectWorkcd">
+                      <option value="">전체</option>
+                    </select>
+                  </div>
+                </div>
+              </dd>
+            </dl>
           </div>
 
-          <!-- 출근시간 카드 -->
-          <div class="office-card">
-            <i class="fa-solid fa-stopwatch fa_xl" id="officeIcon"></i>
-            <div>
-              <div class="status">출근</div>
-              <div class="time" id="officeTime" style="font-weight: bold">오전 09:00</div>
-            </div>
-          </div>
+          <div class="contents-wrap">
+            <div id="theGrid">
 
-          <!-- 근태구분 확인 -->
-          <div id="workcd" style="display: none">
-            <label>근태구분</label>
-            <div>
-              <select id="selectWorkcd">
-                <option>휴가</option>
-              </select>
             </div>
-            <div style="font-size: small; color: red;" id="gpsInfo">
-            </div>
-          </div>
+          </div><!--// contents-wrap end-->
 
           <!-- 버튼 -->
           <div class="btnArea">
-            <div id="inside" style="display: none; gap: 13%; justify-content: center;">
+            <div id="inside" style="display: flex; gap: 13%; justify-content: center;">
               <button onclick="submitCommute('inOfficeIn')" class="office_btn" style=""><i class="fa-solid fa-briefcase fa_xl" style="color: #ffffff;"></i><br>사내출근</button>
               <button onclick="submitCommute('inOfficeOut')" class="office_btn" style="background-color: red;"><i class="fa-solid fa-person-walking fa-xl" style="color: #ffffff;"></i><br>사내퇴근</button>
-            </div>
-            <div id="outside" style="display: none; gap: 13%; justify-content: center;">
-              <button onclick="submitCommute('outOfficeIn')" class="office_btn" style=""><i class="fa-solid fa-briefcase fa_xl" style="color: #ffffff;"></i><br>외부출근</button>
-              <button onclick="submitCommute('outOfficeOut')" class="office_btn" style="background-color: red;"><i class="fa-solid fa-person-walking fa_xl" style="color: #fafafa;"></i><br>외부퇴근</button>
             </div>
           </div>
         </dl>
@@ -486,6 +453,66 @@
       document.getElementById('gpsInfo').innerText = result.data
     };
     AjaxUtil.postAsyncData(url, data, fnsuccess);
+  }
+
+  function searchMainData2() {
+    let url = '/api/commute_current/read';
+    let data = {
+      'workcd': document.getElementById('selectWorkcd').value,
+      'searchFromDate': document.getElementById('searchFromDate').value,
+      'searchToDate': document.getElementById('searchToDate').value
+    };
+    let fnsuccess = function (result) {
+      console.log('result : ', result);
+
+      // ✅ 데이터가 null이 아니면 실행
+      if (result != null && result.data != null) {
+        // 조회된 데이터
+        const items = result.data;
+
+        // ✅ 동적 테이블 생성
+        let tableHtml = `
+          <table>
+              <tr>
+                <th>일자</th>
+                <th>근태</th>
+                <th>출근</th>
+                <th>퇴근</th>
+                <th>근무시간</th>
+                <th>구분</th>
+              </tr>
+                `;
+
+        items.forEach(item => {
+          tableHtml += `
+                    <tr>
+                        <td>${formatDateToYYMMDD(item.workym) || ''}</td>
+                        <td>${item.worknm || ''}</td>
+                        <td>${item.starttime || '--:--'}</td>
+                        <td>${item.endtime || '--:--'}</td>
+                        <td>${item.worktime || '-'}</td>
+                        <td>${item.status_text || ''}</td>
+                    </tr>
+                `;
+        });
+
+        tableHtml += `
+                </table>
+            `;
+
+        // ✅ 기존 내용 제거하고 새롭게 바인딩
+        const tableBody = document.querySelector('#theGrid');
+        tableBody.innerHTML = tableHtml;
+      } else {
+        const tableBody = document.querySelector('#theGrid');
+        tableBody.innerHTML = `
+          <tr>
+              <td colspan="6" style="text-align: center; padding: 8px;">조회된 데이터가 없습니다.</td>
+          </tr>
+      `;
+      }
+    };
+    AjaxUtil.getAsyncData(url, data, fnsuccess);
   }
 
 
