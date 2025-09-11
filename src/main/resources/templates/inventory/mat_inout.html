@@ -196,15 +196,17 @@
     <div class="layout-contents">
         <div class="page-title-wrap">
             <div class="left">
-                <h2>재고 입출고</h2>
+                <h2>자재 이동</h2>
                 <a title="북마크" class="bookmark toggle">
                     내 메뉴
                 </a>
+                <button type="button" class="btn-default pull-right mr-1" id="btnHeaderCompress" title="화면 확대/축소"><i class="fas fa-compress" id="iCompress"></i></button>
             </div>
+
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
                 <li>재고관리</li>
-                <li>재고 입출고</li>
+                <li>자재 이동</li>
             </ul>
         </div>
         <section class="section">
@@ -930,6 +932,7 @@
                         // {binding: 'mio_pk', header: '입고번호', width: 80, align: 'center'},
                         {binding: 'store_house_name', header: '창고', width: 80, align: 'center'},
                         {binding: 'inout', header: '입출', width: 60, align: 'center'},
+                        {binding: 'inout_type', header: '구분', width: 100, align: 'center'},
                         {binding: 'material_type', header: '품목유형', width: 80, align: 'center'},
                         {binding: 'material_code', header: '품목코드', width: 100, align: 'center'},
                         {binding: 'material_name', header: '품목명', width: 170, align: 'left'},
@@ -947,7 +950,7 @@
                         // {binding: 'state_name', header: '입고검사 결재', width: 100, align: 'center'},
                         {binding: 'judge_code', header: '입고검사 판정', width: 100, align: 'center'},
                         {binding: 'lot_use', header: '로트관리유무', width: 100, align: 'center'},
-                        {binding: 'inout_type', header: '구분', width: 100, align: 'center'},
+
                         // {binding: 'SafetyStock', header: '안전재고', width: 100, align: 'right', format: 'n0'}
                     ],
                     itemsSource: new wijmo.collections.CollectionView([]),
