@@ -513,7 +513,7 @@
                             }
 
                             const winWidth = $(window).width();
-                            if (winWidth <= 1024) {
+                            if (winWidth <= 1366) {
                                 $('.menu_area').addClass('hidden');
                                 $('#navbarBarMenu2 .open_menu').removeClass('menu_open'); // 버튼 상태 초기화
                                 $('.con_area, .tab-content').css({
@@ -537,7 +537,7 @@
             function adjustMenu() {
                 const winWidth = $(window).width();
 
-                if (winWidth <= 1024) {
+                if (winWidth <= 1366) {
                     // 태블릿 이하에서는 기본 숨김
                     $('.menu_area').addClass('hidden');
                     $('.con_area, .tab-content').css({
