@@ -124,21 +124,6 @@
 
                     </div>
                 </form>
-
-                <div class="title_box" style="margin-bottom: 5px;">
-                    <div class="left_align">
-                        <!--                    <label class="switch">-->
-                        <!--                        <input type="checkbox" checked id="btnListCollapse"><span class="slider round"></span>-->
-                        <!--                    </label>-->
-                        <!--                    수주/제품 보기/감추기-->
-                        <a class="btn btn-delete" title="출하품목 추가" id="btnAddMat">
-                            출하품목 추가
-                        </a>
-                        <a class="btn btn-delete" title="강제 완료" id="btnCompletionMat">
-                            강제 완료
-                        </a>
-                    </div>
-                </div>
                 <div class="container-fluid" id="divList" style="height: 20vh;">
                     <div class="container-fluid" id="div_suju">
                         <div id="theGrid"></div>
@@ -187,20 +172,13 @@
                         </dl>
                     </div>
 
-                    <div class="button-wrap">
+                    <div class="button-wrap" style="margin-left: auto;">
                         <ul>
-                            <li>
-                                <a class="btn btn-excell"
-                                   style="border: 1px solid red; color: red"
-                                   title="품목 전체제외" id="btnDeleteAllShipMat">
-                                    품목 전체제외
-                                </a>
-                            </li>
                             <li>
                                 <a class="btn btn-delete"
                                    style="border: 1px solid red; color: red"
-                                   title="품목 제외" id="btnDeleteShipMat">
-                                    품목 제외
+                                   title="강제 완료" id="btnDeleteShipMat">
+                                    강제 완료
                                 </a>
                             </li>
                             <li>
@@ -482,7 +460,6 @@
             constructor() {
                 this.grid_suju = null;
                 this.grid_product = null;
-                this.grid_shipment = null;
                 this.viewData = new wijmo.collections.CollectionView();
                 this.viewData2 = new wijmo.collections.CollectionView();
                 this.viewData3 = new wijmo.collections.CollectionView();
@@ -579,82 +556,6 @@
                     }
                 })
 
-                this.grid_shipment = new wijmo.grid.FlexGrid('#theGrid2', {
-                    selectionMode: wijmo.grid.SelectionMode.Row,
-                    headersVisibility: wijmo.grid.HeadersVisibility.All,
-                    autoGenerateColumns: false,
-                    showMarquee: true,
-                    allowDelete: true,
-                    isReadOnly: false,
-                    formatItem: (sender, e) => {
-                        if (e.panel.cellType === wijmo.grid.CellType.RowHeader) {
-                            e.cell.textContent = (e.row + 1).toString();
-                        }
-                    },
-                    columns: [
-                        {
-                            binding: 'suju_pk',
-                            header: '순번(지워야됨)',
-                            width: 70,
-                            align: 'right',
-                            isReadOnly: true,
-                            visible: false
-                        },
-                        {
-                            binding: 'mat_id',
-                            header: '순번(지워야됨)',
-                            width: 70,
-                            align: 'right',
-                            isReadOnly: true,
-                            visible: false
-                        },
-                        {binding: 'mat_code', header: '제품코드', width: 100, align: 'center', isReadOnly: true},
-                        {binding: 'mat_name', header: '제품명', width: 140, align: 'left', isReadOnly: true},
-                        {binding: 'unit_name', header: '단위', width: 100, align: 'center', isReadOnly: true},
-                        {
-                            binding: 'order_qty',
-                            header: '수량',
-                            width: 100,
-                            align: 'right',
-                            isReadOnly: false, // 편집 가능
-                            editor: new wijmo.input.InputNumber(document.createElement('div'), {
-                                format: 'n0', // 정수 형식
-                                min: 0,       // 최소값 설정
-                                max: 99999,   // 최대값 설정
-                                step: 1       // 증가/감소 단위
-                            })
-                        },
-                        {binding: 'mat_grp', header: '제품그룹', width: 100, align: 'left', isReadOnly: true},
-                        {
-                            binding: 'description',
-                            header: '비고',
-                            width: 100,
-                            align: 'center',
-                            isReadOnly: false, // 편집 가능
-                            editor: new wijmo.input.InputMask(document.createElement('div'), {
-                                // mask: '>AAAAAA', // 대문자 영문자 최대 6자 입력 허용
-                                //promptChar: '_', // 입력하지 않은 자리를 '_'로 표시
-                                placeholder: '입력해주세요', // 기본 힌트 텍스트
-                                isRequired: false // 필수 입력 여부
-                            })
-                        },
-
-                    ],
-                    itemsSource: this.viewData2,
-
-                });
-                // 행 헤더에 인덱스 추가
-                this.grid_shipment.formatItem.addHandler((s, e) => {
-                    if (e.panel.cellType === wijmo.grid.CellType.RowHeader) {
-                        e.cell.textContent = (e.row + 1).toString(); // 행 번호 (1부터 시작)
-                    }
-                });
-
-                // 행 헤더 크기 조정
-                this.grid_shipment.rowHeaders.columns[0].width = 50;
-                new FlexGridContextMenu(this.grid_shipment);
-                this.grid_shipment.downloadFileName = '출하지시';
-
 
                 this.grid_product = new wijmo.grid.FlexGrid('#theGrid3', {
                     autoGenerateColumns: false,
@@ -709,12 +610,6 @@
                     }
                 }
                 return;
-            }
-
-            grid_shipment_clear() {
-                this.grid_shipment.itemsSource = new wijmo.collections.CollectionView([]);
-                document.getElementById('company_id').selectedIndex = 0;
-
             }
 
             addShipMat() {
@@ -847,20 +742,6 @@
                 return;
             }
 
-            deleteShipMat() {
-
-                let cv = this.grid_shipment.collectionView;
-                let selectedIndex = this.grid_shipment.selection.row;
-                let selectedItem = cv.items[selectedIndex]; // 선택된 행의 데이터
-                cv.remove(selectedItem);
-                cv.refresh();
-
-                if (cv.items.length === 0) {
-                    document.getElementById('company_id').selectedIndex = 0;
-                }
-
-            }
-
             beforeSave() {
 
                 if ($('#company_id').val() == '') {
@@ -873,26 +754,12 @@
                     return false;
                 }
 
-                for (let i = 0; i < this.grid_shipment.collectionView.items.length; i++) {
-                    let item = this.grid_shipment.collectionView.items[i];
-                    let qty = item.order_qty;
-                    if (qty == null || qty == '') {
-                        Alert.alert('', '수량을 입력하세요.');
-                        return false;
-                    }
-                }
                 return true;
             }
 
             saveShipOrder() {
                 let data = {}; // = FormUtil.extractForm($('#shipmentForm'));
                 let bucket = [];
-                console.log('list_data', this.grid_shipment.collectionView.items);
-
-                let list_data = this.grid_shipment.collectionView.items;
-                for (let i = 0; i < list_data.length; i++) {
-                    bucket.push(list_data[i])
-                }
 
                 data['Company_id'] = $('#company_id').val();
                 data['ShipDate'] = $('#shipdate').val();
@@ -924,8 +791,6 @@
                         $('#company_id option:eq(0)').prop('selected', true);
 
 
-                        page.grid_shipment_clear();
-
                         page.searchMain();
                     } else {
                         const message = res.message ?? '출하지시실패';
@@ -934,53 +799,6 @@
                 }
 
                 AjaxUtil.postAsyncData(gUrl + '/save_shipment_order', data, fnSuccess);
-            }
-
-            checkShipMatUnique(mat_pk) {
-                for (let i = 0; i < this.grid_shipment.collectionView.items.length; i++) {
-                    if (mat_pk == this.grid_shipment.collectionView.items[i].mat_id)
-                        return false;
-                }
-                return true;
-            }
-
-            getShipMatRow(mat_pk) {
-                console.log();
-                for (let i = 0; i < this.grid_shipment.collectionView.items.length; i++) {
-                    console.log('mat', mat_pk);
-                    console.log('ma2t', this.grid_shipment.collectionView.items[i].mat_id);
-                    console.log('ma3t', this.grid_shipment.collectionView.items[i]);
-                    console.log('ma4t', this.grid_shipment.collectionView.items);
-
-                    if (mat_pk == this.grid_shipment.collectionView.items[i].mat_id)
-                        return i;
-                }
-                return -1;
-            }
-
-            addNewRow(new_data) {
-                let cv = this.grid_shipment.collectionView;
-
-                let existingItem = cv.items.find(item =>
-                    item.suju_pk && item.suju_pk === new_data['suju_pk']);
-                if (existingItem) {
-                    cv.remove(existingItem);
-                    cv.commitEdit();
-                }
-
-                let newRow = {
-                    suju_pk: new_data['suju_pk'],
-                    mat_id: new_data['mat_id'],
-                    mat_grp: new_data['mat_grp'],        // 제품그룹 초기값
-                    mat_code: new_data['mat_code'],       // 제품코드 초기값
-                    mat_name: new_data['mat_name'],       // 제품명 초기값
-                    unit_name: new_data['unit_name'],      // 단위 초기값
-                    order_qty: new_data['order_qty'],       // 수량 초기값
-                    description: ''
-                };
-                cv.addNew(newRow);
-                //cv.commit();
-
             }
 
             setButtonState() {
@@ -1030,9 +848,6 @@
                 }
 
 
-                if ($("#cboSource").val() != 'product') {
-                    page.grid_shipment_clear();
-                }
             }
 
             // 검색
@@ -1043,16 +858,6 @@
             $('#cboSource').change(function (e) {
                 initAll();
 
-                page.grid_shipment_clear();
-                if ($("#cboSource").val() == 'suju') {
-                    $('#div_suju').show();
-                    $('#div_product').hide();
-                    page.searchMain();
-                } else if ($("#cboSource").val() == 'product') {
-                    $('#div_suju').hide();
-                    $('#div_product').show();
-                    page.searchMain();
-                }
             });
 
             $('#btnListCollapse').click(function (e) {
@@ -1144,13 +949,8 @@
             $('#shipdate').val(CommonUtil.getYYYYMMDD());
 
             $('#btnSaveShipOrder').click(function (e) {
-                if (page.grid_shipment.collectionView.items == 0) {
-                    Alert.alert('', '출하 지시할 내용이 없습니다.');
-                    return;
-                }
-                //else if (page.grid_shipment.getList("selected").length == 0) {
-                //    Alert.alert('', '제품 선택해 주세요.'); return;
-                //}
+
+                // 출하지시저장
 
                 if (page.beforeSave()) {
                     Alert.confirm('', "출하 지시하시겠습니까?",
@@ -1161,14 +961,6 @@
                         }
                     );
                 }
-            });
-
-            $("#btnDeleteShipMat").click(function (e) {
-                page.deleteShipMat();
-            });
-
-            $("#btnDeleteAllShipMat").click(function (e) {
-                page.grid_shipment_clear();
             });
 
             page.searchMain();
