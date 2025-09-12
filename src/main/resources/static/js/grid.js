@@ -176,82 +176,151 @@ let GridUtil = {
             window.savedScrollPosition = null;
         }
     },
-    enableResponsiveRowSelection(grid, onSelect) {
-        if (!grid || !grid.hostElement || typeof onSelect !== 'function') return () => {};
+      enableResponsiveRowSelection(grid, onSelect) {
+          if (!grid || !grid.hostElement || typeof onSelect !== 'function') return () => {};
 
-        const host = grid.hostElement;
-        const isTouchEnv = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+          const host = grid.hostElement;
+          const isTouchEnv = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
-        // 공통: Enter로 선택
-        const onKeyDown = (e) => {
-            if (e.key === 'Enter') {
-                const item = grid.selectedItems?.[0];
-                if (item) onSelect(item);
-            }
-        };
-        host.addEventListener('keydown', onKeyDown);
+          // 좌표로 행 선택 후 onSelect
+          const selectByPoint = (clientX, clientY) => {
+              try {
+                  const pt = new wijmo.Point(clientX, clientY);
+                  const ht = grid.hitTest(pt);
+                  if (!ht || ht.cellType !== wijmo.grid.CellType.Cell || ht.row < 0) return false;
 
-        // 데스크톱: 더블클릭
-        let onDblClick = null;
-        if (!isTouchEnv) {
-            onDblClick = () => {
-                const item = grid.selectedItems?.[0];
-                if (item) onSelect(item);
-            };
-            host.addEventListener('dblclick', onDblClick);
-            // detach 함수 반환
-            return () => {
-                host.removeEventListener('keydown', onKeyDown);
-                if (onDblClick) host.removeEventListener('dblclick', onDblClick);
-            };
-        }
+                  const lastCol = Math.max(0, grid.columns.length - 1);
+                  grid.select(new wijmo.grid.CellRange(ht.row, 0, ht.row, lastCol), true);
+                  grid.focus();
 
-        // 모바일/태블릿: 단일 탭 + 롱프레스
-        let touchStartY = 0, touchStartX = 0, moved = false, pressTimer = null;
-        const LONGPRESS_MS = 450;
-        const TAP_MOVE_TOL = 10;
+                  const item = grid.rows[ht.row]?.dataItem || grid.selectedItems?.[0];
+                  if (item) { onSelect(item); return true; }
+              } catch (e) {}
+              return false;
+          };
 
-        const onTouchStart = (e) => {
-            moved = false;
-            const t = e.touches[0];
-            touchStartX = t.clientX; touchStartY = t.clientY;
+          // 공통: Enter로 선택
+          const onKeyDown = (e) => {
+              if (e.key === 'Enter') {
+                  const item = grid.selectedItems?.[0];
+                  if (item) onSelect(item);
+              }
+          };
+          host.addEventListener('keydown', onKeyDown);
 
-            clearTimeout(pressTimer);
-            pressTimer = setTimeout(() => {
-                const item = grid.selectedItems?.[0];
-                if (item) onSelect(item); // 길게 눌러 선택
-            }, LONGPRESS_MS);
-        };
+          // 데스크톱: 더블클릭
+          let onDblClick = null;
+          if (!isTouchEnv) {
+              onDblClick = (e) => {
+                  // 포인터 위치 기준으로 선택 시도, 실패 시 현재 선택 사용
+                  if (!selectByPoint(e.clientX, e.clientY)) {
+                      const item = grid.selectedItems?.[0];
+                      if (item) onSelect(item);
+                  }
+              };
+              host.addEventListener('dblclick', onDblClick);
+              // detach
+              return () => {
+                  host.removeEventListener('keydown', onKeyDown);
+                  if (onDblClick) host.removeEventListener('dblclick', onDblClick);
+              };
+          }
 
-        const onTouchMove = (e) => {
-            const t = e.touches[0];
-            if (Math.abs(t.clientX - touchStartX) > TAP_MOVE_TOL ||
-              Math.abs(t.clientY - touchStartY) > TAP_MOVE_TOL) {
-                moved = true; // 스크롤 제스처
-                clearTimeout(pressTimer);
-            }
-        };
+          // ── 모바일/태블릿: 탭 + 롱프레스 + 클릭 안전망, 버튼바에 안 가리게 높이 보정 ──
+          let touchStartY = 0, touchStartX = 0, moved = false, pressTimer = null, justHandled = false;
 
-        const onTouchEnd = () => {
-            clearTimeout(pressTimer);
-            if (moved) return; // 스크롤이면 무시
-            const item = grid.selectedItems?.[0];
-            if (item) onSelect(item); // 단일 탭으로 선택
-        };
+          // 버튼바 높이만큼 그리드 실제(px) 높이로 보정
+          let originalHeight = null, originalMinHeight = null;
+          const recomputeGridHeight = () => {
+              try {
+                  const popupRoot = host.closest('.content_wrap.popup');
+                  const container = popupRoot?.querySelector('.container-fluid') || host.parentElement;
+                  const btnBar    = popupRoot?.querySelector('.popup-button');
+                  if (!container) return;
 
-        host.addEventListener('touchstart', onTouchStart, { passive: true });
-        host.addEventListener('touchmove',  onTouchMove,  { passive: true });
-        host.addEventListener('touchend',   onTouchEnd);
+                  const offset = Math.max(20, btnBar ? btnBar.offsetHeight : 0); // 최소 20px 확보
+                  const available = container.clientHeight - offset;
+                  const target = Math.max(160, available);
 
-        // detach 함수 반환 (모달 닫힘/그리드 dispose 시 호출 권장)
-        return () => {
-            host.removeEventListener('keydown', onKeyDown);
-            host.removeEventListener('touchstart', onTouchStart);
-            host.removeEventListener('touchmove',  onTouchMove);
-            host.removeEventListener('touchend',   onTouchEnd);
-            clearTimeout(pressTimer);
-        };
-    },
+                  if (originalHeight === null) originalHeight = host.style.height || null;
+                  if (originalMinHeight === null) originalMinHeight = host.style.minHeight || null;
+
+                  host.style.height    = `${target}px`;
+                  host.style.minHeight = `160px`;
+
+                  try { grid.invalidate(); } catch (e) {}
+              } catch (e) {}
+          };
+          // 초기 1회 보정
+          setTimeout(recomputeGridHeight, 0);
+          // 회전/리사이즈 시 재보정
+          const onResize = () => recomputeGridHeight();
+          window.addEventListener('resize', onResize);
+
+          const LONGPRESS_MS = 450;
+          const TAP_MOVE_TOL = 10;
+
+          const onTouchStart = (e) => {
+              moved = false;
+              const t = e.touches[0];
+              touchStartX = t.clientX; touchStartY = t.clientY;
+
+              clearTimeout(pressTimer);
+              pressTimer = setTimeout(() => {
+                  // 롱프레스: 시작 좌표 기준
+                  if (selectByPoint(touchStartX, touchStartY)) {
+                      justHandled = true; setTimeout(() => justHandled = false, 300);
+                  }
+              }, LONGPRESS_MS);
+          };
+
+          const onTouchMove = (e) => {
+              const t = e.touches[0];
+              if (Math.abs(t.clientX - touchStartX) > TAP_MOVE_TOL ||
+                Math.abs(t.clientY - touchStartY) > TAP_MOVE_TOL) {
+                  moved = true;
+                  clearTimeout(pressTimer);
+              }
+          };
+
+          const onTouchEnd = (e) => {
+              clearTimeout(pressTimer);
+              if (moved) return;
+              const t = e.changedTouches[0];
+              if (selectByPoint(t.clientX, t.clientY)) {
+                  justHandled = true; setTimeout(() => justHandled = false, 300);
+              }
+          };
+
+          // 일부 브라우저는 터치 후 click도 발생 → 안전망
+          const onClick = (e) => {
+              if (justHandled) return;
+              if (!selectByPoint(e.clientX, e.clientY)) {
+                  const item = grid.selectedItems?.[0];
+                  if (item) onSelect(item);
+              }
+          };
+
+          host.addEventListener('touchstart', onTouchStart, { passive: true });
+          host.addEventListener('touchmove',  onTouchMove,  { passive: true });
+          host.addEventListener('touchend',   onTouchEnd);
+          host.addEventListener('click',      onClick, true);
+
+          // detach (모달 닫힘/그리드 dispose 시 호출 권장)
+          return () => {
+              host.removeEventListener('keydown', onKeyDown);
+              host.removeEventListener('touchstart', onTouchStart);
+              host.removeEventListener('touchmove',  onTouchMove);
+              host.removeEventListener('touchend',   onTouchEnd);
+              host.removeEventListener('click',      onClick, true);
+              window.removeEventListener('resize', onResize);
+              clearTimeout(pressTimer);
+
+              // 높이 원복
+              if (originalHeight !== null) host.style.height = originalHeight; else host.style.removeProperty('height');
+              if (originalMinHeight !== null) host.style.minHeight = originalMinHeight; else host.style.removeProperty('min-height');
+          };
+      },
     /**
      * (선택) 작은 화면에서 행 앞에 "선택" 버튼 컬럼 추가
      * 이미 추가되어 있으면 건너뜀

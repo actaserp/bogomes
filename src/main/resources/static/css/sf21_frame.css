@@ -2076,14 +2076,17 @@ table.tbl-400 {width:400px;}
 }
 
 /* 공통 반응형 */
-.ax5modal[data-modal-els="root"]{
-	width: min(96vw, 1100px) !important;
-	height: min(85svh, 820px) !important;
-	left: 50% !important;
-	top: 7svh !important;
-	transform: translateX(-50%) !important;
-	display: flex; flex-direction: column;
+@media (max-width: 1366px){
+	.ax5modal[data-modal-els="root"]{
+		width: min(96vw, 1100px) !important;
+		height: min(85svh, 820px) !important;
+		left: 50% !important;
+		top: 7svh !important;
+		transform: translateX(-50%) !important;
+		display: flex; flex-direction: column;
+	}
 }
+
 
 /* 모바일 풀스크린 */
 @media (max-width: 768px){
