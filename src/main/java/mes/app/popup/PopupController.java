@@ -62,7 +62,7 @@ public class PopupController {
 	            left join sys_code sc on mg."MaterialType" = sc."Code" 
 	            and sc."CodeType" ='mat_type'
 	            where 1=1 
-	            AND "Useyn" ='Y' 
+	            AND "Useyn" ='0' 
 	            and m."spjangcd" = :spjangcd
 	    """;
 
