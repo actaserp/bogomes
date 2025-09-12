@@ -252,7 +252,13 @@
                 this.modalContainer.open({width: 800, height: 500, $content});
 
                 requestAnimationFrame(() => {
-                    const $gridHost = document.querySelector('#search-grid');
+                    // const $gridHost = document.querySelector('#search-grid');
+
+                    const $gridHost = $content.find('#search-grid')[0];
+                    if (!$gridHost) {
+                          console.warn('search-grid를 찾지 못했습니다.');
+                          return;
+                    }
 
                     if (!$gridHost) {
                         if (retry < 10) {
@@ -286,6 +292,13 @@
                     this.grid.rowHeaders.columns.splice(0, 1);
                     new FlexGridContextMenu(this.grid);
                     this.grid.downloadFileName = '품목 내역';
+                    this._detachSelect = GridUtil.enableResponsiveRowSelection(this.grid, (item) => {
+                        _this.selectData(item);
+                    });
+
+                    if (window.matchMedia('(max-width: 1024px)').matches) {
+                        GridUtil.addSelectButtonColumn(this.grid, (item) => _this.selectData(item));
+                    }
 
                     this.$btnMaterialSearch = $content.find('#btnMaterialSearch');
                     this.$cboMaterialGrp = $content.find('#cboMaterialGrp');
@@ -321,12 +334,16 @@
                         _this.selectData(items[0]);
                     });
 
-                    this.$keyword.on('keypress', function (e) {
+                   /* this.$keyword.on('keypress', function (e) {
                         if (event.keyCode === 13) {
                             _this.searchDataBind();
                         }
+                    });*/
+                    this.$keyword.on('keypress', function (e) {
+                        if (e.key === 'Enter' || e.keyCode === 13) {
+                            _this.searchDataBind();
+                        }
                     });
-
 
                     //닫기버튼을 아래 ID로 사용한다면 호출하는 화면에서 이벤트 처리 필요없음
                     $content.find('#btn-search-close').on('click', function () {
@@ -338,24 +355,8 @@
                     //     _this.grid.collectionView.refresh(); // Wijmo 그리드 새로고침
                     // });
 
-                    this.grid.hostElement.addEventListener('dblclick', function (e) {
-                        let items = _this.grid.selectedItems;
-                        if (items.length === 0) {
-                            return false;
-                        }
-                        _this.selectData(items[0]); // btnMaterialSelect 클릭과 동일한 동작
-                    });
-                    this.grid.hostElement.addEventListener('keydown', function (e) {
-                        if (e.key === 'Enter' || e.keyCode === 13) {
-                            setTimeout(() => {
-                                const selected = _this.grid.selectedItems;
-                                if (selected.length > 0) {
-                                    _this.selectData(selected[0]);
-                                } else {
-                                    console.log('선택된 행 없음');
-                                }
-                            }, 0); // 다음 이벤트 루프에서 실행
-                        }
+                    this._detachSelect = GridUtil.enableResponsiveRowSelection(this.grid, (item) => {
+                        _this.selectData(item);
                     });
 
                     this._escHandler = function (e) {
@@ -375,24 +376,36 @@
                         }
                         // ESC 이벤트 제거
                         $(document).off('keydown.popupesc', this._escHandler);
+                        if (typeof this._detachSelect === 'function') this._detachSelect();
                     };
                 });
 
             }
 
-
             close() {
                 this.modalContainer.close();
 
-                // 콜백 내부에서 포커스를 직접 줬으면 자동 포커스 생략
+                // 포커스 복원
                 if (!this._skipAutoFocus && this.focusAfterClose && document.body.contains(this.focusAfterClose)) {
-                    setTimeout(() => {
-                        this.focusAfterClose.focus();
-                    }, 50);
+                    setTimeout(() => { this.focusAfterClose.focus(); }, 50);
                 }
 
+                // ESC 핸들러 해제
                 $(document).off('keydown.popupesc', this._escHandler);
+
+                // ✅ 리사이즈 리스너 해제
+                if (this._onResizeGrid) {
+                    window.removeEventListener('resize', this._onResizeGrid);
+                    this._onResizeGrid = null;
+                }
+
+                // ✅ 선택 이벤트(detach) 해제(사용 중이라면)
+                if (typeof this._detachSelect === 'function') {
+                    this._detachSelect();
+                    this._detachSelect = null;
+                }
             }
+
         }
 
     </script>

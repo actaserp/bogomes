@@ -175,6 +175,113 @@ let GridUtil = {
             window.selectedGridId = null;
             window.savedScrollPosition = null;
         }
-    }
+    },
+    enableResponsiveRowSelection(grid, onSelect) {
+        if (!grid || !grid.hostElement || typeof onSelect !== 'function') return () => {};
 
+        const host = grid.hostElement;
+        const isTouchEnv = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+        // 공통: Enter로 선택
+        const onKeyDown = (e) => {
+            if (e.key === 'Enter') {
+                const item = grid.selectedItems?.[0];
+                if (item) onSelect(item);
+            }
+        };
+        host.addEventListener('keydown', onKeyDown);
+
+        // 데스크톱: 더블클릭
+        let onDblClick = null;
+        if (!isTouchEnv) {
+            onDblClick = () => {
+                const item = grid.selectedItems?.[0];
+                if (item) onSelect(item);
+            };
+            host.addEventListener('dblclick', onDblClick);
+            // detach 함수 반환
+            return () => {
+                host.removeEventListener('keydown', onKeyDown);
+                if (onDblClick) host.removeEventListener('dblclick', onDblClick);
+            };
+        }
+
+        // 모바일/태블릿: 단일 탭 + 롱프레스
+        let touchStartY = 0, touchStartX = 0, moved = false, pressTimer = null;
+        const LONGPRESS_MS = 450;
+        const TAP_MOVE_TOL = 10;
+
+        const onTouchStart = (e) => {
+            moved = false;
+            const t = e.touches[0];
+            touchStartX = t.clientX; touchStartY = t.clientY;
+
+            clearTimeout(pressTimer);
+            pressTimer = setTimeout(() => {
+                const item = grid.selectedItems?.[0];
+                if (item) onSelect(item); // 길게 눌러 선택
+            }, LONGPRESS_MS);
+        };
+
+        const onTouchMove = (e) => {
+            const t = e.touches[0];
+            if (Math.abs(t.clientX - touchStartX) > TAP_MOVE_TOL ||
+              Math.abs(t.clientY - touchStartY) > TAP_MOVE_TOL) {
+                moved = true; // 스크롤 제스처
+                clearTimeout(pressTimer);
+            }
+        };
+
+        const onTouchEnd = () => {
+            clearTimeout(pressTimer);
+            if (moved) return; // 스크롤이면 무시
+            const item = grid.selectedItems?.[0];
+            if (item) onSelect(item); // 단일 탭으로 선택
+        };
+
+        host.addEventListener('touchstart', onTouchStart, { passive: true });
+        host.addEventListener('touchmove',  onTouchMove,  { passive: true });
+        host.addEventListener('touchend',   onTouchEnd);
+
+        // detach 함수 반환 (모달 닫힘/그리드 dispose 시 호출 권장)
+        return () => {
+            host.removeEventListener('keydown', onKeyDown);
+            host.removeEventListener('touchstart', onTouchStart);
+            host.removeEventListener('touchmove',  onTouchMove);
+            host.removeEventListener('touchend',   onTouchEnd);
+            clearTimeout(pressTimer);
+        };
+    },
+    /**
+     * (선택) 작은 화면에서 행 앞에 "선택" 버튼 컬럼 추가
+     * 이미 추가되어 있으면 건너뜀
+     */
+    addSelectButtonColumn(grid, onSelect) {
+        if (!grid || !grid.columns || typeof onSelect !== 'function') return;
+        if (grid.columns.getColumn('___selectBtn')) return; // 중복 방지
+
+        grid.columns.insert(0, new wijmo.grid.Column({
+            binding: '___selectBtn',
+            header: '',
+            width: 64,
+            isReadOnly: true,
+            align: 'center'
+        }));
+
+        // 기존 itemFormatter 보존
+        const prevFormatter = grid.itemFormatter;
+        grid.itemFormatter = (panel, r, c, cell) => {
+            if (prevFormatter) prevFormatter(panel, r, c, cell);
+            if (panel.cellType === wijmo.grid.CellType.Cell &&
+              panel.columns[c].binding === '___selectBtn') {
+                cell.innerHTML = '<button class="wj-row-select-btn" type="button">선택</button>';
+                const item = panel.rows[r]?.dataItem;
+                const btn = cell.querySelector('.wj-row-select-btn');
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (item) onSelect(item);
+                };
+            }
+        };
+    }
 };
