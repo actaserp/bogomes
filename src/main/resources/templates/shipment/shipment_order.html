@@ -213,8 +213,251 @@
                         </ul>
                     </div>
                 </div>
-                <div class="container-fluid" style="height: 15vh;">
-                    <div id="theGrid2"></div>
+                <div>
+                    <form id="matBasicForm">
+                        <table class="write-table">
+                            <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                            <colgroup>
+                                <col class="wp16">
+                                <col class="wp17">
+                                <col class="wp16">
+                                <col class="wp17">
+                                <col class="wp16">
+                                <col class="wp17">
+                            </colgroup>
+                            <input type="hidden" id="id" name="id" readonly>
+                            <tbody>
+                            <tr>
+                                <th>
+                                    <label for="MaterialGroup_id"><span class="eq">*</span>제원</label>
+                                </th>
+                                <td colspan="2">
+                                    <select id="MaterialGroup_id" name="MaterialGroup_id"
+                                            style="width: 100%;" required></select>
+                                </td>
+
+                                <th>
+                                    <label for="Code"><span class="eq">*</span>제원<br>관리번호</label>
+                                </th>
+                                <td colspan="2">
+                                    <input type="text" id="Code" name="Code"
+                                           style="width: 100%;" required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>
+                                    <label for="Name"><span class="eq">*</span>차대번호</label>
+                                </th>
+                                <td  colspan="2">
+                                    <input type="text" style="width: 100%;" id="Name"
+                                           name="Name" required>
+                                </td>
+                                <th>
+                                    <label for="Unit_id"><span class="eq">*</span>차량구분</label>
+                                </th>
+                                <td colspan="2">
+                                    <select style="width: 100%;" id="Unit_id"
+                                            name="Unit_id" required></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Factory_id"><span class="eq">*</span>륜수</label>
+                                </th>
+                                <td>
+                                    <select type="text" id="Factory_id" name="Factory_id"
+                                            style="width: 100%;"></select>
+                                </td>
+
+                                <th>
+                                    <label for="mtyn">콘</label>
+                                </th>
+                                <td>
+                                    <input type="checkbox" id="mtyn" name="mtyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;" checked>
+                                </td>
+                                <th>
+                                    <label for="mtyn">출고일자</label>
+                                </th>
+                                <td>
+                                    <input type="checkbox" id="mtyn" name="mtyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;" checked>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="useyn">차주</label>
+                                </th>
+                                <td colspan="2">
+                                    <input type="checkbox" id="useyn" name="useyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;">
+                                </td>
+                                <th style="font-size: 14px;">
+                                    <label for="LotSize">연락처</label>
+                                </th>
+                                <td colspan="2">
+                                    <input type="text" id="LotSize" name="LotSize"
+                                           style="width: 100%;">
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Weight">법인명</label>
+                                </th>
+                                <td colspan="2">
+                                    <input type="text" style="width: 100%;" id="Weight"
+                                           name="Weight">
+                                </td>
+                                <th>
+                                    <label for="SafetyStock">회사연락처</label>
+                                </th>
+                                <td colspan="2">
+                                    <input type="text" id="SafetyStock" name="SafetyStock"
+                                           style="width: 100%;">
+                                </td>
+
+                            </tr>
+
+                            <tr>
+                                <th>
+                                    <label for="MaxStock">회사팩스</label>
+                                </th>
+                                <td colspan="5">
+                                    <input type="text" style="width: 100%;" id="MaxStock"
+                                           name="MaxStock">
+                                </td>
+
+
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Width">차명</label>
+                                </th>
+                                <td colspan="5">
+                                    <input type="text" style="width: 100%;" id="Width"
+                                           name="Width">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Height">형식</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="Height" name="Height"
+                                           style="width: 100%;">
+                                </td>
+
+                                <th>
+                                    <label for="fouraxis">4-5축</label>
+                                </th>
+                                <td>
+                                    <!--<textarea id="Description" name="Description"></textarea>-->
+                                    <input type="text" id="fouraxis" name="fouraxis"
+                                           style="width: 100%;">
+                                </td>
+                                <th>
+                                    <label for="fouraxis">5-6축</label>
+                                </th>
+                                <td>
+                                    <!--<textarea id="Description" name="Description"></textarea>-->
+                                    <input type="text" id="fouraxis" name="fouraxis"
+                                           style="width: 100%;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="fiveaxis">오바항</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="fiveaxis" name="fiveaxis"
+                                           style="width: 100%;">
+                                </td>
+
+                                <th>
+                                    <label for="overaxis">차량중량</label>
+                                </th>
+                                <td>
+                                    <!--<textarea id="Description" name="Description"></textarea>-->
+                                    <input type="text" id="overaxis" name="overaxis"
+                                           style="width: 100%;">
+                                </td>
+                                <th>
+                                    <label for="bodylength">최대적재량</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="bodylength" name="bodylength"
+                                           style="width: 100%;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="bodylength">총중량</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="bodylength" name="bodylength"
+                                           style="width: 100%;">
+                                </td>
+
+                                <th>
+                                    <label for="botlength">전전축</label>
+                                </th>
+                                <td>
+                                    <!--<textarea id="Description" name="Description"></textarea>-->
+                                    <input type="text" id="botlength" name="botlength"
+                                           style="width: 100%;">
+                                </td>
+                                <th>
+                                    <label for="bodylength">후전축</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="bodylength" name="bodylength"
+                                           style="width: 100%;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Usage">후중축</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="Usage" name="Usage"
+                                           style="width: 100%;">
+                                </td>
+                                <th>
+                                    <label for="Usage">후후축</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="Usage" name="Usage"
+                                           style="width: 100%;">
+                                </td>
+                                <th>
+                                    <label for="Usage">색상</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="Usage" name="Usage"
+                                           style="width: 100%;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Usage">상세사양</label>
+                                </th>
+                                <td colspan="5">
+                                    <input type="text" id="Usage" name="Usage"
+                                           style="width: 100%;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="Usage">출고시추가지급품</label>
+                                </th>
+                                <td colspan="5">
+                                    <input type="text" id="Usage" name="Usage"
+                                           style="width: 100%;">
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </form>
                 </div>
             </section>
         </div>
@@ -420,7 +663,7 @@
                     selectionMode: wijmo.grid.SelectionMode.Row, // 행 단위 선택
                     isReadOnly: true,
                     columns: [
-                        {binding: 'mat_id', header: '품목번호', width: 100, align: 'right'},  // width: 40
+                        // {binding: 'mat_id', header: '품목번호', width: 100, align: 'right'},  // width: 40
                         {binding: 'mat_type', header: '품목유형', width: 100, align: 'left'},
                         {binding: 'mat_grp', header: '품목그룹', width: 100, align: 'left'},
                         {binding: 'mat_code', header: '품목코드', width: 100, align: 'left'},

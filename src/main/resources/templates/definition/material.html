@@ -205,10 +205,12 @@
                                     <table class="write-table">
                                         <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
                                         <colgroup>
+                                            <col class="wp16">
                                             <col class="wp17">
-                                            <col class="wp33">
+                                            <col class="wp16">
                                             <col class="wp17">
-                                            <col class="wp33">
+                                            <col class="wp16">
+                                            <col class="wp17">
                                         </colgroup>
                                         <input type="hidden" id="id" name="id" readonly>
                                         <tbody>
@@ -216,7 +218,7 @@
                                             <th>
                                                 <label for="MaterialGroup_id"><span class="eq">*</span>차량구분</label>
                                             </th>
-                                            <td>
+                                            <td colspan="2">
                                                 <select id="MaterialGroup_id" name="MaterialGroup_id"
                                                         style="width: 100%;" required></select>
                                             </td>
@@ -224,7 +226,7 @@
                                             <th>
                                                 <label for="Code"><span class="eq">*</span>제원<br>관리번호</label>
                                             </th>
-                                            <td>
+                                            <td colspan="2">
                                                 <input type="text" id="Code" name="Code"
                                                        style="width: 100%;" required>
                                             </td>
@@ -234,50 +236,47 @@
                                             <th>
                                                 <label for="Name"><span class="eq">*</span>차명</label>
                                             </th>
-                                            <td >
+                                            <td colspan="5">
                                                 <input type="text" style="width: 100%;" id="Name"
                                                        name="Name" required>
-                                            </td>
-                                            <th>
-                                                <label for="Unit_id"><span class="eq">*</span>길이</label>
-                                            </th>
-                                            <td>
-                                                <select style="width: 100%;" id="Unit_id"
-                                                        name="Unit_id" required></select>
                                             </td>
                                         </tr>
                                         <tr>
                                             <th>
                                                 <label for="Factory_id"><span class="eq">*</span>상세구분</label>
                                             </th>
-                                            <td>
+                                            <td colspan="2">
                                                 <select type="text" id="Factory_id" name="Factory_id"
                                                         style="width: 100%;"></select>
                                             </td>
-
-                                            <th>
-                                                <label for="mtyn">재고관리여부</label>
+                                            <th style="font-size: 14px;">
+                                                <label for="LotSize">형식</label>
                                             </th>
-                                            <td>
-                                                <input type="checkbox" id="mtyn" name="mtyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;" checked>
+                                            <td colspan="2">
+                                                <input type="text" id="LotSize" name="LotSize"
+                                                       style="width: 100%;">
                                             </td>
-
                                         </tr>
                                         <tr>
                                             <th>
-                                                <label for="useyn">사용중지여부</label>
-                                            </th>
-                                            <td>
-                                                <input type="checkbox" id="useyn" name="useyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;">
-                                            </td>
-                                            <th style="font-size: 14px;">
-                                                <label for="LotSize">형식</label>
+                                                <label for="LotSize"><span class="eq">*</span>길이</label>
                                             </th>
                                             <td>
                                                 <input type="text" id="LotSize" name="LotSize"
                                                        style="width: 100%;">
                                             </td>
-
+                                            <th>
+                                                <label for="mtyn">재고관리</label>
+                                            </th>
+                                            <td>
+                                                <input type="checkbox" id="mtyn" name="mtyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;" checked>
+                                            </td>
+                                            <th>
+                                                <label for="useyn">사용중지</label>
+                                            </th>
+                                            <td>
+                                                <input type="checkbox" id="useyn" name="useyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;">
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>
@@ -294,10 +293,6 @@
                                                 <input type="text" id="SafetyStock" name="SafetyStock"
                                                        style="width: 100%;">
                                             </td>
-
-                                        </tr>
-
-                                        <tr>
                                             <th>
                                                 <label for="MaxStock">총중량(kg)</label>
                                             </th>
@@ -305,6 +300,10 @@
                                                 <input type="text" style="width: 100%;" id="MaxStock"
                                                        name="MaxStock">
                                             </td>
+                                        </tr>
+
+                                        <tr>
+
                                             <th>
                                                 <label for="Thickness">전전축</label>
                                             </th>
@@ -312,10 +311,6 @@
                                                 <input type="text" id="Thickness" name="Thickness"
                                                        style="width: 100%;">
                                             </td>
-
-
-                                        </tr>
-                                        <tr>
                                             <th>
                                                 <label for="Width">후전축</label>
                                             </th>
@@ -330,6 +325,10 @@
                                                 <input type="text" style="width: 100%;" id="Length"
                                                        name="Length">
                                             </td>
+
+                                        </tr>
+                                        <tr>
+
                                         </tr>
                                         <tr>
                                             <th>
@@ -348,8 +347,6 @@
                                                 <input type="text" id="fouraxis" name="fouraxis"
                                                        style="width: 100%;">
                                             </td>
-                                        </tr>
-                                        <tr>
                                             <th>
                                                 <label for="fiveaxis">5-6축</label>
                                             </th>
@@ -357,7 +354,8 @@
                                                 <input type="text" id="fiveaxis" name="fiveaxis"
                                                        style="width: 100%;">
                                             </td>
-
+                                        </tr>
+                                        <tr>
                                             <th>
                                                 <label for="overaxis">오바항</label>
                                             </th>
@@ -366,8 +364,6 @@
                                                 <input type="text" id="overaxis" name="overaxis"
                                                        style="width: 100%;">
                                             </td>
-                                        </tr>
-                                        <tr>
                                             <th>
                                                 <label for="bodylength">차체길이(mm)</label>
                                             </th>
@@ -387,9 +383,25 @@
                                         </tr>
                                         <tr>
                                             <th>
+                                                <label for="mtyn">륜수</label>
+                                            </th>
+                                            <td colspan="2">
+                                                <input type="text" id="LotSize" name="LotSize"
+                                                       style="width: 100%;">
+                                            </td>
+                                            <th>
+                                                <label for="useyn">콘</label>
+                                            </th>
+                                            <td colspan="2">
+                                                <input type="text" id="LotSize" name="LotSize"
+                                                       style="width: 100%;">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
                                                 <label for="Usage">상세사양</label>
                                             </th>
-                                            <td colspan="3">
+                                            <td colspan="5">
                                                 <input type="text" id="Usage" name="Usage"
                                                        style="width: 100%;">
                                             </td>
