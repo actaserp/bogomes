@@ -1,0 +1,790 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+  <style>
+      .wj-header {
+          text-align: center !important;
+      }
+      .input-with-button {
+          display: flex;
+          gap: 4px; /* 버튼과 input 사이 여백 */
+          align-items: center;
+      }
+
+      .input-with-button input {
+          flex: 1; /* 나머지 영역 차지 */
+          min-width: 0;
+          padding: 4px;
+      }
+
+      .input-with-button .btn.in_btn {
+          flex-shrink: 0;
+          width:40px;
+      }
+      .input-with-button button img, .btn img {
+          margin-right: 1px;
+      }
+      /* 1366px 이하: 오른쪽 폼 감추고, 섹션을 세로 스택 */
+      @media (max-width: 1366px) {
+          .layout-contents > div[style*="display: flex"] > section:last-of-type {
+              display: none !important;
+          }
+          .layout-contents > div[style*="display: flex"] {
+              flex-direction: column !important;
+          }
+          .layout-contents > div[style*="display: flex"] > section {
+              width: 100% !important;
+          }
+          /* 기본 폼은 감춤 (모달로만 사용) */
+          .table-wrap {
+              display: none !important;
+          }
+          #btnSave, #btnDel {
+              display: none !important;
+          }
+          #basicForm_modal input,
+          #basicForm_modal select,
+          #basicForm_modal textarea {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+          }
+
+          /* 셀 여백/필드 높이 조금 타이트하게 */
+          #basicForm_modal .write-table th,
+          #basicForm_modal .write-table td {
+              padding: 4px 6px;
+          }
+          #basicForm_modal input[type="text"],
+          #basicForm_modal input[type="date"],
+          #basicForm_modal select {
+              height: 34px;
+          }
+
+          /* 검색 버튼 폭도 살짝 줄여서 공간 확보 */
+          #basicForm_modal .input-with-button .btn.in_btn {
+              width: 34px;
+          }
+
+          /* 고정폭 인라인 스타일을 무시해야 할 경우(예: txtProductName의 width:250px) */
+          #basicForm_modal #txtProductName {
+              width:auto !important;
+          }
+          #basicForm_modal #spcmngno {
+              width:auto !important;
+          }
+          .ax5modal[data-modal-els="root"] {
+              height: 70dvh !important;      /* 동적 뷰포트 */
+              height: 70svh !important;      /* iOS safe */
+              height: 70vh  !important;      /* fallback */
+              top: 5dvh !important;          /* 살짝 아래 띄우기(원하면 0) */
+              display: flex; flex-direction: column;
+          }
+
+          /* 라이브러리가 주입한 body의 inline height 무력화: Flex로 채우기 */
+          .ax5modal[data-modal-els="root"] .ax-modal-body {
+              height: calc(100vh - 40px) !important;   /* inline height 덮어쓰기 */
+              flex: 1 1 auto;            /* 남은 공간 모두 차지 */
+              min-height: 0;             /* 자식 스크롤 허용 */
+              top: 20px !important;
+          }
+
+          /* 모달 내부 스크롤 영역 */
+          .ax5modal .modal-form-wrap {
+              height: 100% !important;
+              overflow-y: auto;
+          }
+
+      }
+
+      @media (max-width: 768px) {
+          #basicForm_modal .write-table { font-size: 0.92rem; }
+          #basicForm_modal input[type="text"],
+          #basicForm_modal input[type="date"],
+          #basicForm_modal select {
+              height: 32px;
+          }
+          #basicForm_modal textarea {
+              min-height: 96px; /* 너무 작아지지 않게 */
+          }
+      }
+
+  </style>
+</head>
+
+<th:block layout:fragment="content">
+  <div class="layout-contents">
+    <!-- Page Title -->
+    <div class="page-title-wrap">
+      <div class="left">
+        <h2>AS 차량관리</h2>
+        <a title="북마크" class="bookmark toggle">
+          내메뉴
+        </a>
+      </div>
+      <ul class="page-navi">
+        <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+        <li>기준정보</li>
+        <li>AS 차량관리</li>
+      </ul>
+    </div>
+
+    <div style="display: flex; gap: 5px">
+      <section class="section" style="width: 40%;">
+        <div class="section-top">
+          <div class="search-wrap">
+            <dl>
+              <dt>
+                <label>제원</label>
+              </dt>
+              <dd>
+                <div class="srch-box">
+                  <select id="cboSpcmngno" name="cboSpcmngno">
+
+                  </select>
+                </div>
+              </dd>
+            </dl>
+            <dl>
+              <dt>
+                <label>차대번호</label>
+              </dt>
+              <dd>
+                <div class="srch-box">
+                  <input type="text" id="txtVechidno" name="txtVechidno">
+                </div>
+              </dd>
+            </dl>
+
+            <dl>
+              <dt><span class="eq"></span></dt>
+              <dd>
+                <li>
+                  <a class="btn btn-delete" title="검색" id="btnSearch">
+                    <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                    검색
+                  </a>
+                </li>
+              </dd>
+            </dl>
+          </div>
+
+        </div>
+        <div class="container-fluid">
+          <p id="selectedItem"></p>
+          <div id="theGrid"></div>
+        </div>
+      </section>
+      <section style="width: 60%;">
+        <div class="section-top">
+          <div class="search-wrap">
+            <ul>
+              <li>
+                <button type="button" class="btn-default" id="btnNew" name="btnNew"
+                        style="height: 36px; width:115px;"><i
+                    class="fas fa-plus"></i>신규등록
+                </button>
+              </li>
+
+              <li>
+                <button type="button" class="btn-default y_write_auth" id="btnSave"
+                        style="float:none; height: 36px; width:115px;">
+                  <i class="fas fa-save"></i>저장
+                </button>
+              </li>
+
+              <li>
+                <button type="button" class="btn-danger y_write_auth" id="btnDel"
+                        style="float:none; height: 36px; width:115px;"><i
+                    class="fas fa-trash"></i>삭제
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="table-wrap" style=" overflow-x: auto;">
+          <form id="basicForm">
+            <table class="write-table" style="width: 100%; border-collapse: collapse;">
+              <caption style="text-align: left; margin-bottom: 8px;">등록테이블</caption>
+              <input type="hidden" id="id" name="id"/>
+              <tbody>
+              <tr>
+                <th>
+                  <label for="spcmngno"><span class="eq">*</span>제원</label>
+                </th>
+                <td>
+                  <select id="spcmngno" name="spcmngno" style="width:210px;">
+                  </select>
+                </td>
+                <th>
+                  <label for="vechidno"><span class="eq">*</span>차대번호</label>
+                </th>
+                <td>
+                  <input id="vechidno" name="vechidno" placeholder="차대번호" style="width: 100%;">
+                </td>
+
+              </tr>
+              <tr>
+                <th>
+                  <label><span class="eq">*</span>차량</label>
+                </th>
+                  <td>
+                    <div class="input-with-button">
+                      <input type="text" id="txtProductName" name="txtProductName"
+                             placeholder="코드 또는 차종 입력 후 엔터" autocomplete="off" style="width: 250px;"/>
+                      <input type="hidden" id ="Material_id" name="Material_id" />
+                      <a class="btn in_btn" title="품목 검색" id="btnProductSearch" >
+                        <img src="/images/icon/btn-srch-black.svg" alt="검색 아이콘" />
+                      </a>
+                    </div>
+                  </td>
+                <th>
+                  <label for="OWNER">차주</label>
+                </th>
+                <td>
+                  <input type="text" id="OWNER" name="OWNER" placeholder="차주" style="width: 100%;">
+                </td>
+
+              </tr>
+              <tr>
+                <th>
+                  <label for="PERNM">차량수리담당</label>
+                </th>
+                <td>
+                  <input type="text" style="width: 100%;" id="PERNM" name="PERNM" placeholder="차량수리담당자" >
+                </td>
+                <th>
+                  <label for="inputDate">작업(완료)일자</label>
+                </th>
+                <td>
+                  <input type="date" style="width: 100%;" id="inputDate" name="inputDate">
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label for="outDate">출고날짜</label>
+                </th>
+                <td>
+                  <input type="date" style="width: 100%;" id="outDate" name="outDate">
+                </td>
+                <th>
+                  출고처리
+                </th>
+                <td style="display:flex;justify-content:center;align-items:center;">
+                  <input type="checkbox" id="endflag" name="endflag">
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label for="fixText">작업내용</label>
+                </th>
+                <td  colspan="5">
+                  <textarea id="fixText" name="fixText" placeholder="작업내용"></textarea>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div> <!--//layout-contents end -->
+</th:block>
+<th:block layout:fragment="scripts">
+  <th:block th:replace="/common/approve_box :: approve_box"></th:block>
+  <th:block th:replace="/common/ax5_uploader :: ax5_uploader"></th:block>
+  <th:block th:replace="/common/upload_one_image_box :: upload_one_image_box"></th:block>
+  <th:block th:replace="/common/multiform_material :: multiform_material"></th:block>
+  <script type="text/javascript">
+    class ASVehiclePage {
+      constructor() {
+        this.grid = null;
+        this.viewData = new wijmo.collections.CollectionView();
+        this.url = '/api/definition/ASVehicle';
+        this._onOpenByClick   = (e) => this._openFromHitTest(e);
+        this._onOpenByDblClick= (e) => this._openFromHitTest(e);
+        this.init();
+      }
+
+      init() {
+        let _this = this;
+        this.grid = new wijmo.grid.FlexGrid('#theGrid', {
+          selectionMode: wijmo.grid.SelectionMode.Row,
+          headersVisibility: wijmo.grid.HeadersVisibility.Column,
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          formatItem: (sender, e) => {
+            if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
+              e.cell.style.textAlign = 'center';
+            }
+          },
+          columns: [
+            {binding: 'id', header: 'id', visible: false},
+            {binding: 'spcmngno', header: '제원', width: 150, align: 'left'},
+            {binding: 'ItemCode', header: '차명', width: 200, align: 'left'},
+            {binding: 'vechidno', header: '차대번호', width: 200, align: 'center'},
+            {binding: 'owner', header: '차주', width: 150, align: 'center'},
+            {binding: 'outdate', header: '출고일자', width: 120, align: 'center'},
+            {binding: 'inputdate', header: '완료일자', width: 120, align: 'center'},
+            {binding: 'endflag', header: '출고여부', width: 100, align: 'center'}
+          ],
+          itemsSource: this.viewData, // 데이터를 설정할 배열
+        });
+
+        new FlexGridContextMenu(this.grid);
+        this.grid.downloadFileName = 'AS차량관리';
+
+        this.bindGridOpenHandler();
+        // ✅ 화면 크기/미디어쿼리 변경 시 핸들러 교체
+        const mq = window.matchMedia('(max-width: 1366px)');
+        const rebind = () => this.bindGridOpenHandler();
+        if (mq.addEventListener) mq.addEventListener('change', rebind);
+        else mq.addListener(rebind); // 구형 브라우저
+        window.addEventListener('resize', rebind);
+
+        $('#txtVechidno').on('keypress', function (e) {
+          if (e.keyCode === 13) {
+            _this.searchMainData();
+          }
+        });
+      }
+      // 상세 오픈 공통 로직
+      _openFromHitTest(e) {
+        const ht = this.grid.hitTest(e);
+        if (!ht || ht.cellType !== wijmo.grid.CellType.Cell) return;
+
+        let item = (ht.row > -1 && this.grid.rows[ht.row]) ? this.grid.rows[ht.row].dataItem : null;
+        if (!item && this.grid.selectedItems.length === 1) item = this.grid.selectedItems[0];
+        if (!item) return Alert.alert('', '선택된 데이터가 없습니다.');
+
+        AjaxUtil.getAsyncData(this.url + '/detail', { id: item.id }, (result) => {
+          if (!result || !result.data) return Alert.alert('오류', '상세 데이터를 불러올 수 없습니다.');
+          const d = result.data;
+
+          const isSmall = window.matchMedia('(max-width: 1366px)').matches;
+          if (isSmall) {
+            openFormModal('edit', d);
+            setTimeout(() => $('#basicForm_modal #spcmngno').focus(), 0);
+          } else {
+            fillForm($('#basicForm'), d);
+          }
+        });
+      }
+
+      bindGridOpenHandler() {
+        const host = this.grid.hostElement;
+        const isSmall = window.matchMedia('(max-width: 1366px)').matches;
+
+        // 이전 바인딩 해제 (중복 방지)
+        host.removeEventListener('click', this._onOpenByClick);
+        host.removeEventListener('dblclick', this._onOpenByDblClick);
+
+        if (isSmall) {
+          // 작은 화면: 클릭 한 번으로 열기
+          host.addEventListener('click', this._onOpenByClick, false);
+        } else {
+          // 큰 화면: 더블클릭으로 열기
+          host.addEventListener('dblclick', this._onOpenByDblClick, false);
+        }
+      }
+
+      searchMainData() {
+        let _this = this;
+
+        let data = {
+          'spcmngno': $("#cboSpcmngno").val(),
+          'vechidno': $("#txtVechidno").val(),
+          spjangcd: sessionStorage.getItem('spjangcd')
+        }
+        let fnsuccess = function (result) {
+          if (result != null) {
+            _this.viewData = new wijmo.collections.CollectionView(result.data);
+            _this.grid.itemsSource = _this.viewData;
+          }
+        };
+
+        AjaxUtil.getAsyncData(_this.url + '/read', data, fnsuccess);
+      }
+
+      //저장 (폼 컨텍스트 지원)
+      saveMainData($form) {
+        const _this = this;
+        const $ctx = $form && $form.length ? $form : getActiveForm();
+
+        const data = {
+          id:          $ctx.find('#id').val(),
+          spcmngno:    $ctx.find('#spcmngno').val(),
+          vechidno:    $ctx.find('#vechidno').val(),
+          Material_id: $ctx.find('#Material_id').val(),
+          OWNER:       $ctx.find('#OWNER').val(),
+          PERNM:       $ctx.find('#PERNM').val(),
+          inputDate:   $ctx.find('#inputDate').val(),
+          outDate:     $ctx.find('#outDate').val(),
+          endflag:     $ctx.find('#endflag').is(':checked') ? '0' : '1',
+          fixText:     $ctx.find('#fixText').val(),
+        };
+
+        Alert.confirm('', '저장하시겠습니까?', function () {
+          AjaxUtil.postJsonData(_this.url + '/save', data, function (result) {
+            if (result && result.success) {
+              Alert.alert('', '저장되었습니다.');
+              _this.searchMainData();
+              const isModal = $ctx.data('isModal') || $ctx.attr('id') === 'basicForm_modal';
+              if (isModal) {
+                const modal = $ctx.data('modal');
+                if (modal && typeof modal.close === 'function') modal.close();
+              } else {
+                $('#btnNew').click(); // 기존 초기화
+              }
+            } else {
+              Alert.alert('', '저장에 실패했습니다.');
+            }
+          });
+        });
+      }
+
+      // ✅ 공통 삭제 함수
+      deleteASData(id, opts = {}) {
+        if (!id) {
+          Alert.alert('', '삭제할 데이터가 없습니다. 먼저 목록에서 항목을 선택하세요.');
+          return;
+        }
+
+        Alert.confirm('', '삭제하시겠습니까?', () => {
+          const url = this.url + '/delete';
+          const data = {id};
+
+          AjaxUtil.postAsyncData(url, data, (res) => {
+            if (res && res.success) {
+              Notify.success('삭제되었습니다.');
+              this.searchMainData();
+              if (opts.closeModal) {
+                const $ctx  = opts.$ctx || $('#basicForm_modal');
+                const modal = $ctx.data('modal');
+                if (modal && typeof modal.close === 'function') {
+                  modal.close();
+                }
+              } else {
+                // 일반 화면에서는 기존처럼 초기화
+                $('#btnNew').click();
+              }
+            } else {
+              Alert.alert('', res && res.message ? res.message : '삭제에 실패했습니다.');
+            }
+          });
+        });
+      }
+    }
+
+    $('#btnProductSearch').click(function () {
+      const $row = $(this).closest('tr');
+
+      const $productInput = $row.find('input[name^="txtProductName"]');
+      const $productId = $row.find('input[name^="Material_id"]');
+
+      const pop = new PopMatComponent();
+      pop.material_type = 'product,sangpum';
+
+      pop.show(function (item) {
+        $productInput.val(item.Name);
+        $productId.val(item.id);
+
+      });
+    });
+    function fillProductFields($row, item) {
+      const $productInput  = $row.find('input[name^="txtProductName"]');
+      const $productId     = $row.find('input[name^="Material_id"]');
+      $productInput.val(item?.Name || '');
+      $productId.val(item?.id || '');
+    }
+
+    // ✅ 엔터키로 품목 검색/선택
+    $(document).on('keydown', 'input[name^="txtProductName"]', function (e) {
+      // Enter만 처리 (키 코드 호환)
+      if (e.key !== 'Enter' && e.keyCode !== 13) return;
+      e.preventDefault();
+
+      const $field = $(this);
+      const $row   = $field.closest('tr'); // 현재 입력이 있는 행(단일폼이어도 OK)
+      const keyword = ($field.val() || '').trim();
+
+      const pop = new PopMatComponent();
+      pop.material_type = 'product,sangpum';
+
+      const callback = function (item) {
+        if (!item) return;
+        fillProductFields($row, item);
+        // 필요 시 포커스 이동 등 추가
+        // $row.find('input[name="다음필드"]').focus();
+      };
+
+      // 🔎 키워드 없으면 그냥 팝업 열기
+      if (!keyword) {
+        pop.focusAfterClose = $field[0];
+        pop.show(callback);
+        return;
+      }
+
+      // 🔎 키워드로 즉시 검색 시도 → 1건이면 자동선택, 그 외는 팝업 열고 자동검색
+      const data = {
+        keyword: keyword,
+        spjangcd: sessionStorage.getItem('spjangcd')
+      };
+      const result = AjaxUtil.getSyncData('/api/popup/search_material', data);
+      const rows = result?.data || [];
+
+      if (rows.length === 1) {
+        callback(rows[0]);
+      } else {
+        pop.show(callback);
+        // 팝업 열린 뒤 사용자가 친 키워드로 자동 검색 트리거
+        setTimeout(() => {
+          if (pop.$keyword && pop.$btnMaterialSearch) {
+            pop.$keyword.val(keyword);
+            pop.$btnMaterialSearch.trigger('click');
+          }
+        }, 50);
+      }
+    });
+
+    // ✅ 사용자가 txtProductName 내용을 지울 때 연관 필드 초기화
+    $(document).on('input', 'input[name^="txtProductName"]', function () {
+      const $field = $(this);
+      const $row   = $field.closest('tr');     // 단일 폼이어도 안전
+
+      if ($field.val().trim() === '') {
+        $row.find('input[name^="Material_id"]').val('');
+      }
+    });
+
+    //× 버튼으로 비울 때도 동일 처리
+    $(document).on('click', '.btn-clear', function () {
+      const $wrap = $(this).closest('.input-clear, .input-with-button, td, tr');
+      $wrap.find('input[name^="txtProductName"]').val('').trigger('input');
+    });
+
+    function fillForm($root, d) {
+      $root.find('#id').val(d.id || '');
+      $root.find('#spcmngno').val(d.spcmngno || '');
+      $root.find('#vechidno').val(d.vechidno || '');
+      $root.find('#Material_id').val(d.Material_id || '');
+      $root.find('#txtProductName').val(d.ItemCode || '');
+      $root.find('#OWNER').val(d.owner || '');
+      $root.find('#PERNM').val(d.pernm || '');
+      $root.find('#inputDate').val(d.inputdate || '');
+      $root.find('#outDate').val(d.outdate || '');
+      $root.find('#fixText').val(d.fixtext || '');
+      // 체크 로직: endflag === '0' 이면 체크
+      $root.find('#endflag').prop('checked', d.endflag === '0');
+    }
+
+    function getActiveForm() {
+      // 모달이 열려있으면 모달 폼, 아니면 기본 폼
+      return $('#basicForm_modal').length ? $('#basicForm_modal') : $('#basicForm');
+    }
+
+    function openFormModal(mode /* 'new' | 'edit' */, initialData) {
+      const title = (mode === 'new') ? '등록' : '수정';
+      const modal = new PopupDraggable(title);
+
+      // 중복 모달 폼 방지 (이미 열려있다면 제거/정리)
+      try { $('#basicForm_modal').closest('.modal-form-wrap').remove(); } catch (e) {}
+
+      // 폼 클론 생성
+      const $clone = $('#basicForm').clone(true, true);
+      $clone.attr('id', 'basicForm_modal'); // 컨텍스트 구분용
+
+      $clone.data('isModal', true);
+      $clone.data('modal', modal);
+
+      // 컨텐츠 래퍼
+      const $wrap = $('<div class="modal-form-wrap" style="padding:8px;"></div>').append($clone);
+
+      // 신규일 때 초기화
+      if (mode === 'new') {
+        $clone[0].reset();
+        $clone.find('input[type="hidden"]').val('');
+        const today = new Date();
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        $clone.find('#inputDate').val(CommonUtil.formatYYYYMMDD(monthStart));
+        $clone.find('#outDate').val(CommonUtil.formatYYYYMMDD(today));
+      }
+
+      // 수정일 때 바인딩
+      if (mode === 'edit' && initialData) fillForm($clone, initialData);
+
+      // === 반응형 사이즈로 오픈 ===
+      const size = calcModalSize();
+      modal.open({
+        width:  size.w,
+        height: size.h,        // ← 모달 자체 높이도 vh 기반으로 꽉 차게
+        $content: $wrap
+      });
+
+      // 리사이즈(창 크기/모바일 키보드 변화) 대응
+      const onResize = () => {
+        const s = calcModalSize();
+        if (typeof modal.resize === 'function') modal.resize(s.w, s.h);
+
+      };
+      window.addEventListener('resize', onResize);
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
+
+      // 모달 전용 버튼 영역
+      const $actions = $('<div style="margin-top:12px; display:flex; justify-content:center; gap:8px;"></div>');
+
+// 저장 버튼
+      const $btnSaveModal = $('<button type="button" class="btn-default">저장</button>');
+      $actions.append($btnSaveModal);
+
+// 수정 모드일 때 삭제 버튼
+      if (mode === 'edit') {
+        const $btnDeleteModal = $('<button type="button" class="btn-danger">삭제</button>');
+        $actions.append($btnDeleteModal);
+
+        $btnDeleteModal.on('click', function () {
+          const id = $clone.find('#id').val();
+          page.deleteASData(id, { closeModal: true, $ctx: $clone });
+          if (typeof modal.close === 'function') modal.close();
+        });
+      }
+
+// 닫기 버튼
+      const $btnCloseModal = $('<button type="button" class="btn-popup" id="modal-close-button">닫기</button>');
+      $actions.append($btnCloseModal);
+
+      $btnCloseModal.on('click', function () {
+        if (typeof modal.close === 'function') modal.close();
+      });
+
+      $wrap.append($actions);
+
+    // 저장 핸들러
+      $btnSaveModal.on('click', function () {
+        page.saveMainData($clone);
+      });
+
+    }
+    // 화면/가상뷰포트(모바일 키보드)까지 반영해서 모달 크기 계산
+    function calcModalSize() {
+      // 뷰포트(가상 키보드 포함) 기준 값
+      const vw = (window.visualViewport && window.visualViewport.width)  || window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+
+      // 바깥 여백(타이틀바/그림자/외곽 마진) – 화면을 꽉 채우되 살짝 여백만 남김
+      const OUTER_GAP_W = 40;
+      const OUTER_GAP_H = 40;   // ← 필요하면 32~64 사이로 미세조정
+
+      // 최소/최대 안전값
+      const MIN_W = 360, MAX_W = 900;
+      const MIN_H = 420, MAX_H = 1000;
+
+      // 모달 전체 크기(= open 시 height)
+      const w = Math.max(MIN_W, Math.min(MAX_W, vw - OUTER_GAP_W));
+      const h = Math.max(MIN_H, Math.min(MAX_H, vh - OUTER_GAP_H));
+
+      // 모달 내부에서 버튼/패딩 등을 제외한 본문 높이
+      const INNER_GAP = 96; // 타이틀/하단버튼/내부패딩 합
+      return { w, h, bodyH: h - INNER_GAP };
+    }
+
+
+    $(document).ready(function (e) {
+
+      // ===== 반응형: 오른쪽 버튼영역을 왼쪽 상단으로 이동 =====
+      const ResponsiveToolbar = (function () {
+        const BREAKPOINT = 1366;
+        const $sections = $('.layout-contents > div[style*="display: flex"]').children('section');
+        const $leftSectionTop  = $sections.eq(0).find('.section-top');
+        const $rightSectionTop = $sections.eq(1).find('.section-top');
+
+        // 원위치를 기억할 placeholder
+        const $placeholder = $('<div id="rightSectionTop_ph" style="display:none;"></div>');
+        let moved = false;
+
+        function apply() {
+          if (window.innerWidth <= BREAKPOINT && !moved) {
+            // 원위치 기억
+            $rightSectionTop.after($placeholder);
+            // 왼쪽 상단으로 버튼영역 이동 (검색바 아래에 붙임)
+            $rightSectionTop.appendTo($leftSectionTop);
+            moved = true;
+          } else if (window.innerWidth > BREAKPOINT && moved) {
+            // 원위치로 복귀
+            $placeholder.after($rightSectionTop);
+            $placeholder.remove();
+            moved = false;
+          }
+        }
+
+        $(window).on('resize', apply);
+        apply();
+        return { apply };
+      })();
+
+      page = new ASVehiclePage();
+
+      let today = new Date();
+      let monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      $('#inputDate').val(CommonUtil.formatYYYYMMDD(monthStart));
+      $('#outDate').val(CommonUtil.formatYYYYMMDD(today));
+
+      AjaxUtil.fillSelectOptions($('#cboSpcmngno'), 'material_group', 'all', false);
+      AjaxUtil.fillSelectOptions($('#spcmngno'), 'material_group', 'choose', false);
+
+      page.searchMainData();
+
+      // 검색
+      $('#btnSearch').click(function (e) {
+        e.preventDefault();
+        page.searchMainData();
+      });
+
+      $('#btnSave').off('click').on('click', function (e) {
+        e.preventDefault();
+        const $activeForm = getActiveForm();
+        page.saveMainData($activeForm);
+      });
+
+
+      $('#btnDel').on('click', (e) => {
+        e.preventDefault();
+        const id = $('#id').val();
+        page.deleteASData(id);   // ✅ 분리한 함수 호출
+      });
+
+      //초기화
+      $('#btnNew').off('click').on('click', function (e) {
+        e.preventDefault();
+
+        if (window.innerWidth <= 1366) {
+          // 작은 화면: 모달로 등록 폼
+          openFormModal('new');
+          setTimeout(() => {
+            $('#basicForm_modal #spcmngno').focus();
+          }, 0);
+          return;
+        }
+
+        // 큰 화면: 기존 초기화 동작 유지
+        $('#basicForm')[0].reset();
+        $('input[name="endflag"]').prop('checked', false);
+        $('#basicForm').find('input[type="hidden"]').val('');
+
+        const today = new Date();
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        let startStr = CommonUtil.formatYYYYMMDD(monthStart);
+        let endStr   = CommonUtil.formatYYYYMMDD(today);
+        $('#inputDate').val(startStr).trigger('change');
+        $('#outDate').val(endStr).trigger('change');
+      });
+
+    });
+  </script>
+
+</th:block>
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+</html>
