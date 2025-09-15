@@ -1,5 +1,6 @@
 package mes.domain.entity.bogo;
 
+import io.micrometer.core.annotation.Counted;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -44,5 +45,7 @@ public class tb_as010 { //as 차량관리
   @Column(name = "fixtext")
   String fixtext;
 
+  @Column(name="regno")
+  String regno;
 
 }

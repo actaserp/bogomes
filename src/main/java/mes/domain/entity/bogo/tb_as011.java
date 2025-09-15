@@ -51,4 +51,7 @@ public class tb_as011 {
 
   @Column(name="mileage")
   Integer mileage;  //주행거리
+
+  @Column(name="fixtext")
+  String fixtext;
 }

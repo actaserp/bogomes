@@ -93,7 +93,16 @@
               height: 100% !important;
               overflow-y: auto;
           }
+          #basicForm_modal .select2-results__options {
+              max-height: 40vh;   /* 필요 시 30~50vh로 조절 */
+              overflow-y: auto;
+          }
 
+          /* 입력부 높이(닫힌 상태)도 기존 폼과 맞추기 */
+          #basicForm_modal .select2-container { width: 100% !important; }
+          #basicForm_modal .select2-selection--single { height: 34px; }
+          #basicForm_modal .select2-selection__rendered { line-height: 34px; }
+          #basicForm_modal .select2-selection__arrow { height: 34px; }
       }
 
       @media (max-width: 768px) {
@@ -222,7 +231,16 @@
                 <td>
                   <input id="vechidno" name="vechidno" placeholder="차대번호" style="width: 100%;">
                 </td>
-
+              </tr>
+              <tr>
+                <th>
+                  <label for="regno"><span class="eq">*</span>등록번호</label>
+                </th>
+                <td>
+                  <input id="regno" name="regno" placeholder="등록번호" style="width: 100%;">
+                </td>
+                <th></th>
+                <td></td>
               </tr>
               <tr>
                 <th>
@@ -321,7 +339,8 @@
           },
           columns: [
             {binding: 'id', header: 'id', visible: false},
-            {binding: 'spcmngno', header: '제원', width: 150, align: 'left'},
+            {binding: 'spcmngno', header: '제원', width: 100, align: 'left'},
+            {binding: 'regno', header: '등록번호', width: 200, align: 'left'},
             {binding: 'ItemCode', header: '차명', width: 200, align: 'left'},
             {binding: 'vechidno', header: '차대번호', width: 200, align: 'center'},
             {binding: 'owner', header: '차주', width: 150, align: 'center'},
@@ -423,6 +442,7 @@
           outDate:     $ctx.find('#outDate').val(),
           endflag:     $ctx.find('#endflag').is(':checked') ? '0' : '1',
           fixText:     $ctx.find('#fixText').val(),
+          regno:       $ctx.find('#regno').val(),
         };
 
         Alert.confirm('', '저장하시겠습니까?', function () {
@@ -526,7 +546,7 @@
         return;
       }
 
-      // 🔎 키워드로 즉시 검색 시도 → 1건이면 자동선택, 그 외는 팝업 열고 자동검색
+      //키워드로 즉시 검색 시도 → 1건이면 자동선택, 그 외는 팝업 열고 자동검색
       const data = {
         keyword: keyword,
         spjangcd: sessionStorage.getItem('spjangcd')
@@ -575,6 +595,7 @@
       $root.find('#inputDate').val(d.inputdate || '');
       $root.find('#outDate').val(d.outdate || '');
       $root.find('#fixText').val(d.fixtext || '');
+      $root.find('#regno').val(d.regno || '');
       // 체크 로직: endflag === '0' 이면 체크
       $root.find('#endflag').prop('checked', d.endflag === '0');
     }
@@ -621,6 +642,16 @@
         height: size.h,        // ← 모달 자체 높이도 vh 기반으로 꽉 차게
         $content: $wrap
       });
+      if (window.innerWidth <= 1366) {
+        const $sel = $clone.find('#spcmngno'); // 대상 하나만
+        if (!$sel.hasClass('select2-hidden-accessible')) {
+          $sel.select2({
+            dropdownParent: $wrap,      // 드롭다운을 모달 내부에 렌더(넘침 방지)
+            width: '100%',
+            minimumResultsForSearch: Infinity // 검색창 숨김
+          });
+        }
+      }
 
       // 리사이즈(창 크기/모바일 키보드 변화) 대응
       const onResize = () => {

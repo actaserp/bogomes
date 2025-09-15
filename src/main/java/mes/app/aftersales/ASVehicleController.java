@@ -82,6 +82,7 @@ public class ASVehicleController {
       String outDate    = (String) payload.get("outDate");
       String endflag    = (String) payload.get("endflag"); // 0/1
       String fixText    = (String) payload.get("fixText");
+      String regno    = (String) payload.get("regno");
 
       // 2. 신규/수정 분기
       tb_as010 as010;
@@ -104,6 +105,7 @@ public class ASVehicleController {
       as010.setOutdate(CommonUtil.trySqlDate(outDate));
       as010.setEndflag(endflag);
       as010.setFixtext(fixText);
+      as010.setRegno(regno);
 
       // 4. 저장 (신규든 수정이든 save() 한 번으로 처리 가능)
       as010Repository.save(as010);

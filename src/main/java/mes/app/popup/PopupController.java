@@ -845,4 +845,45 @@ public class PopupController {
 		return result;
 	}
 
+	@RequestMapping("/search_asList")
+	public AjaxResult getSearch_asList(
+			@RequestParam(value = "owner", required = false) String owner,
+			@RequestParam(value = "vechidno", required = false) String vechidno){
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("compownerCode", owner);
+		paramMap.addValue("vechidno", vechidno);
+
+		AjaxResult result = new AjaxResult();
+
+		String sql = """
+    select
+			a.id as asid,
+			a.itemcode as "Material_id",
+			m."Name" as itemcode,
+			a."owner" ,
+			a.vechidno ,
+			a.regno
+			from tb_as010 a
+			left join material m on a.itemcode::int = m.id
+			where 1=1
+			""";
+
+		if (owner != null && !owner.isEmpty()) {
+			sql += " AND a.\"owner\" ILIKE :owner";
+			paramMap.addValue("owner", "%" + owner + "%");
+		}
+
+		if (vechidno != null && !vechidno.isEmpty()) {
+			sql += " AND a.vechidno ILIKE :vechidno ";
+			paramMap.addValue("vechidno", "%" + vechidno + "%");
+		}
+
+		sql += " ORDER BY a.id ASC ";
+
+		result.data = this.sqlRunner.getRows(sql, paramMap);
+
+		return result;
+	}
+
 	}

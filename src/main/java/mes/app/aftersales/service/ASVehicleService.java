@@ -29,6 +29,7 @@ public class ASVehicleService {
         a."owner" ,
         a.outdate ,
         a.inputdate ,
+        a.regno, 
         a.endflag as endflag_code,
         case
         	when endflag = '0' then '출고'
@@ -69,7 +70,8 @@ public class ASVehicleService {
            a.outdate ,
            a.inputdate ,
            a.endflag ,
-           a.fixtext
+           a.fixtext,
+           a.regno
            from tb_as010 a
            left join mat_grp mg on mg.id =  a.spcmngno::int
            left join material m on a.itemcode::int = m.id

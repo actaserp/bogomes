@@ -1,0 +1,982 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+  <style>
+      .wj-header {
+          text-align: center !important;
+      }
+
+      .input-with-button {
+          display: flex;
+          gap: 4px; /* 버튼과 input 사이 여백 */
+          align-items: center;
+      }
+
+      .input-with-button input {
+          flex: 1; /* 나머지 영역 차지 */
+          min-width: 0;
+          padding: 4px;
+      }
+
+      .input-with-button .btn.in_btn {
+          flex-shrink: 0;
+          width: 40px;
+      }
+
+      .input-with-button button img, .btn img {
+          margin-right: 1px;
+      }
+
+      .write-table input, select {
+          width: auto;
+      }
+
+      /* 1366px 이하: 오른쪽 폼 감추고, 섹션을 세로 스택 + 상단 저장/삭제/AS버튼 숨김 */
+      @media (max-width: 1366px) {
+          .layout-contents > div[style*="display: flex"] > section:last-of-type {
+              display: none !important;
+          }
+
+          .layout-contents > div[style*="display: flex"] {
+              flex-direction: column !important;
+          }
+
+          .layout-contents > div[style*="display: flex"] > section {
+              width: 100% !important;
+          }
+
+          /* 기본 폼은 감춤 (모달로만 사용) */
+          .table-wrap {
+              display: none !important;
+          }
+
+          /* 작은 화면에선 상단 버튼은 모달 전용 버튼으로 대체 */
+          #btnSave, #btnDel, #btnASList {
+              display: none !important;
+          }
+
+          .ax5modal[data-modal-els="root"] {
+              height: 70dvh !important; /* 동적 뷰포트 */
+              height: 70svh !important; /* iOS safe */
+              height: 70vh !important; /* fallback */
+              top: 5dvh !important; /* 살짝 아래 띄우기(원하면 0) */
+              display: flex;
+              flex-direction: column;
+          }
+
+          /* 라이브러리가 주입한 body의 inline height 무력화: Flex로 채우기 */
+          .ax5modal[data-modal-els="root"] .ax-modal-body {
+              display: flex;
+              flex-direction: column;
+              height: calc(100vh - 40px) !important;
+              overflow: hidden; /* 밖으로 튀는 것 차단 */
+          }
+
+          /* 모달 내부 래퍼: 세로 플렉스 */
+          .ax5modal .modal-form-wrap {
+              display: flex;
+              flex-direction: column;
+              flex: 1 1 auto;
+              min-height: 0; /* 내부 스크롤 허용 */
+          }
+
+          /* 폼만 스크롤 */
+          .ax5modal .modal-form-wrap > #basicForm_modal {
+              flex: 1 1 auto;
+              min-height: 0;
+              overflow: auto;      /* 스크롤은 여기서만 */
+              padding: 8px;        /* 인라인 대신 CSS */
+              box-sizing: border-box;
+          }
+
+          /* 하단 버튼 고정 영역 (sticky) */
+          .ax5modal .modal-form-wrap .modal-actions {
+              position: sticky;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              width: 100%;
+              z-index: 1;
+              background: #fff;            /* 스크롤 시 내용과 분리 */
+              border-top: 1px solid #e5e7eb;
+              padding: 8px;
+              display: flex;               /* 버튼 정렬 */
+              justify-content: center;
+              gap: 8px;
+              flex-wrap: wrap;             /* 버튼 많으면 줄바꿈 */
+              text-align: center;          /* 혹시 텍스트가 있으면 정렬 */
+          }
+
+          .modal-form-wrap {
+              --fs-base: 13.5px;
+              --fs-label: 13px;
+              --cell-pad-y: 6px;
+              --cell-pad-x: 8px;
+              --input-h: 34px;
+          }
+          .btn-aslist {
+              color: #fff !important;
+              background-color: #337ab7 !important;
+              border-color: #337ab7 !important;
+              font-size: revert;
+          }
+
+      }
+
+      /* 공통(모달 내부 기본값) */
+      .modal-form-wrap {
+          --fs-base: 14px; /* 기본 본문 폰트 */
+          --fs-label: 13px; /* 라벨/테이블 헤더 */
+          --cell-pad-y: 8px; /* 셀 상하 패딩 */
+          --cell-pad-x: 10px; /* 셀 좌우 패딩 */
+          --input-h: 36px; /* 인풋/셀렉트 높이 */
+
+          font-size: var(--fs-base);
+      }
+
+      .modal-form-wrap .write-table th,
+      .modal-form-wrap .write-table td {
+          padding: var(--cell-pad-y) var(--cell-pad-x);
+      }
+
+      .modal-form-wrap input[type="text"],
+      .modal-form-wrap input[type="date"],
+      .modal-form-wrap select {
+          height: var(--input-h);
+      }
+
+      @media (max-width: 768px) {
+          #basicForm_modal .write-table {
+              font-size: 0.92rem;
+          }
+
+          #basicForm_modal input[type="text"],
+          #basicForm_modal input[type="date"],
+          #basicForm_modal select {
+              height: 32px;
+          }
+
+          #basicForm_modal textarea {
+              min-height: 96px; /* 너무 작아지지 않게 */
+          }
+      }
+
+      /* 태블릿/모바일(≤1024px) : 한 단계 더 타이트 */
+      @media (max-width: 1024px) {
+          .modal-form-wrap {
+              --fs-base: 13px;
+              --fs-label: 12.5px;
+              --cell-pad-y: 5px;
+              --cell-pad-x: 8px;
+              --input-h: 32px;
+          }
+      }
+
+      /* iPad Pro landscape 같은 1366×1024 케이스에 보수적으로 */
+      @media (max-width: 1366px) and (max-height: 1024px) {
+          .modal-form-wrap {
+              --fs-base: 13px;
+              --cell-pad-y: 5px;
+              --input-h: 32px;
+          }
+      }
+
+      /* ultra-small(≤768px) : 모바일에 맞춰 더 타이트 */
+      @media (max-width: 768px) {
+          .modal-form-wrap {
+              --fs-base: 12.5px;
+              --fs-label: 12px;
+              --cell-pad-y: 4px;
+              --cell-pad-x: 6px;
+              --input-h: 30px;
+          }
+      }
+
+      /* 라벨만 미세 조정 */
+      .modal-form-wrap .write-table th label {
+          font-size: var(--fs-label);
+      }
+
+      /* 필요 시 긴 텍스트 입력을 위한 textarea 기본 높이 */
+      @media (max-width: 1024px) {
+          .modal-form-wrap textarea#fixText {
+              min-height: 96px;
+          }
+      }
+  </style>
+</head>
+<th:block layout:fragment="content">
+  <div class="layout-contents">
+    <!-- Page Title -->
+    <div class="page-title-wrap">
+      <div class="left">
+        <h2>AS 차량점검관리</h2>
+        <a title="북마크" class="bookmark toggle">
+          내메뉴
+        </a>
+      </div>
+      <ul class="page-navi">
+        <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+        <li>기준정보</li>
+        <li>AS 차량점검관리</li>
+      </ul>
+    </div>
+
+    <div style="display: flex; gap: 5px">
+      <section class="section" style="width: 40%;">
+        <div class="section-top">
+          <div class="search-wrap">
+            <!--<dl>
+              <dt>
+                <label>제원</label>
+              </dt>
+              <dd>
+                <div class="srch-box">
+                  <select id="cboSpcmngno" name="cboSpcmngno">
+
+                  </select>
+                </div>
+              </dd>
+            </dl>-->
+            <dl>
+              <dt>
+                <label>등록 번호</label>
+              </dt>
+              <dd>
+                <div class="srch-box">
+                  <input type="text" id="txtRegno" name="txtRegno">
+                </div>
+              </dd>
+            </dl>
+
+            <dl>
+              <dt><span class="eq"></span></dt>
+              <dd>
+                <li>
+                  <a class="btn btn-delete" title="검색" id="btnSearch">
+                    <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                    검색
+                  </a>
+                </li>
+              </dd>
+            </dl>
+          </div>
+
+        </div>
+        <div class="container-fluid">
+          <p id="selectedItem"></p>
+          <div id="theGrid"></div>
+        </div>
+      </section>
+      <section style="width: 60%;">
+        <div class="section-top">
+          <div class="search-wrap">
+            <ul>
+              <li>
+                <button type="button" class="btn-default" id="btnASList" name="btnASList"
+                        style="height: 36px; width:115px;">as 접수선택
+                </button>
+              </li>
+              <li>
+                <button type="button" class="btn-default" id="btnNew" name="btnNew"
+                        style="height: 36px; width:115px;"><i
+                    class="fas fa-plus"></i>신규등록
+                </button>
+              </li>
+
+              <li>
+                <button type="button" class="btn-default y_write_auth" id="btnSave"
+                        style="float:none; height: 36px; width:115px;">
+                  <i class="fas fa-save"></i>저장
+                </button>
+              </li>
+
+              <li>
+                <button type="button" class="btn-danger y_write_auth" id="btnDel"
+                        style="float:none; height: 36px; width:115px;"><i
+                    class="fas fa-trash"></i>삭제
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="table-wrap" style=" overflow-x: auto;">
+          <form id="basicForm">
+            <table class="write-table" style="width: 100%; border-collapse: collapse;">
+              <caption style="text-align: left; margin-bottom: 8px;">등록테이블</caption>
+              <input type="hidden" id="id" name="id"/>
+              <input type="hidden" id="as_id" name="as_id"/>
+              <tbody>
+              <tr>
+                <th>
+                  <label for="regno"><span class="eq">*</span>등록번호</label>
+                </th>
+                <td>
+                  <input id="regno" name="regno" placeholder="등록번호" readonly>
+                </td>
+                <th>
+                  <label for="itemcode"><span class="eq">*</span>차량명칭(차종)</label>
+                </th>
+                <td>
+                  <input type="hidden" id="vechidno" name="vechidno">
+                  <input type="hidden" id="Material_id" name="Material_id">
+                  <input id="itemcode" name="itemcode" placeholder="차량명칭(차종)" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label for="regdate"><span class="eq">*</span>등록일자</label>
+                </th>
+                <td>
+                  <input type="date" id="regdate" name="regdate">
+                </td>
+                <th>
+                  <label for="fixdate">점검/정비의뢰일자</label>
+                </th>
+                <td>
+                  <input type="date" id="fixdate" name="fixdate">
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label for="fixText">작업내용</label>
+                </th>
+                <td colspan="5">
+                  <textarea id="fixText" name="fixText" placeholder="작업내용" style="height:90px;"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label for="partgroup">부품구분</label>
+                </th>
+                <td>
+                  <input type="text" id="partgroup" name="partgroup" placeholder="부품구분">
+                </td>
+                <th>
+                  <label>부품수량</label>
+                </th>
+                <td>
+                  <input type="text" id="partqty" name="partqty" placeholder="부품수량">
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label for="uamt">부품단가</label>
+                </th>
+                <td>
+                  <input type="text" id="uamt" name="uamt" placeholder="부품단가">
+                </td>
+                <th>
+                  합계
+                </th>
+                <td>
+                  <input type="text" id="totamt" name="totamt" placeholder="합계">
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label>공임</label>
+                </th>
+                <td>
+                  <input type="text" id="workpay" name="workpay" placeholder="공임">
+                </td>
+                <th>
+                  정비기사
+                </th>
+                <td>
+                  <input type="text" id="pernm" name="pernm" placeholder="정비기사">
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label>주행거리</label>
+                </th>
+                <td>
+                  <input type="text" id="mileage" name="mileage" placeholder="주행거리 -KM">
+                </td>
+                <th>
+                  출고처리
+                </th>
+                <td style="display:flex;justify-content:center;align-items:center;">
+                  <input type="checkbox" id="endflag" name="endflag">
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div> <!--//layout-contents end -->
+
+</th:block>
+<th:block layout:fragment="scripts">
+  <th:block th:replace="/as/popup_as_list :: popup_ASList"></th:block>
+  <script type="text/javascript">
+    class ASManagementPage {
+      constructor() {
+        this.grid = null;
+        this.viewData = new wijmo.collections.CollectionView();
+        this.url = '/api/definition/ASManagement';
+        this._onOpenByClick    = (e) => this._openFromHitTest(e);
+        this._onOpenByDblClick = (e) => this._openFromHitTest(e);
+        this.init();
+      }
+
+      init() {
+        let _this = this;
+        this.grid = new wijmo.grid.FlexGrid('#theGrid', {
+          selectionMode: wijmo.grid.SelectionMode.Row,
+          headersVisibility: wijmo.grid.HeadersVisibility.Column,
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          formatItem: (sender, e) => {
+            if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
+              e.cell.style.textAlign = 'center';
+            }
+          },
+          columns: [
+            {binding: 'id', header: 'id', visible: false},
+            {binding: 'as_id', header: 'id', visible: false},
+            {binding: 'regdate', header: '등록일자', width: 120, align: 'center'},
+            {binding: 'regno', header: '등록번호', width: 120, align: 'left'},
+            {binding: 'itemcode', header: '차량명칭', width: 180, align: 'center'},
+            {binding: 'fixdate', header: '점검일자', width: 120, align: 'center'},
+            {binding: 'fixtext', header: '작업내용', width: 210, align: 'left'},
+            {binding: 'pernm', header: '정비기사', width: 100, align: 'center'},
+          ],
+          itemsSource: this.viewData, // 데이터를 설정할 배열
+        });
+
+        new FlexGridContextMenu(this.grid);
+        this.grid.downloadFileName = 'AS차량점검관리';
+
+        this.bindGridOpenHandler();
+
+        //미디어쿼리/리사이즈 시 핸들러 재바인딩
+        const mq = window.matchMedia('(max-width: 1366px)');
+        const rebind = () => this.bindGridOpenHandler();
+        if (mq.addEventListener) mq.addEventListener('change', rebind);
+        else mq.addListener(rebind); // 구형 브라우저 대응
+        window.addEventListener('resize', rebind);
+
+        $('#txtRegno').on('keypress', function (e) {
+          if (e.keyCode === 13) {
+            _this.searchMainData();
+          }
+        });
+
+        $('#btnASList').click(function () {
+          let poppage = new PopASListComponent();
+          let $poppage = $(poppage);
+          let searchcallback = function (items) {
+            console.log('items : ', items);
+            document.getElementById('as_id').value = items.asid;
+            document.getElementById('Material_id').value = items.Material_id;
+            document.getElementById('itemcode').value = items.itemcode;
+            document.getElementById('regno').value = items.regno;
+            document.getElementById('vechidno').value = items.vechidno;
+          };
+
+          poppage.show(searchcallback);
+        });
+      }
+
+      _openFromHitTest(e) {
+        const ht = this.grid.hitTest(e);
+        if (!ht || ht.cellType !== wijmo.grid.CellType.Cell) return;
+
+        let item = (ht.row > -1 && this.grid.rows[ht.row]) ? this.grid.rows[ht.row].dataItem : null;
+        if (!item && this.grid.selectedItems.length === 1) item = this.grid.selectedItems[0];
+        if (!item) return Alert.alert('', '선택된 데이터가 없습니다.');
+
+        AjaxUtil.getAsyncData(this.url + '/detail', { id: item.id }, (result) => {
+          if (!result || !result.data) return Alert.alert('오류', '상세 데이터를 불러올 수 없습니다.');
+          const d = result.data;
+
+          const isSmall = window.matchMedia('(max-width: 1366px)').matches;
+
+          if (isSmall) {
+            // 작은 화면: 모달
+            openFormModal('edit', d);
+
+            // 모달 DOM이 붙은 뒤에 포맷/합계 적용
+            setTimeout(() => {
+              const $ctx = $('#basicForm_modal');
+
+              // 우선 값 채우기(필요 시 fillForm로 대체)
+              // fillForm($ctx, d);  // 이미 쓰신다면 이 한 줄로 모두 바인딩
+              $ctx.find('#itemcode').val(d.itemcode || '');
+              // 숫자 필드 포맷
+              formatNumberInput(d.partqty ?? '', '#partqty', $ctx);
+              formatNumberInput(d.uamt    ?? '', '#uamt',    $ctx);
+              formatNumberInput(d.totamt  ?? '', '#totamt',  $ctx);
+              formatNumberInput(d.workpay ?? '', '#workpay', $ctx);
+
+              // 마일리지는 km 전용 포맷
+              $ctx.find('#mileage').val(d.mileage ?? '');
+              formatMileageInput($ctx.find('#mileage'));
+
+              // 합계 보정
+              calculateTotal($ctx);
+
+              // 포커스
+              $ctx.find('#spcmngno').focus();
+            }, 0);
+
+          } else {
+            // 큰 화면: 오른쪽 폼
+            const $ctx = $('#basicForm');
+            fillForm($ctx, d);
+            $ctx.find('#itemcode').val(d.itemcode || '');
+            // 숫자 필드 포맷
+            formatNumberInput(d.partqty ?? '', '#partqty', $ctx);
+            formatNumberInput(d.uamt    ?? '', '#uamt',    $ctx);
+            formatNumberInput(d.totamt  ?? '', '#totamt',  $ctx);
+            formatNumberInput(d.workpay ?? '', '#workpay', $ctx);
+
+            // 마일리지는 km 전용 포맷
+            formatMileageInput($ctx.find('#mileage'));
+
+            // 합계 보정
+            calculateTotal($ctx);
+          }
+        });
+      }
+
+      // 클릭/더블클릭 핸들러 동적 스위칭
+      bindGridOpenHandler() {
+        const host = this.grid.hostElement;
+        const isSmall = window.matchMedia('(max-width: 1366px)').matches;
+
+        // 중복 바인딩 방지: 기존 리스너 해제
+        host.removeEventListener('click',    this._onOpenByClick);
+        host.removeEventListener('dblclick', this._onOpenByDblClick);
+
+        if (isSmall) {
+          // 작은 화면: 클릭으로 오픈
+          host.addEventListener('click', this._onOpenByClick, false);
+        } else {
+          // 큰 화면: 더블클릭으로 오픈
+          host.addEventListener('dblclick', this._onOpenByDblClick, false);
+        }
+      }
+
+      searchMainData() {
+        let _this = this;
+
+        let data = {
+          'txtRegno': $('#txtRegno').val()
+        }
+
+        let fnsuccess = function (result) {
+          if (result != null) {
+            _this.viewData = new wijmo.collections.CollectionView(result.data);
+            _this.grid.itemsSource = _this.viewData;
+          }
+        };
+
+        AjaxUtil.getAsyncData(_this.url + '/read', data, fnsuccess);
+      }
+
+      //저장
+      saveMainData($form) {
+        const _this = this;
+        const $ctx = $form && $form.length ? $form : getActiveForm();
+
+        if (!$ctx.find('#regno').val()) {
+          Alert.alert('', '등록번호를 입력하세요.');
+          return;
+        }
+        if (!$ctx.find('#Material_id').val()) {
+          Alert.alert('', '차량명칭(차종)을 선택하세요.');
+          return;
+        }
+        if (!$ctx.find('#itemcode').val()) {
+          Alert.alert('', '차량명칭(차종)을 입력하세요.');
+          return;
+        }
+
+        const data = {
+          id: $ctx.find('#id').val(),
+          as_id: $ctx.find('#as_id').val(),
+          regno: $ctx.find('#regno').val(),
+          itemcode: $ctx.find('#itemcode').val(),
+          Material_id: $ctx.find('#Material_id').val(),
+          regdate: $ctx.find('#regdate').val(),
+          vechidno: $ctx.find('#vechidno').val(),
+          fixdate: $ctx.find('#fixdate').val(),
+          fixText: $ctx.find('#fixText').val(),
+          partgroup: $ctx.find('#partgroup').val(),
+          partqty: $ctx.find('#partqty').val(),
+          uamt: $ctx.find('#uamt').val().replace(/,/g, ''),
+          totamt: $ctx.find('#totamt').val().replace(/,/g, ''),
+          workpay: $ctx.find('#workpay').val().replace(/,/g, ''),
+          pernm: $ctx.find('#pernm').val(),
+          mileage: $ctx.find('#mileage').val().replace(/,/g, ''),
+          endflag: $ctx.find('#endflag').is(':checked') ? '0' : '1',
+        };
+
+        Alert.confirm('', '저장하시겠습니까?', function () {
+          AjaxUtil.postJsonData(_this.url + '/save', data, function (result) {
+            if (result && result.success) {
+              Alert.alert('', '저장되었습니다.');
+              _this.searchMainData();
+              // 모달이면 닫기
+              const isModal = $ctx.attr('id') === 'basicForm_modal';
+              if (isModal) {
+                const modal = $ctx.data('modal');
+                if (modal && typeof modal.close === 'function') modal.close();
+              } else {
+                $('#btnNew').click(); // 기본 폼 초기화
+              }
+            } else {
+              Alert.alert('', '저장에 실패했습니다.');
+            }
+          });
+        });
+      };
+
+      deleteASData(id, opts = {}) {
+        if (!id) {
+          Alert.alert('', '삭제할 데이터가 없습니다. 먼저 목록에서 항목을 선택하세요.');
+          return;
+        }
+
+        Alert.confirm('', '삭제하시겠습니까?', () => {
+          const url = this.url + '/delete';
+          const data = {id};
+
+          AjaxUtil.postAsyncData(url, data, (res) => {
+            if (res && res.success) {
+              Notify.success('삭제되었습니다.');
+              this.searchMainData();
+              if (opts.closeModal) {
+                const $ctx  = opts.$ctx || $('#basicForm_modal');
+                const modal = $ctx.data('modal');
+                if (modal && typeof modal.close === 'function') {
+                  modal.close();
+                }
+              } else {
+                // 일반 화면에서는 기존처럼 초기화
+                $('#btnNew').click();
+              }
+            } else {
+              Alert.alert('', res && res.message ? res.message : '삭제에 실패했습니다.');
+            }
+          });
+        });
+      }
+    }
+
+    function getActiveForm() {
+      return $('#basicForm_modal').length ? $('#basicForm_modal') : $('#basicForm');
+    }
+
+    function fillForm($root, d) {
+      $root.find('#id').val(d.id || '');
+      $root.find('#as_id').val(d.as_id || '');
+      $root.find('#regno').val(d.regno || '');
+      $root.find('#Material_id').val(d.Material_id || '');
+      $root.find('#itemcode').val(d.ItemCode || '');
+      $root.find('#regdate').val(d.regdate || d.regdate || '');
+      $root.find('#fixdate').val(d.fixdate || d.fixdate || '');
+      $root.find('#fixText').val(d.fixtext || '');
+      $root.find('#partgroup').val(d.partgroup || '');
+      $root.find('#partqty').val(d.partqty || '');
+      $root.find('#uamt').val(d.uamt || '');
+      $root.find('#totamt').val(d.totamt || '');
+      $root.find('#workpay').val(d.workpay || '');
+      $root.find('#pernm').val(d.pernm || '');
+      $root.find('#mileage').val(d.mileage || '');
+      $root.find('#endflag').prop('checked', d.endflag === '0');
+    }
+
+    // 1) 뷰포트 기반 모달 크기 계산(아이패드 대응 포함)
+    function calcModalSize() {
+      const vw = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+
+      const OUTER_GAP_W = 40;  // 좌우 여백
+      const OUTER_GAP_H = 40;  // 상하 여백
+
+      // 최대치 제한 + 화면 가용 크기 반영
+      const w = Math.min(vw - OUTER_GAP_W, 900);
+      const h = Math.min(vh - OUTER_GAP_H, 700);
+
+      return {w, h, bodyH: h - 96};
+    }
+
+    // 2) 모달 오픈 (신규/수정 공통)
+    function openFormModal(mode /* 'new' | 'edit' */, initialData) {
+      const title = (mode === 'new') ? '신규등록' : '수정';
+      const modal = new PopupDraggable(title);
+
+      // 중복 모달 방지
+      try {
+        $('#basicForm_modal').closest('.modal-form-wrap').remove();
+      } catch (e) {
+      }
+
+      // 폼 클론
+      const $clone = $('#basicForm').clone(true, true);
+      $clone.attr('id', 'basicForm_modal');
+      $clone.data('isModal', true);
+      $clone.data('modal', modal);
+
+      // 신규 초기화 / 수정 바인딩
+      if (mode === 'new') {
+        $clone[0].reset();
+        $clone.find('input[type="hidden"]').val('');
+        const today = new Date();
+        $clone.find('#regdate').val(CommonUtil.formatYYYYMMDD(today));
+        $clone.find('#fixdate').val(CommonUtil.formatYYYYMMDD(today));
+      } else if (initialData) {
+        fillForm($clone, initialData);
+      }
+
+      // 모달 컨텐츠 래퍼
+      // const $wrap = $('<div class="modal-form-wrap" style="padding:8px;"></div>').append($clone);
+      const $wrap = $('<div class="modal-form-wrap"></div>').append($clone);
+
+      // ===== 모달 전용 버튼 영역 (AS 접수선택 + 저장/삭제/닫기) =====
+      // const $actions = $('<div style="margin-top:12px; display:flex; justify-content:center; flex-wrap:wrap; gap:8px;"></div>');
+      const $actions = $('<div class="modal-actions" style="margin-top:12px; display:flex; justify-content:center; flex-wrap:wrap; gap:8px;"></div>');
+
+      // AS 접수선택 (모달 내부)
+      const $btnASListInModal = $('<button type="button" class="btn-default btn-aslist">AS 접수선택</button>');
+      $btnASListInModal.on('click', function () {
+        let poppage = new PopASListComponent();
+        poppage.show(function (items) {
+          if (!items) return;
+          $clone.find('#as_id').val(items.asid || '');
+          $clone.find('#Material_id').val(items.Material_id || '');
+          $clone.find('#itemcode').val(items.itemcode || '');
+          $clone.find('#regno').val(items.regno || '');
+        });
+      });
+      $actions.append($btnASListInModal);
+
+      // 저장
+      const $btnSaveModal = $('<button type="button" class="btn-default btn-aslist">저장</button>');
+      $btnSaveModal.on('click', function () {
+        page.saveMainData($clone);
+      });
+      $actions.append($btnSaveModal);
+
+      // 삭제(수정 모드일 때만)
+      let $btnDeleteModal = null;
+      if (mode === 'edit') {
+        $btnDeleteModal = $('<button type="button" class="btn-danger">삭제</button>');
+        $btnDeleteModal.on('click', function () {
+          const id = $clone.find('#id').val();
+          page.deleteASData(id);
+          const modalInst = $clone.data('modal');
+          if (modalInst && typeof modalInst.close === 'function') modalInst.close();
+        });
+        $actions.append($btnDeleteModal);
+      }
+
+      // 닫기
+      const $btnCloseModal = $('<button type="button" class="btn-popup">닫기</button>');
+      $actions.append($btnCloseModal);
+
+      $wrap.append($actions);
+
+      // ===== 최초 오픈: 동적 크기 적용 =====
+      const size0 = calcModalSize();
+      modal.open({width: size0.w, height: size0.h, $content: $wrap});
+
+      // 포커스 진입
+      setTimeout(() => {
+        $clone.find('#regno').focus();
+      }, 0);
+
+      // ===== 리사이즈 대응 (rAF 디바운스 + visualViewport) =====
+      let resizeRAF = null;
+      const doResize = () => {
+        const s = calcModalSize();
+        if (typeof modal.resize === 'function') modal.resize(s.w, s.h);
+      };
+      const onResize = () => {
+        if (resizeRAF) cancelAnimationFrame(resizeRAF);
+        resizeRAF = requestAnimationFrame(doResize);
+      };
+
+      window.addEventListener('resize', onResize);
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
+
+      // 정리 함수
+      const cleanupResize = () => {
+        if (resizeRAF) cancelAnimationFrame(resizeRAF);
+        window.removeEventListener('resize', onResize);
+        if (window.visualViewport) window.visualViewport.removeEventListener('resize', onResize);
+      };
+
+      // 닫기 버튼 핸들러 (리스너 해제 포함)
+      $btnCloseModal.on('click', function () {
+        cleanupResize();
+        if (typeof modal.close === 'function') modal.close();
+      });
+
+      // 모달 자체 onClose 훅에서도 안전하게 정리
+      const prevOnClose = modal.onClose;
+      modal.onClose = () => {
+        cleanupResize();
+        if (typeof prevOnClose === 'function') prevOnClose();
+      };
+
+      // (선택) 오픈 직후 한 번 더 보정 — 모바일 키보드/툴바 늦게 반영 시
+      setTimeout(doResize, 50);
+    }
+
+    // ✅ 공통 숫자 포맷 (콤마) - 컨텍스트 기반
+    function formatNumberInput(inputValue, targetSelector, $ctx) {
+      const $scope = ($ctx && $ctx.length) ? $ctx : getActiveForm();
+      let cleaned = (inputValue || '').toString().replace(/[^0-9]/g, '').replace(/,/g, '');
+      let formatted = cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      $scope.find(targetSelector).val(formatted);
+    }
+
+    // ✅ 마일리지 전용: '123,456 km' + 커서 ' km' 앞 고정
+    function formatMileageInput($input) {
+      let val = $input.val() || '';
+      let digits = val.replace(/[^0-9]/g, '');
+      let formatted = digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' km' : '';
+      $input.val(formatted);
+
+      // 빈 값이면 커서 고정 불필요
+      if (!formatted) return;
+
+      // 항상 ' km' 앞에 커서 고정 (음수 방어)
+      const pos = Math.max(0, formatted.length - 3);
+      const el = $input[0];
+      if (el.setSelectionRange) el.setSelectionRange(pos, pos);
+    }
+
+    // ✅ 합계 계산 (인자 없으면 활성 폼)
+    function calculateTotal($ctx) {
+      const $scope = ($ctx && $ctx.length) ? $ctx : getActiveForm();
+      if (!$scope || !$scope.length) return;
+
+      let qty  = ($scope.find('#partqty').val() || '').replace(/[^0-9]/g, '');
+      let uamt = ($scope.find('#uamt').val()    || '').replace(/[^0-9]/g, '');
+      let total = (qty && uamt) ? (parseInt(qty, 10) * parseInt(uamt, 10)) : 0;
+
+      formatNumberInput(total.toString(), '#totamt', $scope);
+    }
+
+    /* ======================
+       이벤트 바인딩 (위임)
+    ====================== */
+
+    // 🔹 마일리지: 전용 핸들러만 바인딩 (중복 금지)
+    $(document).on('input focus', '#basicForm #mileage, #basicForm_modal #mileage', function () {
+      formatMileageInput($(this));
+    });
+
+    // 🔹 콤마 포맷(단가/합계/공임)
+    $(document).on('input', '#basicForm #uamt, #basicForm_modal #uamt, #basicForm #totamt, #basicForm_modal #totamt, #basicForm #workpay, #basicForm_modal #workpay', function () {
+      formatNumberInput(this.value, '#' + this.id, getActiveForm());
+    });
+
+    // 🔹 수량/단가 변경 시 합계 재계산
+    $(document).on('input', '#basicForm #partqty, #basicForm_modal #partqty, #basicForm #uamt, #basicForm_modal #uamt', function () {
+      // 입력 포맷
+      formatNumberInput(this.value, '#' + this.id, getActiveForm());
+      // 합계
+      calculateTotal();
+    });
+
+    $(document).ready(function (e) {
+
+      // ===== 반응형: 오른쪽 버튼영역을 왼쪽 상단으로 이동 =====
+      const ResponsiveToolbar = (function () {
+        const BREAKPOINT = 1366;
+        const $sections = $('.layout-contents > div[style*="display: flex"]').children('section');
+        const $leftSectionTop = $sections.eq(0).find('.section-top');
+        const $rightSectionTop = $sections.eq(1).find('.section-top');
+
+        // 원위치를 기억할 placeholder
+        const $placeholder = $('<div id="rightSectionTop_ph" style="display:none;"></div>');
+        let moved = false;
+
+        function apply() {
+          if (window.innerWidth <= BREAKPOINT && !moved) {
+            // 원위치 기억
+            $rightSectionTop.after($placeholder);
+            // 왼쪽 상단으로 버튼영역 이동 (검색바 아래에 붙임)
+            $rightSectionTop.appendTo($leftSectionTop);
+            moved = true;
+          } else if (window.innerWidth > BREAKPOINT && moved) {
+            // 원위치로 복귀
+            $placeholder.after($rightSectionTop);
+            $placeholder.remove();
+            moved = false;
+          }
+        }
+
+        $(window).on('resize', apply);
+        apply();
+        return {apply};
+      })();
+
+      page = new ASManagementPage();
+
+      let today = new Date();
+      let monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      $('#regdate').val(CommonUtil.formatYYYYMMDD(today));
+      $('#fixdate').val(CommonUtil.formatYYYYMMDD(today));
+
+      AjaxUtil.fillSelectOptions($('#cboSpcmngno'), 'material_group', 'all', false);
+      AjaxUtil.fillSelectOptions($('#spcmngno'), 'material_group', 'choose', false);
+
+      page.searchMainData();
+
+      // 검색
+      $('#btnSearch').click(function (e) {
+        e.preventDefault();
+        page.searchMainData();
+      });
+
+      $('#btnSave').off('click').on('click', function (e) {
+        e.preventDefault();
+        page.saveMainData(getActiveForm());
+      });
+
+      $('#btnDel').off('click').on('click', function (e) {
+        e.preventDefault();
+        const id = getActiveForm().find('#id').val() || $('#id').val();
+        page.deleteASData(id);
+      });
+      // 단가나 수량이 바뀔 때마다 합계 재계산
+      $('#partqty, #uamt').on('input', function () {
+        // 입력 필드 포맷 적용
+        formatNumberInput(this.value, '#' + this.id);
+        // 합계 재계산
+        calculateTotal();
+      });
+      //초기화
+      $('#btnNew').off('click').on('click', function (e) {
+        e.preventDefault();
+        if (window.innerWidth <= 1366) {
+          openFormModal('new');
+        } else {
+          // 큰 화면: 기존 인라인 초기화 유지
+          $('#basicForm')[0].reset();
+          $('input[name="endflag"]').prop('checked', false);
+          $('#basicForm').find('input[type="hidden"]').val('');
+          const today = new Date();
+          $('#regdate').val(CommonUtil.formatYYYYMMDD(today));
+          $('#fixdate').val(CommonUtil.formatYYYYMMDD(today));
+        }
+      });
+
+    });
+  </script>
+
+</th:block>
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+</html>
