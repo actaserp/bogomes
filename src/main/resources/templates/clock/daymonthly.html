@@ -16,7 +16,7 @@
         <!-- Page Title -->
         <div class="page-title-wrap">
             <div class="left">
-                <h2>일/월별 근태현황</h2>
+                <h2>작업자근무관리</h2>
                 <a title="북마크" class="bookmark toggle">
                     내메뉴
                 </a>
@@ -24,27 +24,18 @@
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
                 <li>근태현황</li>
-                <li>일/월별 근태현황</li>
+                <li>작업자근무관리</li>
             </ul>
         </div>
 
         <div class="tab-wrap">
-            <ul class="tab-links">
-                <li>
-                    <a href="#tab1" title="일별">일별</a>
-                </li>
-                <li>
-                    <a href="#tab2" title="월별">월별</a>
-                </li>
-            </ul>
-
             <div class="tab-contents">
                 <section class="tab-item" id="tab1" >
                     <div class="section-top">
                         <div class="search-wrap">
                             <dl>
                                 <dt>
-                                    <label>년월</label>
+                                    <label>조회월</label>
                                 </dt>
                                 <dd>
                                     <div class="srch-box">
@@ -52,27 +43,16 @@
                                     </div>
                                 </dd>
                             </dl>
-
                             <dl>
                                 <dt>
-                                    <label for="work_division">근무구분</label>
-                                </dt>
-                                <dd>
-                                    <select style="width: 150px;" id="work_division" name="work_division"></select>
-                                </dd>
-                            </dl>
-
-
-                            <dl>
-                                <dt>
-                                    <label for="depart">부서</label>
+                                    <label for="depart">사원명</label>
                                 </dt>
                                 <dd>
                                     <select style="width: 150px;" id="depart" name="depart"></select>
                                 </dd>
                             </dl>
 
-                            <!--<dl>
+                            <dl>
                                 <dt><span class="eq"></span></dt>
                                 <dd>
                                     <li>
@@ -82,135 +62,35 @@
                                         </a>
                                     </li>
                                 </dd>
-                            </dl>-->
+                            </dl>
                         </div>
                         <div class="button-wrap">
                             <ul>
                                 <li>
                                     <a class="btn btn-excell" title="저장" id="btnDataSave">
                                         <img src="/images/icon/ico-edit.svg" alt="마감 아이콘">
-                                        저장
+                                        등록
                                     </a>
                                 </li>
 
                                 <li>
                                     <a class="btn btn-excell" title="마감" id="btnSave">
                                         <img src="/images/icon/ico-edit.svg" alt="마감 아이콘">
-                                        마감
+                                        수정
                                     </a>
-                                </li>
-                                <li>
-                                    <a class="btn btn-excell" title="마감취소" id="btncancel3">
-                                        <img src="/images/icon/ico-edit.svg" alt="마감취소 아이콘">
-                                        마감취소
-                                    </a>
-                                </li>
-                                <li>
-                                    <button type="button" class="btn-delete btn-danger" id="btnDataDelete"
-                                            style="width: 115px; height: 36px;">
-                                        <i class="fas fa-trash"></i>삭제
-                                    </button>
                                 </li>
                             </ul>
                         </div>
                     </div> <!--//section-top end -->
 
                     <div class="row">
-                        <div class="col wp15">
-                            <div class="container-fluid">
-                                <div id="grid" style="height: 650px; max-height: 650px;"></div>
-                            </div>
-                        </div>
-
-                        <div class="wp85">
+                        <div>
                             <div class="container-fluid">
                                 <p id="selectedItem"></p>
                                 <div id="day-grid" style="height: 650px; max-height: 650px;"></div>
                             </div>
                         </div>
                     </div>
-                </section>
-
-                <section class="tab-item" id="tab2" >
-                    <div class="section-top">
-                        <div class="search-wrap">
-                            <dl>
-                                <dt>
-                                    <label>년월</label>
-                                </dt>
-                                <dd>
-                                    <div class="srch-box">
-                                        <input type="month" class="form-control2" id="startdate2" name="startdate">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <dl>
-                                <dt>
-                                    <label>사원명</label>
-                                </dt>
-                                <dd>
-                                    <select style="width: 150px;" id="person_name" name="person_name"></select>
-                                </dd>
-                            </dl>
-
-                            <dl>
-                                <dt>
-                                    <label for="depart2">부서</label>
-                                </dt>
-                                <dd>
-                                    <select style="width: 150px;" id="depart2" name="depart2"></select>
-                                </dd>
-                            </dl>
-
-                            <dl>
-                                <dt><span class="eq"></span></dt>
-                                <dd>
-                                    <li>
-                                        <a class="btn btn-delete" title="검색" id="btnSearch">
-                                            <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
-                                            검색
-                                        </a>
-                                    </li>
-                                </dd>
-                            </dl>
-
-                        </div>
-                        <div class="button-wrap">
-                            <ul>
-                                <li>
-                                    <a class="btn btn-excell" title="월정산" id="btnSave2">
-                                        <img src="/images/icon/ico-edit.svg" alt="저장 아이콘">
-                                        월정산
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="btn btn-excell" title="월정산취소" id="btncancel" style="display: none;">
-                                        <img src="/images/icon/ico-edit.svg" alt="월정산취소 아이콘">
-                                        월정산취소
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="btn btn-excell" title="마감" id="btnSave3">
-                                        <img src="/images/icon/ico-edit.svg" alt="마감 아이콘">
-                                        마감
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="btn btn-excell" title="마감취소" id="btncancel2" style="display: none;">
-                                        <img src="/images/icon/ico-edit.svg" alt="저장 아이콘">
-                                        마감취소
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="container-fluid">
-                        <p id="selectedItem"></p>
-                        <div id="monthly-grid" style="height: 650px; max-height: 650px;"></div>
-                    </div>
-
                 </section>
             </div>
         </div>
@@ -387,7 +267,7 @@
                 this.grid2.selectionChanged.addHandler(selectionHandler);
 
                 new FlexGridContextMenu(this.grid2);
-                this.grid2.downloadFileName = '일/월별근태현황';
+                this.grid2.downloadFileName = '작업자근무관리';
 
 // grid 초기화 후 selection 강제 해제 (선택되지 않도록)
                 setTimeout(() => {

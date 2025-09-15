@@ -40,6 +40,10 @@
     max-height: 150px; /* 최대 150px까지만 보여줌 */
     overflow-y: auto;  /* 스크롤 가능하게 설정 */
   }
+
+  .typeInput{
+    margin-bottom: 5px;
+  }
 </style>
 <head>
   <meta charset="UTF-8">
@@ -107,37 +111,41 @@
 <!--          <div style="width: 100%; display: flex; justify-content: center; margin: 30px 0 30px 0;">-->
 <!--            <img src="/assets_mobile/images/logo/actas_log.png" alt="로고 이미지" style="width: 70%">-->
 <!--          </div>-->
-          <div>
+          <div style="margin-bottom: 15px;">
             <dl>
-              <dt>근무일자</dt>
+              <h3>근무일자</h3>
               <dd>
-                <div style="display: flex; gap: 10px">
+                <div class="typeInput" style="display: flex; gap: 10px">
                   <div style="width: 100%">
-                    <input type="date" id="searchDate">
+                    <input type="date" id="searchDate" onchange="searchMainData()" style="font-size: x-large;">
                   </div>
                 </div>
               </dd>
             </dl>
             <dl>
-              <dt>근무시간</dt>
+              <h3>시작시간</h3>
+              <dd>
+                <div class="typeInput" style="display: flex; gap: 10px">
+                  <div style="width: 100%;">
+                    <input type="time" id="searchFromTime" style="font-size: x-large;">
+                  </div>
+                </div>
+              </dd>
+              <h3>종료시간</h3>
               <dd>
                 <div style="display: flex; gap: 10px">
-                  <div style="width: 45%">
-                    <input type="time" id="searchFromTime">
-                  </div>
-                  ~
-                  <div style="width: 45%">
-                    <input type="time" id="searchToTime">
+                  <div class="typeInput" style="width: 100%;">
+                    <input type="time" id="searchToTime" style="font-size: x-large;">
                   </div>
                 </div>
               </dd>
             </dl>
             <dl>
-              <dt>근무구분</dt>
+              <h3>근무구분</h3>
               <dd>
                 <div style="display: flex; gap: 10px">
-                  <div style="width: 100%">
-                    <select id="selectWorkcd">
+                  <div class="typeInput" style="width: 100%">
+                    <select id="selectWorkcd" style="font-size: x-large;">
                       <option value="">전체</option>
                     </select>
                   </div>
@@ -146,7 +154,7 @@
             </dl>
           </div>
 
-          <div class="contents-wrap">
+          <div>
             <div id="theGrid">
 
             </div>
@@ -155,8 +163,8 @@
           <!-- 버튼 -->
           <div class="btnArea">
             <div id="inside" style="display: flex; gap: 13%; justify-content: center;">
-              <button onclick="submitCommute('inOfficeIn')" class="office_btn" style=""><i class="fa-solid fa-briefcase fa_xl" style="color: #ffffff;"></i><br>사내출근</button>
-              <button onclick="submitCommute('inOfficeOut')" class="office_btn" style="background-color: red;"><i class="fa-solid fa-person-walking fa-xl" style="color: #ffffff;"></i><br>사내퇴근</button>
+              <button onclick="submitCommute('inOfficeIn')" class="office_btn" style=""><i class="fa-solid fa-briefcase fa_xl" style="color: #ffffff;"></i><br>근무삭제</button>
+              <button onclick="submitCommute('inOfficeOut')" class="office_btn" style="background-color: red;"><i class="fa-solid fa-person-walking fa-xl" style="color: #ffffff;"></i><br>근무등록</button>
             </div>
           </div>
         </dl>
@@ -184,181 +192,30 @@
   // GPS 변수
   let latitude = null;
   let longitude = null;
+  const today = new Date();
 
-  const updateDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const date = String(today.getDate()).padStart(2, '0');
-    const weekDay = weekDays[today.getDay()];
-    document.getElementById('searchDate').innerText = `${year}.${month}.${date}(${weekDay})`;
-  };
-
-  const updateIPAddress = () => {
-    const cacheBuster = `?format=json&cb=${Date.now()}`;
-    fetch(`https://api.ipify.org${cacheBuster}`)
-            .then(response => response.text())
-            .then(data => {
-              console.log("응답 데이터 확인:", data);
-              if (data.includes('{')) {
-                const jsonData = JSON.parse(data);
-                document.getElementById('ipAddress').innerText = 'IP : ' + jsonData.ip;
-                handleIPDisplay(jsonData.ip);
-              } else {
-                document.getElementById('ipAddress').innerText = 'IP : ' + data.trim();
-                handleIPDisplay(data.trim());
-              }
-            })
-            .catch(error => {
-              console.error("IP 조회 중 에러 발생: ", error.message);
-            });
-  };
-
-  const handleIPDisplay = (ip) => {
-    if (ip === '106.240.249.66') {
-      console.log('사내 IP 확인');
-      document.getElementById('inside').style.display = 'flex';
-      document.getElementById('outside').style.display = 'none';
-      document.getElementById('workcd').style.display = 'none';
-    } else {
-      console.log('외부 IP 확인');
-      document.getElementById('inside').style.display = 'none';
-      document.getElementById('outside').style.display = 'flex';
-      document.getElementById('workcd').style.display = 'block';
-
-      getGPSLocation();
-    }
-  };
-
-  // 네트워크 연결 상태 변경 감지
-  window.addEventListener('online', () => {
-    console.log("📡 네트워크가 다시 연결되었습니다. IP를 갱신합니다.");
-    updateIPAddress();
-  });
-
-  // 네트워크 타입 변경 감지 (LTE → Wi-Fi 등)
-  if (navigator.connection) {
-    navigator.connection.addEventListener('change', () => {
-      console.log('📶 네트워크 타입 변경 감지됨:', navigator.connection.effectiveType);
-      setTimeout(() => {
-        updateIPAddress();
-      }, 2000); // 네트워크 안정화 대기
-    });
-  }
-
-  const updateTime = () => {
-    const now = new Date();
-    let hours = now.getHours();
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
-    document.getElementById('searchTime').innerText = formattedTime;
-  };
-
-  (() => {
-    updateIPAddress();
-    updateTime();
-  })();
-
-  setInterval(updateIPAddress, 5000);
-  setInterval(updateTime, 5000);
-
-  updateDate();
 
   $(document).ready(function (e) {
-    // 유저정보 확인
-    function searchMainData(){
-      let _this = this;
-      let url = '/api/mobile_main/read_userInfo'
-      let data = {
-      }
-      let fnsuccess = function (result) {
-        console.log('result : ', result)
-        if (result != null) {
-          document.getElementById('userInfo').textContent = result.data.Name +" "+ result.data.first_name +" "+ result.data.jik_id;
-          document.getElementById('officeTime').textContent = result.data.inOfficeTime ? result.data.inOfficeTime : "--:--";
-          // 근태구분값 바인드
-          const selectElement = document.getElementById('selectWorkcd');
-          const options = selectElement.options;
-          for (let i = 0; i < options.length; i++) {
-            if (options[i].value === result.data.workcd) {
-              selectElement.value = options[i].value;
-              break;
-            }
-          }
-        }
-      };
-      AjaxUtil.getAsyncData(url, data, fnsuccess);
-    }
-    searchMainData();
-    AjaxUtil.fillSelectOptions($('#selectWorkcd'), 'workcd', 'choose', false, 'work_division', '');
-  })
-
-  // 공휴일 확인 api
-  // API 정보
-  const API_KEY = 'bu6q9pRCluI8rJbEWr3Rzw5Dy6yiZC0XMpLyxho278jONlqE5NxPaaVyULwLr3WEYKyWfBOWnHyG2iOxdd4Uxg==';  // 🔥 발급받은 API 키를 여기에 넣으세요
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  let isHoly = 0;
-
-  // API URL 설정
-  const url = `https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getHoliDeInfo?solYear=${year}&solMonth=${month}&ServiceKey=${API_KEY}`;
-  async function checkHoliday() {
-    try {
-      const response = await axios.get(url, {
-        params: {
-          _type: 'json'
-        }
-      });
-
-      const items = response.data.response.body.items.item;
-      const todayString = `${year}${month}${day}`;
-      const isWeekend = today.getDay() === 0 || today.getDay() === 6;
-      const isHoliday = items && items.some(item => item.locdate === todayString);
-      if (isWeekend) {
-        console.log("오늘은 주말입니다.");
-        isHoly = 1;
-      } else if (isHoliday) {
-        console.log("오늘은 공휴일입니다.");
-        isHoly = 1;
-      } else {
-        console.log("오늘은 평일입니다.");
-      }
-
-    } catch (error) {
-      console.error("API 호출에 실패했습니다:", error.message);
-    }
-  }
-  function reloadWindow(){
-    console.log("확인 버튼 클릭됨");
-    window.location.reload(); // ✅ 페이지 새로고침
-  }
-
-  // 출근/퇴근 등록(상태값에 따라 로직 변경)
-  function submitCommute(office){
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const date = String(today.getDate()).padStart(2, '0');
-    const weekDay = weekDays[today.getDay()];
-    const weekNum = today.getDay();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
+    const dd = String(today.getDate()).padStart(2, '0');      // 일
+
+    // yyyy-MM-dd 포맷으로 변환
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+    // <input type="date">에 오늘 날짜 바인딩
+    document.getElementById('searchDate').value = formattedDate;
+
+    AjaxUtil.fillSelectOptions($('#selectWorkcd'), 'system_code', 'choose', false, 'class_work', '');
+    searchMainData();
+  });
+
+  // 근무 등록(상태값에 따라 로직 변경)
+  function submitCommute(office){
     console.log('office tag : ', office)
       //출근 버튼클릭
     if(office.trim() === 'inOfficeIn' || office.trim() === 'outOfficeIn') {
-      if(office.trim() === 'outOfficeIn'){
-        if (document.getElementById('selectWorkcd').value === "") {
-          Alert.alert('', '근태구분을 선택하여주십시오');
-          return;
-        }
-      }
-      if(document.getElementById('officeTime').textContent !== '--:--') {
-        Alert.alert('', '이미출근 하셨습니다.');
-      }else {
-        checkHoliday();
         let _this = this;
         let url = '/api/mobile_main/submitCommute'
         let data = {
@@ -384,18 +241,8 @@
           }
         };
         AjaxUtil.postAsyncData(url, data, fnsuccess);
-      }
     }else{
-      if(office.trim() === 'outOfficeOut'){
-        if (document.getElementById('selectWorkcd').value === "") {
-          Alert.alert('', '근태구분을 선택하여주십시오');
-          return;
-        }
-      }
       // 퇴근버튼 클릭
-      if(document.getElementById('officeTime').textContent === '--:--') {
-        Alert.alert('', '출근기록이 없습니다.');
-      }else{
         console.log('office tag : ', office)
         let _this = this;
         let url = '/api/mobile_main/modifyCommute'
@@ -417,50 +264,13 @@
         };
         AjaxUtil.postAsyncData(url, data, fnsuccess);
       }
-    }
   }
 
-  // GPS 좌표를 가져오는 함수
-  const getGPSLocation = () => {
-    console.log('GPS 메서드 진입')
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          latitude = position.coords.latitude;
-          longitude = position.coords.longitude;
-          console.log(`GPS Coordinates: Lat ${latitude}, Lon ${longitude}`);
-          getAddressFromVWorld(latitude, longitude);
-        },
-        (error) => {
-          console.warn("GPS 접근 실패, IP 기반 위치로 대체합니다.", error.message);
-          document.getElementById('gpsInfo').innerText = '위치정보를 조회할 수 없습니다.'
-        }
-      );
-    } else {
-      console.error("이 브라우저는 Geolocation을 지원하지 않습니다.");
-    }
-  };
-
-  function getAddressFromVWorld(lat, lon) {
-    let _this = this;
-    let url = '/api/mobile_main/switchAddress'
-    let data = {
-      'lat': lat,
-      'lon': lon
-    }
-    let fnsuccess = function (result) {
-      console.log("주소 : " , result.data)
-      document.getElementById('gpsInfo').innerText = result.data
-    };
-    AjaxUtil.postAsyncData(url, data, fnsuccess);
-  }
-
-  function searchMainData2() {
+  function searchMainData() {
     let url = '/api/commute_current/read';
     let data = {
+      'workDate' : document.getElementById('searchDate').value,
       'workcd': document.getElementById('selectWorkcd').value,
-      'searchFromDate': document.getElementById('searchFromDate').value,
-      'searchToDate': document.getElementById('searchToDate').value
     };
     let fnsuccess = function (result) {
       console.log('result : ', result);
@@ -474,24 +284,22 @@
         let tableHtml = `
           <table>
               <tr>
-                <th>일자</th>
-                <th>근태</th>
-                <th>출근</th>
-                <th>퇴근</th>
-                <th>근무시간</th>
-                <th>구분</th>
+                <th>시작시간</th>
+                <th>종료시간</th>
+                <th>근무구분</th>
+                <th>시간</th>
+                <th>삭제</th>
               </tr>
                 `;
 
         items.forEach(item => {
           tableHtml += `
                     <tr>
-                        <td>${formatDateToYYMMDD(item.workym) || ''}</td>
-                        <td>${item.worknm || ''}</td>
                         <td>${item.starttime || '--:--'}</td>
                         <td>${item.endtime || '--:--'}</td>
-                        <td>${item.worktime || '-'}</td>
-                        <td>${item.status_text || ''}</td>
+                        <td>${item.worknm || ''}</td>
+                        <td>${item.worktime || ''}</td>
+                        <td><input type="checkbox"></td>
                     </tr>
                 `;
         });
@@ -507,7 +315,7 @@
         const tableBody = document.querySelector('#theGrid');
         tableBody.innerHTML = `
           <tr>
-              <td colspan="6" style="text-align: center; padding: 8px;">조회된 데이터가 없습니다.</td>
+              <td colspan="5" style="text-align: center; padding: 8px;">조회된 데이터가 없습니다.</td>
           </tr>
       `;
       }

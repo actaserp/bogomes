@@ -11,6 +11,7 @@
   "wm_unit": { "name": "단위정보", "templates": { "default": "definition/unit.html" } },
   "wm_mat_group": { "name": "품목그룹", "templates": { "default": "definition/mat_group.html" } },
   "wm_mat": { "name": "품목정보", "templates": { "default": "definition/material.html" } },
+  "wm_as_consumables": { "name": "소모품정보", "templates": { "default": "definition/consumables.html" } },
   "wm_bom": { "name": "BOM",    "templates": { "default": "definition/bom.html" } },
   "wm_bank_code": { "name": "은행 코드",    "templates": { "default": "definition/bank_code.html" } },
   "wm_account_number": { "name": "계좌번호",    "templates": { "default": "definition/account_number.html" } },
@@ -140,7 +141,7 @@
   "wm_login_log": { "name": "로그인로그", "templates": { "default": "system/login_log.html" } },
   "wm_menu_log": { "name": "메뉴로그", "templates": { "default": "system/menu_log.html" } },
 
-  "wm_clock_daymonthly": { "name": "일/월별 근태현황", "templates": { "default": "clock/daymonthly.html" } },
+  "wm_clock_daymonthly": { "name": "작업자근무관리", "templates": { "default": "clock/daymonthly.html" } },
   "wm_clock_member": { "name": "사원별휴가확인", "templates": { "default": "clock/member.html" } },
   "wm_clock_yearly": { "name": "연차관리", "templates": { "default": "clock/yearly.html" } },
   "wm_clock_system": { "name": "근태설정", "templates": { "default": "clock/system.html" } },

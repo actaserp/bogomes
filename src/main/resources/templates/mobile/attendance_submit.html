@@ -1,117 +1,49 @@
 <!DOCTYPE html>
 <html lang="ko">
 <style>
-  .btn-clear {
-    display: none !important; /* 강제로 숨김 */
-  }
-  .btn-close {
-    display: none !important; /* 강제로 숨김 */
-  }
-  /* 검색 영역 스타일 */
-  #searcharea, #detailarea {
-    position: relative;
-    width: 100%;
-    margin-top: 10px;
+  .btnArea{
+    position: fixed;
+    bottom: 0px;
+    width: 93%;
+    height: 120px;
   }
 
-  /* 검색 아이콘 (SVG) */
-  .search-icon {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-  }
-
-  /* 검색 가이드 스타일 */
-  .search-guide {
-    padding: 10px;
-    font-size: 14px;
-    color: #666;
-  }
-
-  /* 버튼 스타일 */
-  .btn-select, .btn-login {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+  .office_btn {
+    background-color: #007aff;
+    color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    width: 100px;
+    height: 100px;
+    font-size: 1.2em;
     cursor: pointer;
+    transition: background-color 0.3s;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 50px;
+    border: none;
+    box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
   }
 
-  /* 모달 오버레이 (배경 흐리게) */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 배경 */
-    z-index: 999; /* 모달보다 한 단계 아래 */
-  }
-
-  /* 모달 스타일 */
-  .modal {
-    display: none;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: 650px;
-    max-width: 90%;
-    background-color: white;
+  #officeIcon {
+    color: #ffffff;
+    background-color: #9acaf4;
     border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    border: none;
-    z-index: 9999;
+    font-size: 2.5em;
+    width: 15%;
+    aspect-ratio: 1 / 1;
+    padding-top: 2%;
+    margin-right: 10%;
   }
 
-  /* 모달 닫기 버튼 스타일 */
-  .modal-close {
-    position: absolute;
-    top: 10px;
-    right: 5px;
-    width: 30px; /* 버튼 크기 */
-    height: 25px;
-    border: none;
-    border-radius: 3px;
-    background: none; !important; /* 배경 제거 */
-    background-color: transparent; !important; /* 배경을 투명하게 */
-    z-index: 1000;
-    cursor: pointer; /* 클릭 가능한 버튼 스타일 */
+  #selectWorkcd {
+    max-height: 150px; /* 최대 150px까지만 보여줌 */
+    overflow-y: auto;  /* 스크롤 가능하게 설정 */
   }
 
-  #loadingSpinner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.8); /* 배경 어둡게 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-
-  #loadingImage {
-    width: 95%; /* 전체 화면의 80% 크기 */
-    max-width: 900px; /* 최대 크기 제한 */
-  }
-
-  .contents-wrap dd{
-    margin-bottom: 20px;
-  }
-
-  .contents-wrap dt{
-    margin-left: 10px;
+  .typeInput{
     margin-bottom: 5px;
   }
-
 </style>
 <head>
   <meta charset="UTF-8">
@@ -138,6 +70,8 @@
   <script src="/js/common.js?v=1060"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
   <script src="/js/Mobile.js"></script>
+  <script src="https://kit.fontawesome.com/84dc79ac13.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -151,7 +85,7 @@
         </a>
       </div>
       <div class="left" style="margin-left:35px; font-size: 25px;">
-        <h2>휴가등록</h2>
+        <h2>근무조회</h2>
       </div>
       <div class="right">
         <a href="#" title="전체메뉴" class="btn-menu">
@@ -169,84 +103,56 @@
     <div class="layout-contents" >
       <!-- 검색 영역  -->
       <div class="search-wrap">
-
-      </div>
-      <!-- 컨텐츠 영역  -->
-      <div class="contents-wrap">
+        <div class="srch-tit aco-hd">
+          <p>기본검색</p>
+          <a href="#" title="열기/닫기" class="btn-aco">
+            <img src="/assets_mobile/images/icon/ico-down.svg" alt="열기/닫기">
+          </a>
+        </div>
+        <div class="srch-cont aco-cont">
           <dl>
-            <dt>사용자ID</dt>
+            <h3>조회기간</h3>
             <dd>
-              <div style="display: flex; gap: 10px">
-                <div style="width: 100%">
-                  <input type="text" id="userId" readonly>
+              <div class="typeInput" style="display: flex; gap: 10px">
+                <div style="width: 45%">
+                  <input type="date" id="searchFromDate" style="font-size: large;">
+                </div>
+                ~
+                <div style="width: 45%">
+                  <input type="date" id="searchToDate" style="font-size: large;">
                 </div>
               </div>
             </dd>
-            <dt>사용자명</dt>
+            <h3>근무구분</h3>
             <dd>
               <div style="display: flex; gap: 10px">
-                <div style="width: 100%">
-                  <input type="text" id="userName2" readonly>
-                </div>
-              </div>
-            </dd>
-            <dt>휴가항목</dt>
-            <dd>
-              <div style="display: flex; gap: 10%">
-                  <select style="width: 70%" id="attKind" onchange="bindPeriod();">
-                    <option>휴가</option>
+                <div class="typeInput" style="width: 100%">
+                  <select id="selectWorkcd" style="font-size: large;">
+                    <option value="">전체</option>
                   </select>
-                  <label style="display: flex; align-items: center">
-                    <input type="checkbox" style="margin: 0" id="isAnnual" disabled>
-                    &nbsp;&nbsp;연차</label>
-              </div>
-            </dd>
-            <dt>기간</dt>
-            <dd>
-              <!-- 시작 날짜/시간 -->
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; gap: 10px;">
-                  <input type="date" id="startDate" style="width: 140px;">
-                  <input type="time" id="startTime" style="width: 140px;">
-                </div>
-              </div>
-
-              <span style="font-weight: bold;">~</span>
-
-              <!-- 종료 날짜/시간 -->
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; gap: 10px;">
-                  <input type="date" id="endDate" style="width: 140px;">
-                  <input type="time" id="endTime" style="width: 140px;">
-                </div>
-              </div>
-
-            </dd>
-            <div style="display: flex;">
-              <dt>사용일수</dt>
-              <dt style="margin-left: auto">연차잔여일수</dt>
-            </div>
-            <dd>
-              <div style="display: flex; gap: 10px">
-                <div style="width: 100%; display: flex;">
-                  <input type="number" id="useDate" style="width: 45%;" readonly>
-                  <input type="number" id="usedDate" style="width: 45%; margin-left: auto;" readonly>
-                </div>
-              </div>
-            </dd>
-            <dt>사유</dt>
-            <dd>
-              <div style="display: flex; gap: 10px">
-                <div style="width: 100%">
-                  <input type="text" id="remark" >
                 </div>
               </div>
             </dd>
           </dl>
           <div class="srch-btn">
-            <button class="btn-dark" onclick="saveAttendance()">등록</button>
+            <button class="btn-dark" onclick="searchMainData()">조회</button>
           </div>
         </div>
+      </div>
+      <!-- 컨텐츠 영역  -->
+      <div class="contents-wrap">
+        <dl style="margin-bottom: 10px">
+          <!--          <div style="width: 100%; display: flex; justify-content: center; margin: 30px 0 30px 0;">-->
+          <!--            <img src="/assets_mobile/images/logo/actas_log.png" alt="로고 이미지" style="width: 70%">-->
+          <!--          </div>-->
+          <div>
+            <div id="theGrid">
+
+            </div>
+          </div><!--// contents-wrap end-->
+
+
+        </dl>
       </div><!--// contents-wrap end-->
     </div> <!--//layout-contents end -->
   </div> <!-- //mobile-layout-contents end-->
@@ -264,136 +170,95 @@
   // if (username && username !== 'null') localStorage.setItem('username', username);
   // if (groupname && groupname !== 'null') localStorage.setItem('groupname', groupname);
 </script>
-
 <script type="text/javascript">
+  // 현재 날짜 설정 (페이지 로딩 시 1회 설정)
+  // 요일 이름 배열
+  const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
+  // GPS 변수
+  let latitude = null;
+  let longitude = null;
+  const today = new Date();
+
 
   $(document).ready(function (e) {
-    searchMainData();
-    AjaxUtil.fillSelectOptions($('#attKind'), 'workcd', 'choose', false, 'work_division', '');
-    // 이벤트 리스너 등록
-    document.getElementById('startDate').addEventListener('change', calculateUseDays);
-    document.getElementById('endDate').addEventListener('change', calculateUseDays);
-  })
-  // 휴가기간 초기 00시00분 바인드
-  function bindDate(userStartTime){
     const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
+    const dd = String(today.getDate()).padStart(2, '0');      // 일
 
-    // userStartTime이 없으면 기본값으로 "00:00" 설정
-    const startTime = userStartTime ?? "00:00";
+    // yyyy-MM-dd 포맷으로 변환
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+    const firstDate = `${yyyy}-${mm}-01`;
 
-    // 시작 시간과 종료 시간 초기화
-    document.getElementById('startDate').value = `${formattedDate}`;
-    document.getElementById('endDate').value = `${formattedDate}`;
-  }
+    // <input type="date">에 오늘 날짜 바인딩
+    document.getElementById('searchToDate').value = formattedDate;
+    document.getElementById('searchFromDate').value = firstDate;
 
-  // 유저정보 확인 (사용자정보/ ID, 이름, 연차잔여일수 바인드)
-  function searchMainData(){
-    let _this = this;
-    let url = '/api/attendance_submit/read_userInfo'
+    AjaxUtil.fillSelectOptions($('#selectWorkcd'), 'system_code', 'all', false, 'class_work', '');
+    searchMainData();
+  });
+
+
+  function searchMainData() {
+    let url = '/api/commute_current/read_record';
     let data = {
-    }
+      'searchToDate' : document.getElementById('searchToDate').value,
+      'searchFromDate': document.getElementById('searchFromDate').value,
+      'selectWorkcd': document.getElementById('selectWorkcd').value
+    };
     let fnsuccess = function (result) {
-      if (result != null) {
-        console.log("✅ 응답 데이터: ", result.data);
+      console.log('result : ', result);
 
-        // 요소가 존재할 때만 바인딩
-        const userIdEl = document.getElementById('userId');
-        const userNameEl = document.getElementById('userName2');
-        const usedDateEl = document.getElementById('usedDate');
+      // ✅ 데이터가 null이 아니면 실행
+      if (result != null && result.data != null) {
+        // 조회된 데이터
+        const items = result.data;
 
-        if (userIdEl) userIdEl.value = result.data.username ?? '';
-        if (userNameEl) userNameEl.value = result.data.first_name ?? '';
-        if (usedDateEl) usedDateEl.value = result.data.restnum ?? '';
+        // ✅ 동적 테이블 생성
+        let tableHtml = `
+          <table>
+              <tr>
+                <th>일자</th>
+                <th>시작시간</th>
+                <th>종료시간</th>
+                <th>근무구분</th>
+                <th>시간</th>
+              </tr>
+                `;
 
-        bindDate(result.data.sttime);
+        items.forEach(item => {
+          tableHtml += `
+                    <tr>
+                        <td>${item.workym + '.' + item.workday || ''}</td>
+                        <td>${item.starttime || '--:--'}</td>
+                        <td>${item.endtime || '--:--'}</td>
+                        <td>${item.worknm || ''}</td>
+                        <td>${item.worktime || ''}</td>
+                    </tr>
+                `;
+        });
+
+        tableHtml += `
+                </table>
+            `;
+
+        // ✅ 기존 내용 제거하고 새롭게 바인딩
+        const tableBody = document.querySelector('#theGrid');
+        tableBody.innerHTML = tableHtml;
+      } else {
+        const tableBody = document.querySelector('#theGrid');
+        tableBody.innerHTML = `
+          <tr>
+              <td colspan="5" style="text-align: center; padding: 8px;">조회된 데이터가 없습니다.</td>
+          </tr>
+      `;
       }
     };
     AjaxUtil.getAsyncData(url, data, fnsuccess);
   }
-  // 휴가 등록
-  function saveAttendance(office){
-    let _this = this;
-    let url = '/api/attendance_submit/submitAttendance'
-    let data = {
-      'userId': document.getElementById('userId').value,
-      'userName': document.getElementById('userName2').value,
-      'attKind': document.getElementById('attKind').value,
-      // 'isAnnual': document.getElementById('isAnnual').value,
-      'useDate': document.getElementById('useDate').value,
-      'usedDate': document.getElementById('usedDate').value,
-      'remark': document.getElementById('remark').value,
-      'startDate': document.getElementById('startDate').value,
-      'startTime': document.getElementById('startTime').value,
-      'endDate': document.getElementById('endDate').value,
-      'endTime': document.getElementById('endTime').value,
-      'isAnnual': document.getElementById('isAnnual').checked ? "1" : "0"
-    }
-    let fnsuccess = function (result) {
-      if (result != null) {
-        if (result.success) {
-          Alert.alert('', result.message, function() {
-            window.location.href = '/mobile/attendance_current';
-          });
-        } else {
-          Alert.alert('', "휴가 등록에 실패하였습니다.");
-        }
-      } else {
-        Alert.alert('', "오류가 발생하였습니다.");
-      }
-    };
-    AjaxUtil.postAsyncData(url, data, fnsuccess);
-  }
 
-  // 날짜와 시간 차이 계산 함수
-  function calculateUseDays() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const useDateInput = document.getElementById('useDate');
 
-    console.log('날자계산 메서드 동작')
-    if (useDateInput.getAttribute('data-fixed') === 'true') {
-      console.log('useDate는 고정값 상태입니다. 계산하지 않음.');
-      return;
-    }
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      // 같은 날짜면 최소 하루
-      // 하루 = 1000ms * 60s * 60m * 24h
-      const dayDiff = (end - start) / (1000 * 60 * 60 * 24);
 
-      if (dayDiff === 0) {
-        useDateInput.value = "1.00"; // 같은 날이면 1일
-      } else {
-        useDateInput.value = dayDiff > 0 ? (dayDiff + 1).toFixed(2) : '0.00'; // 양수면 +1일
-      }
-    }
-  }
-  function bindPeriod() {
-    let _this = this;
-    let url = '/api/attendance_submit/bindPeriod'
-    let data = {
-      'attKind': document.getElementById('attKind').value,
-    }
-    let fnsuccess = function (result) {
-      if (result != null) {
-        console.log("result : ", result);
-        let usenum = parseFloat(result.data.usenum);
-        if (usenum > 0 && usenum < 1) {
-          const useDateInput = document.getElementById('useDate');
-          useDateInput.value = usenum.toFixed(2);
-          useDateInput.setAttribute('data-fixed', 'true'); // 🔒 잠금 표시
-        } else {
-          document.getElementById('useDate').removeAttribute('data-fixed');
-        }
-        document.getElementById('isAnnual').checked = result.data.yearflag === '1';
-      } else {
-        Alert.alert('', "오류가 발생하였습니다.");
-      }
-    };
-    AjaxUtil.getAsyncData(url, data, fnsuccess);
-  }
 </script>
 </body>
 </html>
