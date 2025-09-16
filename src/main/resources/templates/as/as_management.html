@@ -213,6 +213,9 @@
         <a title="북마크" class="bookmark toggle">
           내메뉴
         </a>
+        <button type="button" class="btn-default pull-right mr-1" id="btnHeaderCompress" title="화면 확대/축소">
+          <i class="fas fa-compress" id="iCompress"></i>
+        </button>
       </div>
       <ul class="page-navi">
         <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
@@ -353,7 +356,7 @@
                   <input type="text" id="partgroup" name="partgroup" placeholder="부품구분">
                 </td>
                 <th>
-                  <label>부품수량</label>
+                  <label for="partqty">부품수량</label>
                 </th>
                 <td>
                   <input type="text" id="partqty" name="partqty" placeholder="부품수량">
@@ -367,7 +370,7 @@
                   <input type="text" id="uamt" name="uamt" placeholder="부품단가">
                 </td>
                 <th>
-                  합계
+                  <label for="totamt">합계</label>
                 </th>
                 <td>
                   <input type="text" id="totamt" name="totamt" placeholder="합계">
@@ -375,13 +378,13 @@
               </tr>
               <tr>
                 <th>
-                  <label>공임</label>
+                  <label for="workpay">공임</label>
                 </th>
                 <td>
                   <input type="text" id="workpay" name="workpay" placeholder="공임">
                 </td>
                 <th>
-                  정비기사
+                  <label for="pernm">정비기사</label>
                 </th>
                 <td>
                   <input type="text" id="pernm" name="pernm" placeholder="정비기사">
@@ -389,13 +392,13 @@
               </tr>
               <tr>
                 <th>
-                  <label>주행거리</label>
+                  <label for="mileage">주행거리</label>
                 </th>
                 <td>
                   <input type="text" id="mileage" name="mileage" placeholder="주행거리 -KM">
                 </td>
                 <th>
-                  출고처리
+                  <label for="endflag">출고처리</label>
                 </th>
                 <td style="display:flex;justify-content:center;align-items:center;">
                   <input type="checkbox" id="endflag" name="endflag">
