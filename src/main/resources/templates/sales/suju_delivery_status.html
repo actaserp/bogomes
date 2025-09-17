@@ -33,18 +33,12 @@
           </dl>
           <dl id="searchComArea">
             <dt>
-              상호(차주)
+              <label>상호(차주)</label>
             </dt>
             <dd>
-              <input type="text" id="cboCompany" name="cboCompany">
-              <input type="hidden" id="cboCompanyHidden">
-              &nbsp;
-              <a class="btn btn-delete" title="검색" id="btnCompanySearch">
-                <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
-                상호 검색
-              </a>
+              <input type="text" class="form-control2"
+                     id="txtCompany" name="txtCompany">
             </dd>
-
           </dl>
           <dl>
             <dt>&nbsp;</dt>
@@ -72,7 +66,7 @@
   <script type="text/javascript">
 
 
-    class SujuSummaryPage {
+    class SuJuDeliveryStatusPage {
       constructor() {
         this.url = '/api/sales/suju_delivery_status';
         this.grid = null;
@@ -81,6 +75,7 @@
       }
 
       init() {
+        let _this = this;
         this.grid = new wijmo.grid.FlexGrid('#theGrid', {
           selectionMode: wijmo.grid.SelectionMode.Row,
           headersVisibility: wijmo.grid.HeadersVisibility.Column,
@@ -95,12 +90,13 @@
             }
           },
           columns: [
-            { binding: 'mat_grp_name', header: '상호(차주)', width: 150 ,allowMerging: true },
-            { binding: 'mat_code', header: '수주일', width: 120 ,allowMerging: true },
-            { binding: 'unit_name', header: '제원관리번호', width: 150, allowSorting: false },
-            { binding: 'tot_price_sum', header: '차대번호', width: 210, minWidth: 150,align: 'right', format: 'n0' },
-            { binding: 'company_name', header: '차주', width: 180, allowSorting: false },
-            { binding: 'company_name', header: '차명', width: 180, allowSorting: false },
+            { binding: 'id', header: 'id', visible: false, allowSorting: false},
+            { binding: 'CustomerBarcode', header: '제원관리번호', width: 150, allowSorting: true },
+            { binding: 'com_name', header: '상호(차주)', width: 150 ,allowMerging: false },
+            { binding: 'JumunDate', header: '수주일', width: 120 },
+            { binding: 'vechidno', header: '차대번호', width: 210, minWidth: 150,align: 'right', format: 'n0' },
+            { binding: 'contractnm', header: '차주', width: 180, allowSorting: false },
+            { binding: 'mat_name', header: '차명', width: 180, allowSorting: false },
             { binding: 'SujuQty', header: '수주량(대수)', width: 100, align: 'right', format: 'n0' },
             { binding: 'SujuQty2', header: '납품수량', width: 100, align: 'right', format: 'n0' },
             { binding: 'DeliveryDate', header: '납품일', width: 120, align: 'center' },
@@ -111,7 +107,7 @@
         this.grid.itemFormatter = function (panel, row, col, cell) {
           if (panel.cellType === wijmo.grid.CellType.Cell) {
             let colName = panel.columns[col].binding;
-            if (['mat_grp_name', 'mat_code', 'mat_name', 'unit_name'].includes(colName)) {
+            if (['com_name', 'CustomerBarcode'].includes(colName)) {
               cell.style.textAlign = 'center';          // 수평 가운데
               cell.style.verticalAlign = 'middle';      // 수직 가운데
               cell.style.display = 'flex';              // flex로 정렬
@@ -123,29 +119,35 @@
 
         new FlexGridContextMenu(this.grid);
         this.grid.downloadFileName = '수주별납품현황';
+
+        $('#txtCompany').on('keypress', function (e) {
+          if (e.keyCode === 13) {
+            _this.searchMainData();
+          }
+        });
       }
 
       searchMainData() {
-        const url = this.url + '/read';
-        const data = {
-          'srchStartDt' : $("#srchStartDt").val(),
-          'srchEndDt' : $("#srchEndDt").val(),
-          'cboCompany' : $("#cboCompanyHidden").val(),
-        };
-        const result = AjaxUtil.getSyncData(url, data);
-        console.log("result data : ", result.data);
-        if (result) {
-          this.grid.itemsSource = result.data;
-        }
-      }
+        let _this = this;
+        let company =  $('#txtCompany').val();
+        let start = $('#srchStartDt').val();  //시작일
+        let end = $('#srchEndDt').val();      //종료일
+        let url = this.url + '/read';
 
-      exportExcel() {
-        const book = wijmo.grid.xlsx.FlexGridXlsxConverter.saveAsync(this.grid, {
-          includeColumnHeaders: true,
-          includeCellStyles: false,
-        }, (blob) => {
-          wijmo.saveFile(blob, '수주량.xlsx');
-        });
+        let data = {
+          'company': company,
+          'start': start,
+          'end': end,
+          'action': 'read',
+          spjangcd: sessionStorage.getItem('spjangcd')
+        };
+
+        let fnsuccess = function (result) {
+          if (result != null) {
+            _this.viewData.sourceCollection = result.data;
+          }
+        };
+        AjaxUtil.getAsyncData(url, data, fnsuccess);
       }
     }
 
@@ -159,14 +161,12 @@
 
       const firstDay = `${yyyy}-${mm}-01`;
       const currentDay = `${yyyy}-${mm}-${dd}`;
-      page = new SujuSummaryPage();
+
+      page = new SuJuDeliveryStatusPage();
 
 
       $('#srchStartDt').val(firstDay);
       $('#srchEndDt').val(currentDay);
-
-      AjaxUtil.fillSelectOptions($('#cboMatGrp'), 'material_group', 'all', '', 'product,semi');
-      AjaxUtil.fillSelectOptions($('#sujuState'), 'system_code', 'all', null, 'suju_state');
 
       $('#btnSearch').click(() => {
         if ($('#cboCompanyHidden').val() === '' && $('#cboCompany').val() !== '') {
@@ -182,7 +182,7 @@
         let poppage = new PopCompComponent();
         let $poppage = $(poppage);
         let searchcallback = function (items) {
-          console.log('items : ',items);
+          //console.log('items : ',items);
           document.getElementById('cboCompany').value = items.compname;
           document.getElementById('cboCompanyHidden').value = items.id;
         };
