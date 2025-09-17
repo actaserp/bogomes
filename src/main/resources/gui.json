@@ -40,6 +40,7 @@
   "wm_suju_delivery_status" : {"name": "수부별 납품현황", "templates": { "default": "sales/suju_delivery_status.html" }},
   "wm_shipment_order": { "name": "출하지시등록", "templates": { "default": "shipment/shipment_order.html" } },
   "wm_shipment_order_list": { "name": "출하지시조회", "templates": { "default": "shipment/shipment_order_list.html" } },
+  "wm_vehicle_dev": { "name": "차량출고관리대장", "templates": { "default": "shipment/vehicle_dev.html" } },
   "wm_shipment_do_a": { "name": "출고지시등록(수량)", "templates": { "default": "shipment/shipment_do_a.html" } },
   "wm_shipment_do_b": { "name": "출고지시등록(LOT)", "templates": { "default": "shipment/shipment_do_b.html" } },
   "wm_shipment_list": { "name": "출고내역", "templates": { "default": "shipment/shipment_list.html" } },

@@ -57,4 +57,13 @@ public class Shipment extends AbstractAuditModel{
 	
 	@Column(name = "\"Unit_id\"")
 	Integer unitId;
+
+	@Column(name = "\"spjangcd\"")
+	Integer spjangcd;
+
+	@Column(name = "\"vercode\"")
+	Integer vercode;
+
+	@Column(name = "\"suju_head_id\"")
+	Integer suju_head_id;
 }

@@ -1,10 +1,7 @@
 package mes.app.shipment.service;
 
 import java.sql.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import mes.domain.entity.Suju;
@@ -81,6 +78,7 @@ public class ShipmentOrderService {
             , m."Code" as mat_code
             , m."Name" as mat_name
             , s."SujuQty" as suju_qty
+            , s."SujuQty" as order_input_qty
             , s."SujuQty2" as prod_qty 
             , sp.order_sum as order_qty 
             , sp.ship_sum  as shipment_qty
@@ -250,19 +248,8 @@ public class ShipmentOrderService {
 		return items;
 	}
 
-	public List<Suju> getRelationSujuList(List<Map<String, Object>> items){
-
-		List<Integer> SuJuItems = items.stream()
-				.map(item -> item.get("suju_pk"))
-				.filter(val -> !val.toString().trim().isEmpty())
-				.map(val -> Integer.parseInt(val.toString()))
-				.collect(Collectors.toList());
-
-
-		List<Suju> byIdIn = sujuRepository.findByIdIn(SuJuItems);
-
-		System.out.println("Su");
-		return byIdIn;
+	public List<Suju> getRelationSujuList(Integer item) {
+		return sujuRepository.findByIdIn(Collections.singletonList(item));
 	}
 
 	public List<Map<String, Object>> getProdcutList (Set<Integer> mat_id, Integer companyId){
@@ -285,5 +272,49 @@ public class ShipmentOrderService {
 
 		return items;
 	}
-	
+	//
+	// 그리드 더블클릭 제품 조회
+	public Map<String, Object> getSujuDetailProd (Integer searchId){
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("searchId", searchId);
+
+		String sql = """
+				select m.*,
+				m."Name" as "matName",
+				mg.id
+				from material
+				left join mat_grp mg ON mg.id = m."MaterialGroup_id" 
+				where id = :searchId
+		""";
+
+		Map<String, Object> item = this.sqlRunner.getRow(sql, paramMap);
+
+		return item;
+	}
+	// 그리드 더블클릭 수주 조회
+	public Map<String, Object> getSujuDetailSuju (Integer searchId){
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("searchId", searchId);
+
+		String sql = """
+				select sj.*,
+				sh.*,
+				cp."Name" as "CompanyNm",
+				cp.*,
+				m."Name" as "matName",
+				m.id as "matId",
+				m.*
+				from suju sj
+				left join suju_head sh ON sj."SujuHead_id" = sh.id
+				left join company cp ON cp.id = sj."Company_id"
+				left join material m ON m.id = sj."Material_id"
+				where sj.id = :searchId
+		""";
+
+		Map<String, Object> item = this.sqlRunner.getRow(sql, paramMap);
+
+		return item;
+	}
 }

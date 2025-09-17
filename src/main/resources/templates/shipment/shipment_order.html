@@ -144,7 +144,7 @@
                                 </label>
                             </dt>
                             <dd>
-                                <select class="" id="company_id" name="company_id" disabled></select>
+                                <select class="" id="company_id" name="company_id"></select>
                             </dd>
                         </dl>
                         <dl>
@@ -193,6 +193,7 @@
                 </div>
                 <div>
                     <form id="matBasicForm">
+                        <input type="hidden" id="searchId" name="searchId">
                         <table class="write-table">
                             <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
                             <colgroup>
@@ -203,94 +204,94 @@
                                 <col class="wp16">
                                 <col class="wp17">
                             </colgroup>
-                            <input type="hidden" id="id" name="id" readonly>
+                            <input type="hidden" id="matId" name="matId" readonly>
                             <tbody>
                             <tr>
                                 <th>
                                     <label for="MaterialGroup_id"><span class="eq">*</span>제원</label>
                                 </th>
                                 <td colspan="2">
-                                    <select id="MaterialGroup_id" name="MaterialGroup_id"
-                                            style="width: 100%;" required></select>
+                                    <input type="text" id="MaterialGroup_id" name="MaterialGroup_id"
+                                           style="width: 100%;" required>
                                 </td>
 
                                 <th>
-                                    <label for="Code"><span class="eq">*</span>제원<br>관리번호</label>
+                                    <label for="CustomerBarcode"><span class="eq">*</span>제원<br>관리번호</label>
                                 </th>
                                 <td colspan="2">
-                                    <input type="text" id="Code" name="Code"
+                                    <input type="text" id="CustomerBarcode" name="CustomerBarcode"
                                            style="width: 100%;" required>
                                 </td>
                             </tr>
 
                             <tr>
                                 <th>
-                                    <label for="Name"><span class="eq">*</span>차대번호</label>
+                                    <label for="vechidno"><span class="eq">*</span>차대번호</label>
                                 </th>
                                 <td  colspan="2">
-                                    <input type="text" style="width: 100%;" id="Name"
-                                           name="Name" required>
+                                    <input type="text" style="width: 100%;" id="vechidno"
+                                           name="vechidno" required>
                                 </td>
                                 <th>
-                                    <label for="Unit_id"><span class="eq">*</span>차량구분</label>
+                                    <label for="ProductionClass"><span class="eq">*</span>차량구분</label>
                                 </th>
                                 <td colspan="2">
-                                    <select style="width: 100%;" id="Unit_id"
-                                            name="Unit_id" required></select>
+                                    <select style="width: 100%;" id="ProductionClass"
+                                            name="ProductionClass" required></select>
                                 </td>
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Factory_id"><span class="eq">*</span>륜수</label>
+                                    <label for="wheel">륜수</label>
                                 </th>
                                 <td>
-                                    <select type="text" id="Factory_id" name="Factory_id"
-                                            style="width: 100%;"></select>
+                                    <input type="number" id="wheel" name="wheel"
+                                            style="width: 100%;">
                                 </td>
 
                                 <th>
-                                    <label for="mtyn">콘</label>
+                                    <label for="cone">콘</label>
                                 </th>
                                 <td>
-                                    <input type="checkbox" id="mtyn" name="mtyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;" checked>
+                                    <input type="text" id="cone" name="cone" style="width: 100%;">
                                 </td>
                                 <th>
-                                    <label for="mtyn">출고일자</label>
+                                    <label for="devdate">출고일자</label>
                                 </th>
                                 <td>
-                                    <input type="checkbox" id="mtyn" name="mtyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;" checked>
+                                    <input type="date" id="devdate" name="devdate" style="width: 100%;">
                                 </td>
 
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="useyn">차주</label>
+                                    <label for="CompanyNm">차주</label>
                                 </th>
                                 <td colspan="2">
-                                    <input type="checkbox" id="useyn" name="useyn" value="1" style="display: block; margin: auto; height: 26px; width: 26px;">
+                                    <input type="text" id="CompanyNm" name="CompanyNm" style="width: 100%;">
                                 </td>
                                 <th style="font-size: 14px;">
-                                    <label for="LotSize">연락처</label>
+                                    <label for="TelNumber">연락처</label>
                                 </th>
                                 <td colspan="2">
-                                    <input type="text" id="LotSize" name="LotSize"
+                                    <input type="text" id="TelNumber" name="TelNumber"
                                            style="width: 100%;">
                                 </td>
 
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Weight">법인명</label>
+                                    <label for="CompanyNm">법인명</label>
                                 </th>
                                 <td colspan="2">
-                                    <input type="text" style="width: 100%;" id="Weight"
-                                           name="Weight">
+                                    <input type="text" style="width: 100%;" id="CompanyNm"
+                                           name="CompanyNm">
                                 </td>
                                 <th>
-                                    <label for="SafetyStock">회사연락처</label>
+                                    <label for="TelNumber">회사연락처</label>
                                 </th>
                                 <td colspan="2">
-                                    <input type="text" id="SafetyStock" name="SafetyStock"
+                                    <input type="text" id="TelNumber" name="TelNumber"
                                            style="width: 100%;">
                                 </td>
 
@@ -298,30 +299,30 @@
 
                             <tr>
                                 <th>
-                                    <label for="MaxStock">회사팩스</label>
+                                    <label for="FaxNumber">회사팩스</label>
                                 </th>
                                 <td colspan="5">
-                                    <input type="text" style="width: 100%;" id="MaxStock"
-                                           name="MaxStock">
+                                    <input type="text" style="width: 100%;" id="FaxNumber"
+                                           name="FaxNumber">
                                 </td>
 
 
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Width">차명</label>
+                                    <label for="matName">차명</label>
                                 </th>
                                 <td colspan="5">
-                                    <input type="text" style="width: 100%;" id="Width"
-                                           name="Width">
+                                    <input type="text" style="width: 100%;" id="matName"
+                                           name="matName">
                                 </td>
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Height">형식</label>
+                                    <label for="Class3">형식</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="Height" name="Height"
+                                    <input type="text" id="Class3" name="Class3"
                                            style="width: 100%;">
                                 </td>
 
@@ -334,84 +335,84 @@
                                            style="width: 100%;">
                                 </td>
                                 <th>
-                                    <label for="fouraxis">5-6축</label>
+                                    <label for="fiveaxis">5-6축</label>
                                 </th>
                                 <td>
                                     <!--<textarea id="Description" name="Description"></textarea>-->
-                                    <input type="text" id="fouraxis" name="fouraxis"
-                                           style="width: 100%;">
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="fiveaxis">오바항</label>
-                                </th>
-                                <td>
                                     <input type="text" id="fiveaxis" name="fiveaxis"
                                            style="width: 100%;">
                                 </td>
-
+                            </tr>
+                            <tr>
                                 <th>
-                                    <label for="overaxis">차량중량</label>
+                                    <label for="overaxis">오바항</label>
                                 </th>
                                 <td>
-                                    <!--<textarea id="Description" name="Description"></textarea>-->
                                     <input type="text" id="overaxis" name="overaxis"
                                            style="width: 100%;">
                                 </td>
+
                                 <th>
-                                    <label for="bodylength">최대적재량</label>
+                                    <label for="Weight">차량중량</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="bodylength" name="bodylength"
+                                    <!--<textarea id="Description" name="Description"></textarea>-->
+                                    <input type="text" id="Weight" name="Weight"
+                                           style="width: 100%;">
+                                </td>
+                                <th>
+                                    <label for="SafetyStock">최대적재량</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="SafetyStock" name="SafetyStock"
                                            style="width: 100%;">
                                 </td>
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="bodylength">총중량</label>
+                                    <label for="MaxStock">총중량</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="bodylength" name="bodylength"
+                                    <input type="text" id="MaxStock" name="MaxStock"
                                            style="width: 100%;">
                                 </td>
 
                                 <th>
-                                    <label for="botlength">전전축</label>
+                                    <label for="Thickness">전전축</label>
                                 </th>
                                 <td>
                                     <!--<textarea id="Description" name="Description"></textarea>-->
-                                    <input type="text" id="botlength" name="botlength"
+                                    <input type="text" id="Thickness" name="Thickness"
                                            style="width: 100%;">
                                 </td>
                                 <th>
-                                    <label for="bodylength">후전축</label>
+                                    <label for="Width">후전축</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="bodylength" name="bodylength"
+                                    <input type="text" id="Width" name="Width"
                                            style="width: 100%;">
                                 </td>
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Usage">후중축</label>
+                                    <label for="Length">후중축</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="Usage" name="Usage"
+                                    <input type="text" id="Length" name="Length"
                                            style="width: 100%;">
                                 </td>
                                 <th>
-                                    <label for="Usage">후후축</label>
+                                    <label for="Height">후후축</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="Usage" name="Usage"
+                                    <input type="text" id="Height" name="Height"
                                            style="width: 100%;">
                                 </td>
                                 <th>
-                                    <label for="Usage">색상</label>
+                                    <label for="Color">색상</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="Usage" name="Usage"
+                                    <input type="text" id="Color" name="Color"
                                            style="width: 100%;">
                                 </td>
                             </tr>
@@ -426,10 +427,10 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Usage">출고시추가지급품</label>
+                                    <label for="addmaterial">출고시추가지급품</label>
                                 </th>
                                 <td colspan="5">
-                                    <input type="text" id="Usage" name="Usage"
+                                    <input type="text" id="addmaterial" name="addmaterial"
                                            style="width: 100%;">
                                 </td>
                             </tr>
@@ -478,6 +479,7 @@
                 this.grid_suju = new wijmo.grid.FlexGrid('#theGrid', {
                     autoGenerateColumns: false,
                     showMarquee: true,
+                    headersVisibility: wijmo.grid.HeadersVisibility.Column,
                     allowSorting: 'MultiColumn',
                     selectionMode: wijmo.grid.SelectionMode.Row, // 행 단위 선택
                     isReadOnly: false,
@@ -547,14 +549,28 @@
                         s.setCellData(row, col.index, sujuQtyValue);
                     }
                 });
+
+                this.grid_suju.hostElement.addEventListener('dblclick', (e) => {
+                    let hitTest = this.grid_suju.hitTest(e);
+                    if (hitTest.cellType === wijmo.grid.CellType.Cell) {
+                        let row = hitTest.row;
+                        let selectedItem = this.grid_suju.rows[row].dataItem;
+                        let searchId = selectedItem.suju_pk;
+                        document.getElementById('searchId').value = searchId;
+
+                        // 출하 상세조회
+                        searchDetailSuju(searchId);
+                    }
+                });
+
                 new FlexGridContextMenu(this.grid_suju);
                 this.grid_suju.downloadFileName = '수주내역';
-                let selector = new wijmo.grid.selector.Selector(this.grid_suju, {
-                    itemChecked: (e, ctx) => {
-                        SelectItem = this.grid_suju.rows.filter(r => r.isSelected);
-
-                    }
-                })
+                // let selector = new wijmo.grid.selector.Selector(this.grid_suju, {
+                //     itemChecked: (e, ctx) => {
+                //         SelectItem = this.grid_suju.rows.filter(r => r.isSelected);
+                //
+                //     }
+                // })
 
 
                 this.grid_product = new wijmo.grid.FlexGrid('#theGrid3', {
@@ -573,6 +589,17 @@
                         {binding: 'cur_stock', header: '현재고', width: 80, align: 'right'}
                     ],
                     itemsSource: this.viewData3,
+                });
+                this.grid_product.hostElement.addEventListener('dblclick', (e) => {
+                    let hitTest = this.grid_product.hitTest(e);
+                    if (hitTest.cellType === wijmo.grid.CellType.Cell) {
+                        let row = hitTest.row;
+                        let selectedItem = this.grid_product.rows[row].dataItem;
+                        let searchId = selectedItem.mat_id;
+                        document.getElementById('searchId').value = searchId;
+                        // 출하 상세조회
+                        searchDetailSuju(searchId);
+                    }
                 });
                 new FlexGridContextMenu(this.grid_product);
                 this.grid_product.downloadFileName = '제품';
@@ -612,136 +639,6 @@
                 return;
             }
 
-            addShipMat() {
-                let _this = this;
-                if ($("#cboSource").val() == 'suju') {
-                    let comp_pk = null;
-                    let comp_name = null;
-
-                    let hasError = false;
-
-                    $.each(SelectItem, function (index, item) {
-                        comp_pk = item._data.Company_id;
-                        comp_name = item._data.CompanyName;
-                        //let row_idx = _this.getShipMatRow(item._data.mat_id);
-
-                        let order_input_qty = Number(item._data.order_input_qty);
-
-                        if (!order_input_qty) {
-                            Alert.alert('', '지시량을 입력해주세요.');
-                            hasError = true;
-                            return false;
-                        }
-                        if (order_input_qty < 0) {
-                            Alert.alert('', '지시량을 확인해주세요.');
-                            hasError = true;
-                            return false;
-                        }
-
-                        if (isNaN(order_input_qty))
-                            order_input_qty = 0;
-                        //return true;
-                        if (order_input_qty <= 0) {
-                            order_input_qty = 0;
-                            //return true;    // continue
-                        }
-
-
-                        let new_data = {};
-                        //new_data['item_pk'] = item._data.mat_id;
-                        new_data['mat_id'] = item._data.mat_id;
-                        new_data['suju_pk'] = item._data.suju_pk;
-                        new_data['mat_grp'] = item._data.mat_grp;
-                        new_data['mat_code'] = item._data.mat_code;
-                        new_data['mat_name'] = item._data.mat_name;
-                        new_data['unit_name'] = item._data.unit_name;
-                        //let qty = item.suju_qty;
-                        //if (item.order_qty > 0)
-                        //    qty -= item.order_qty;
-                        new_data['order_qty'] = order_input_qty;
-
-                        _this.addNewRow(new_data);
-                        /*if (row_idx == -1) {    // 품목중복 없음.
-
-                            //page.grid_shipment.addRow($.extend({}, new_data), 'last');
-                            //result.push(new_data);
-                        } else {
-                            _this.grid_shipment.collectionView.items.forEach(function (row, index) {
-                                console.log('row', row['mat_id'])
-                                if (row['mat_id'] == item._data.mat_id) {
-                                    let suju_pk = 'S' + String(item._data.suju_pk);
-                                    console.log('row1', row);
-                                    if (row['suju_pk'].indexOf(suju_pk) == -1) {
-                                        console.log('여기는 수주pk가 없다는 의미');
-
-                                        row['suju_pk'] += ',' + suju_pk + ':' + String(order_input_qty);
-                                        //let qty = item.suju_qty;
-                                        //if (item.order_qty > 0)
-                                        //    qty -= item.order_qty;
-                                        //row['order_qty'] += qty;
-                                        row['order_qty'] = Number(row['order_qty']) + order_input_qty;
-                                    } else {
-                                        console.log('여기는 수주pk가 있다는 의미');
-
-                                        let myArray = row['suju_pk'].split(',');
-                                        myArray.forEach(function (suju_data, index, thisArray) {
-                                            let suju_no = suju_data.split(':')[0]
-                                            if (suju_no == suju_pk)
-                                                //suju_data = suju_no + ':' + String(order_input_qty);
-                                                thisArray[index] = suju_no + ':' + String(order_input_qty);
-                                        });
-                                        //let order_sum = 0;
-                                        //myArray.forEach(function (suju_data, index, thisArray) {
-                                        //    let qty = suju_data.split(':')[1]
-                                        //    order_sum += Number(qty);
-                                        //});
-
-                                        row['suju_pk'] = myArray.join(',');
-                                        //row['order_qty'] = order_sum;
-                                    }
-                                }
-                            });
-                        }*/
-
-                    });
-
-                    /*_this.grid_shipment.collectionView.items.forEach(function (row, index) {
-                        let myArray = row['suju_pk'].split(',');
-                        let order_sum = 0;
-                        myArray.forEach(function (suju_data, index, thisArray) {
-                            let qty = suju_data.split(':')[1]
-                            order_sum += Number(qty);
-                        });
-                        row['order_qty'] = order_sum;
-                    });*/
-                    if (hasError) return;
-                    $("#company_id").val(comp_pk);
-                    $("#company_id_text").val(comp_name);
-                } else if ($("#cboSource").val() == 'product') {
-
-                    $.each(SelectItem2, function (index, item) {
-                        if (!_this.checkShipMatUnique(item._data.mat_id))
-                            return true;
-
-                        let new_data = {};
-                        new_data['suju_pk'] = '';
-                        new_data['mat_id'] = item._data.mat_id;
-                        new_data['mat_grp'] = item._data.mat_grp;
-                        new_data['mat_code'] = item._data.mat_code;
-                        new_data['mat_name'] = item._data.mat_name;
-                        new_data['unit_name'] = item._data.unit_name;
-                        let qty = item._data.suju_qty;
-                        if (item.order_qty > 0)
-                            qty -= item._data.order_qty;
-                        new_data['order_qty'] = qty;
-
-                        _this.addNewRow(new_data);
-                    });
-                }
-
-                return;
-            }
-
             beforeSave() {
 
                 if ($('#company_id').val() == '') {
@@ -757,19 +654,19 @@
                 return true;
             }
 
-            saveShipOrder() {
-                let data = {}; // = FormUtil.extractForm($('#shipmentForm'));
-                let bucket = [];
-
+            saveShipOrder($form) {
+                let data = FormUtil.extractForm($form);
                 data['Company_id'] = $('#company_id').val();
                 data['ShipDate'] = $('#shipdate').val();
-                data['Description'] = $('#description').val();
-
-                if ($('#cboSource').val() == 'product')
-                    data['TableName'] = 'product'
-                else
+                if ($('#cboSource').val() === 'product') {
+                    data['TableName'] = 'product';
+                    data['mat_id'] = $('#searchId').val();
+                } else {
                     data['TableName'] = 'suju'
-
+                    data['suju_pk'] = $('#searchId').val();
+                }
+                let bucket = [];
+                bucket.push({ suju_pk: $('#searchId').val() });
                 data['Q'] = JSON.stringify(bucket);
                 console.log('data', data);
 
@@ -781,12 +678,6 @@
                         $('#description').val('');
 
                         let comboBox = $('#cboSource').val();
-
-                        if (comboBox === 'product') {
-                            $('#company_id').attr('disabled', false);
-                        } else {
-                            $('#company_id').attr('disabled', true);
-                        }
 
                         $('#company_id option:eq(0)').prop('selected', true);
 
@@ -801,11 +692,40 @@
                 AjaxUtil.postAsyncData(gUrl + '/save_shipment_order', data, fnSuccess);
             }
 
-            setButtonState() {
-                let bDisabled = page.ship_state != 'ordered';
-                $('#btnSaveOrderQty').prop('disabled', bDisabled);
-                $('#btnSaveShipDate').prop('disabled', bDisabled);
+            // setButtonState() {
+            //     let bDisabled = page.ship_state != 'ordered';
+            //     $('#btnSaveOrderQty').prop('disabled', bDisabled);
+            //     $('#btnSaveShipDate').prop('disabled', bDisabled);
+            // }
+
+        }
+
+        // 수주 및 제품 상세조회 그리드 더블클릭
+        function searchDetailSuju(searchId){
+            let data = {};
+            if ($('#cboSource').val() == 'product') {
+                data['TableName'] = 'product';
+                data['searchId'] = searchId;
             }
+            else {
+                data['TableName'] = 'suju';
+                data['searchId'] = searchId;
+            }
+
+            let fnSuccess = function (res) {
+                if (res.success) {
+                    let detailData = res.data;
+                    FormUtil.BindDataForm(detailData, $('#matBasicForm'));
+                    Notify.success('수주데이터 조회 완료');
+
+                } else {
+                    const message = res.message ?? '수주데이터 조회 실패';
+                    Alert.alert('', message);
+                }
+            }
+
+            AjaxUtil.getAsyncData(gUrl + '/search_detail_suju', data, fnSuccess);
+
         }
 
 
@@ -820,7 +740,7 @@
                 condition1: ''
             });
             new CompanySelector('dataCompanySelect', 'combobox', 'company_id', 'sale', {
-                null_option: 'all',
+                null_option: 'choose',
                 selected_value: '',
                 data_fill: true,
                 condition1: ''
@@ -828,6 +748,7 @@
 
             AjaxUtil.fillSelectOptions($('#cboMatGroup'), 'material_group', 'all', '', 'product,semi,sangpum');
             AjaxUtil.fillSelectOptions($('#cboMaterial'), 'material', 'all', '', null);
+            AjaxUtil.fillSelectOptions($('#ProductionClass'), 'material_group', 'all', '', 'product,semi,sangpum');
             $('#cboMatGroup').change(function (e) {
                 let mat_grp_pk = $('#cboMatGroup').val();
                 AjaxUtil.fillSelectOptions($('#cboMaterial'), 'material', 'all', '', mat_grp_pk);
@@ -836,18 +757,7 @@
             function initAll() {
                 $('#btnListCollapse').prop("checked", true);
                 $('#divList').show();
-
-                if ($("#cboSource").val() === 'product') {
-                    $("#company_id").attr("disabled", false);
-
-                    $("#company_id option:eq(0)").prop("selected", true);
-                } else {
-                    $("#company_id").attr("disabled", true);
-
-                    $("#company_id option:eq(0)").prop("selected", true);
-                }
-
-
+                $("#company_id option:eq(0)").prop("selected", true);
             }
 
             // 검색
@@ -858,66 +768,20 @@
             $('#cboSource').change(function (e) {
                 initAll();
 
+                if ($("#cboSource").val() == 'suju') {
+                    $('#div_suju').show();
+                    $('#div_product').hide();
+                    page.searchMain();
+                } else if ($("#cboSource").val() == 'product') {
+                    $('#div_suju').hide();
+                    $('#div_product').show();
+                    page.searchMain();
+                }
             });
 
             $('#btnListCollapse').click(function (e) {
                 $('#divList').toggle(300);
             });
-
-            $("#btnAddMat").click(function (e) {
-
-                if (($("#cboSource").val() == 'suju') && (SelectItem.length === 0 || SelectItem === undefined)) {
-                    Alert.alert('', '제품을 선택해 주세요.');
-                    return;
-                } else if (($("#cboSource").val() == 'product') && (SelectItem2.length === 0 || SelectItem2 === undefined)) {
-                    Alert.alert('', '제품을 선택해 주세요.');
-                    return;
-                }
-                let comp_a = "";
-                let comp_a2 = "";
-
-                let return_a = 0;
-
-                if ($("#cboSource").val() == 'suju') {
-
-                    let bottomCompanySelectBox = $('#company_id').val();
-                    if (bottomCompanySelectBox != '' && bottomCompanySelectBox !== null) {
-                        $.each(SelectItem, function (index, item) {
-                            if (item._data.Company_id != bottomCompanySelectBox) {
-                                console.log('bottom', bottomCompanySelectBox);
-                                console.log('item', item._data.Company_id);
-
-                                return_a = 1;
-                            }
-                        })
-                    } else {
-                        $.each(SelectItem, function (index, item) {
-                            if (comp_a && (comp_a !== item._data.Company_id)) {
-                                return_a = 1;
-                            } else
-                                comp_a = item._data.Company_id;
-                        });
-                    }
-
-                }
-                if (return_a == 1) {
-                    Alert.alert('', '하나 이상의 판매처가 있습니다.');
-                    return;
-                }
-                page.addShipMat();
-
-            });
-
-            $("#cboSource").change(function () {
-                const source = $(this).val();
-
-                if (source === 'product') {
-                    $("#btnCompletionMat").hide();  // 숨김
-                } else {
-                    $("#btnCompletionMat").show();  // 표시
-                }
-            }).trigger("change"); // 페이지 로드시 초기 상태도 반영
-
 
             // 강제 완료
             $("#btnCompletionMat").click(function (e) {
@@ -949,13 +813,11 @@
             $('#shipdate').val(CommonUtil.getYYYYMMDD());
 
             $('#btnSaveShipOrder').click(function (e) {
-
-                // 출하지시저장
-
                 if (page.beforeSave()) {
+                    let $form = $('#matBasicForm');
                     Alert.confirm('', "출하 지시하시겠습니까?",
                         function () {
-                            page.saveShipOrder();
+                            page.saveShipOrder($form);
                         },
                         function () {
                         }
