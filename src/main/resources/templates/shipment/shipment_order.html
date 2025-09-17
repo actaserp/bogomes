@@ -208,10 +208,10 @@
                             <tbody>
                             <tr>
                                 <th>
-                                    <label for="MaterialGroup_id"><span class="eq">*</span>제원</label>
+                                    <label for="spcno"><span class="eq">*</span>제원</label>
                                 </th>
                                 <td colspan="2">
-                                    <input type="text" id="MaterialGroup_id" name="MaterialGroup_id"
+                                    <input type="text" id="spcno" name="spcno"
                                            style="width: 100%;" required>
                                 </td>
 
@@ -233,11 +233,11 @@
                                            name="vechidno" required>
                                 </td>
                                 <th>
-                                    <label for="ProductionClass"><span class="eq">*</span>차량구분</label>
+                                    <label for="MaterialGroup_id"><span class="eq">*</span>차량구분</label>
                                 </th>
                                 <td colspan="2">
-                                    <select style="width: 100%;" id="ProductionClass"
-                                            name="ProductionClass" required></select>
+                                    <select style="width: 100%;" id="MaterialGroup_id"
+                                            name="MaterialGroup_id" required></select>
                                 </td>
                             </tr>
                             <tr>
@@ -245,7 +245,7 @@
                                     <label for="wheel">륜수</label>
                                 </th>
                                 <td>
-                                    <input type="number" id="wheel" name="wheel"
+                                    <input type="text" id="wheel" name="wheel"
                                             style="width: 100%;">
                                 </td>
 
@@ -681,7 +681,7 @@
 
                         $('#company_id option:eq(0)').prop('selected', true);
 
-
+                        Alert.alert('', "출하지시가 완료되었습니다.");
                         page.searchMain();
                     } else {
                         const message = res.message ?? '출하지시실패';
@@ -748,7 +748,7 @@
 
             AjaxUtil.fillSelectOptions($('#cboMatGroup'), 'material_group', 'all', '', 'product,semi,sangpum');
             AjaxUtil.fillSelectOptions($('#cboMaterial'), 'material', 'all', '', null);
-            AjaxUtil.fillSelectOptions($('#ProductionClass'), 'material_group', 'all', '', 'product,semi,sangpum');
+            AjaxUtil.fillSelectOptions($('#MaterialGroup_id'), 'material_group', 'choose', '', 'product,semi,sangpum');
             $('#cboMatGroup').change(function (e) {
                 let mat_grp_pk = $('#cboMatGroup').val();
                 AjaxUtil.fillSelectOptions($('#cboMaterial'), 'material', 'all', '', mat_grp_pk);

@@ -243,26 +243,26 @@
                                         </tr>
                                         <tr>
                                             <th>
-                                                <label for="Factory_id"><span class="eq">*</span>상세구분</label>
+                                                <label for="Class2">상세구분</label>
                                             </th>
                                             <td colspan="2">
-                                                <select type="text" id="Factory_id" name="Factory_id"
-                                                        style="width: 100%;"></select>
+                                                <input type="text" id="Class2" name="Class2"
+                                                        style="width: 100%;">
                                             </td>
                                             <th style="font-size: 14px;">
-                                                <label for="LotSize">형식</label>
+                                                <label for="Class3">형식</label>
                                             </th>
                                             <td colspan="2">
-                                                <input type="text" id="LotSize" name="LotSize"
+                                                <input type="text" id="Class3" name="Class3"
                                                        style="width: 100%;">
                                             </td>
                                         </tr>
                                         <tr>
                                             <th>
-                                                <label for="LotSize"><span class="eq">*</span>길이</label>
+                                                <label for="Class1">길이</label>
                                             </th>
                                             <td>
-                                                <input type="text" id="LotSize" name="LotSize"
+                                                <input type="text" id="Class1" name="Class1"
                                                        style="width: 100%;">
                                             </td>
                                             <th>
@@ -383,17 +383,17 @@
                                         </tr>
                                         <tr>
                                             <th>
-                                                <label for="mtyn">륜수</label>
+                                                <label for="wheel">륜수</label>
                                             </th>
                                             <td colspan="2">
-                                                <input type="text" id="LotSize" name="LotSize"
+                                                <input type="text" id="wheel" name="wheel"
                                                        style="width: 100%;">
                                             </td>
                                             <th>
-                                                <label for="useyn">콘</label>
+                                                <label for="cone">콘</label>
                                             </th>
                                             <td colspan="2">
-                                                <input type="text" id="LotSize" name="LotSize"
+                                                <input type="text" id="cone" name="cone"
                                                        style="width: 100%;">
                                             </td>
                                         </tr>
@@ -546,7 +546,7 @@
                                         </tr>
                                         <tr>
                                             <th>
-                                                <label for="MinOrder"><span class="eq">*</span>최소 발주량</label>
+                                                <label for="MinOrder">최소 발주량</label>
                                             </th>
                                             <td>
                                                 <input type="text" style="width: 100%;" id="MinOrder"
@@ -554,7 +554,7 @@
                                             </td>
 
                                             <th>
-                                                <label for="MaxOrder"><span class="eq">*</span>최대 발주량</label>
+                                                <label for="MaxOrder">최대 발주량</label>
                                             </th>
                                             <td>
                                                 <input type="text" style="width: 100%;" id="MaxOrder"
@@ -657,7 +657,7 @@
                                             </td>
 
                                             <th>
-                                                <label for="ValidDays"><span class="eq">*</span>사용기한(일)</label>
+                                                <label for="ValidDays">사용기한(일)</label>
                                             </th>
                                             <td>
                                                 <input type="number" style="width: 100%;" id="ValidDays"
@@ -971,7 +971,7 @@
                     autoGenerateColumns: false,
                     showMarquee: true,
                     isReadOnly: true,
-                    frozenColumns: 3, // 앞에 5개의 컬럼 고정
+                    frozenColumns: 4, // 앞에 컬럼 고정
                     formatItem: (sender, e) => {
                         if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
                             e.cell.style.textAlign = 'center';
@@ -1352,7 +1352,6 @@
             // 탭 내부 dropdown load
             initForm() {
                 AjaxUtil.fillSelectOptions($('#MaterialGroup_id'), 'material_group', '', false); // 품목그룹
-                AjaxUtil.fillSelectOptions($('#Unit_id'), 'unit', '', false); // 단위
                 AjaxUtil.fillSelectOptions($('#StoreHouse_id'), 'store_house', '', false); // 창고
                 AjaxUtil.fillSelectOptions($('#WorkCenter_id'), 'workcenter', '', false); // 워크센터
 
@@ -2238,16 +2237,6 @@
                     $('#matBasicForm #Name').focus();  // 해당 input으로 포커스 이동
                     return;
                 }
-                if (!data.Unit_id) {
-                    Alert.alert('', '길이를 선택해 주세요');
-                    $('#matBasicForm #Unit_id').focus();  // 해당 input으로 포커스 이동
-                    return;
-                }
-                if (!data.Factory_id) {
-                    Alert.alert('', '상세구분을 선택해 주세요');
-                    $('#matBasicForm #Factory_id').focus();  // 해당 input으로 포커스 이동
-                    return;
-                }
                 if (!data.StoreHouse_id) {
                     Alert.alert('', '기본 재고 창고를 선택해 주세요');
                     $('#matStockForm #StoreHouse_id').focus();  // 해당 input으로 포커스 이동
@@ -2257,37 +2246,6 @@
                     $('#tab_inventory').show();  // 해당 탭 내용 표시
                     return;
                 }
-
-                if (!data.MinOrder) {
-                    Alert.alert('', '최소 발주량을 입력해 주세요');
-                    $('#matStockForm #MinOrder').focus();  // 해당 input으로 포커스 이동
-                    // 탭 이동 및 내용 표시
-                    $('a[href="#tab_inventory"]').tab('show');  // 탭 전환
-                    $('#tab_basic').hide();
-                    $('#tab_inventory').show();  // 해당 탭 내용 표시
-                    return;
-                }
-
-                if (!data.MaxOrder) {
-                    Alert.alert('', '최대 발주량을 입력해 주세요');
-                    $('#matStockForm #MaxOrder').focus();  // 해당 input으로 포커스 이동
-                    // 탭 이동 및 내용 표시
-                    $('a[href="#tab_inventory"]').tab('show');  // 탭 전환
-                    $('#tab_basic').hide();
-                    $('#tab_inventory').show();  // 해당 탭 내용 표시
-                    return;
-                }
-
-                if (!data.ValidDays) {
-                    Alert.alert('', '사용기한(일)를 입력해 주세요');
-                    $('#matStockForm #ValidDays').focus();  // 해당 input으로 포커스 이동
-                    // 탭 이동 및 내용 표시
-                    $('a[href="#tab_inventory"]').tab('show');  // 탭 전환
-                    $('#tab_basic').hide();
-                    $('#tab_inventory').show();  // 해당 탭 내용 표시
-                    return;
-                }
-
                 Alert.confirm('',
                     '저장하시겠습니까?',
                     function () {

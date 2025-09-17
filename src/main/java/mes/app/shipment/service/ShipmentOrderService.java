@@ -282,10 +282,10 @@ public class ShipmentOrderService {
 		String sql = """
 				select m.*,
 				m."Name" as "matName",
-				mg.id
-				from material
+				mg.id as "MaterialGroup_id"
+				from material m
 				left join mat_grp mg ON mg.id = m."MaterialGroup_id" 
-				where id = :searchId
+				where m.id = :searchId
 		""";
 
 		Map<String, Object> item = this.sqlRunner.getRow(sql, paramMap);

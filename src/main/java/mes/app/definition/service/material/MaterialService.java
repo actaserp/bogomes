@@ -166,6 +166,12 @@ public class MaterialService {
 			, m."overaxis"
 			, m."bodylength"
 			, m."botlength"
+			, m.wheel
+			, m.cone
+			, m."Class1"
+			, m."Class2"
+			, m."Class3"
+			, m."Thickness"
             from material m
             inner join mat_grp mg on m."MaterialGroup_id" = mg.id
             left join unit u on u.id = m."Unit_id"
