@@ -611,10 +611,9 @@ class PopupDraggable {
         const usableHeight = iframeHeight - headerHeight - tabsHeight;
         const modalWidth = Math.min(window.innerWidth * 0.96, 1100);
 
-        // modalHeight 계산 로직 (생략 가능, 지금 쓰시는 방식 그대로)
-        const contentH = $root.find(".table-wrap").outerHeight(true) || 0;
-        const buttonH  = $root.find(".popup-button").outerHeight(true) || 0;
-        let modalHeight = contentH + buttonH + 80;
+        // ✅ body-frame 전체 높이를 기준으로 계산 (범용 처리)
+        const bodyFrameH = $root.find("[data-modal-els='body-frame']").outerHeight(true) || 0;
+        let modalHeight = bodyFrameH + 80;  // 패딩 + 버튼 고려
         if (modalHeight > usableHeight) modalHeight = usableHeight * 0.9;
 
         const middleTop = (usableHeight - modalHeight) / 2;
@@ -623,7 +622,7 @@ class PopupDraggable {
 
         const leftPos = (iframeWidth - modalWidth) / 2;
 
-        // 전체 모달 사이즈 세팅
+        // 모달 위치/사이즈 적용
         $root.css({
             top: finalTop + "px",
             width: modalWidth + "px",
@@ -632,16 +631,13 @@ class PopupDraggable {
             transform: "none"
         });
 
-        // 👉 body 높이 강제 수정 (header 빼고 남은 공간)
+        // ✅ header 제외 영역을 body 높이로 강제
         const headerH = $root.find("[data-modal-els='header']").outerHeight(true) || 0;
         $root.find(".ax-modal-body").css({
             height: (modalHeight - headerH) + "px",
             overflow: "auto"
         });
-
-        // console.log("adjustPosition", { usableHeight, modalWidth, modalHeight, finalTop, leftPos });
     }
-
 
 
     open({ width, height, $content }) {
