@@ -609,12 +609,25 @@ class PopupDraggable {
         const tabsHeight   = (tabsEl && tabsEl.offsetParent !== null) ? tabsEl.offsetHeight : 0;
 
         const usableHeight = iframeHeight - headerHeight - tabsHeight;
-        const modalWidth = Math.min(window.innerWidth * 0.96, 1100);
 
-        // ✅ body-frame 전체 높이를 기준으로 계산 (범용 처리)
-        const bodyFrameH = $root.find("[data-modal-els='body-frame']").outerHeight(true) || 0;
-        let modalHeight = bodyFrameH + 80;  // 패딩 + 버튼 고려
-        if (modalHeight > usableHeight) modalHeight = usableHeight * 0.9;
+        // 👉 데스크탑 / 태블릿 기준 분기
+        const isDesktop = window.innerWidth > 1366;
+
+        // width: 데스크탑은 고정값 우선, 아니면 동적 계산
+        const modalWidth = (isDesktop && this.fixedWidth)
+            ? this.fixedWidth
+            : Math.min(window.innerWidth * 0.96, 1100);
+
+        // height: 데스크탑은 고정값 우선, 아니면 동적 계산
+        let modalHeight;
+        if (isDesktop && this.fixedHeight) {
+            modalHeight = this.fixedHeight;
+            if (modalHeight > usableHeight) modalHeight = usableHeight * 0.9;
+        } else {
+            const bodyFrameH = $root.find("[data-modal-els='body-frame']").outerHeight(true) || 0;
+            modalHeight = bodyFrameH + 80;
+            if (modalHeight > usableHeight) modalHeight = usableHeight * 0.9;
+        }
 
         const middleTop = (usableHeight - modalHeight) / 2;
         let finalTop = middleTop - modalHeight * 0.1;
@@ -631,13 +644,14 @@ class PopupDraggable {
             transform: "none"
         });
 
-        // ✅ header 제외 영역을 body 높이로 강제
+        // body 높이 강제
         const headerH = $root.find("[data-modal-els='header']").outerHeight(true) || 0;
         $root.find(".ax-modal-body").css({
             height: (modalHeight - headerH) + "px",
             overflow: "auto"
         });
     }
+
 
 
     open({ width, height, $content }) {
