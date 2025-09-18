@@ -343,7 +343,7 @@
                 <div class="input-with-checkbox">
                   <input type="text" name="BaljuUnitPrice" min="0" placeholder="단가" style="text-align:right;"/>
                   <input type="hidden" name="originalUnitPrice" value="" />
-                  <input type="checkbox" id="VatIncluded" name="VatIncluded" checked />
+                  <input type="checkbox" id="VatIncluded" name="VatIncluded" />
                 </div>
               </td>
               <td><input type="text" name="BaljuPrice"   style="text-align:right;"/></td>
@@ -499,7 +499,6 @@
 
         // 숫자 포맷 적용 대상 필드들
         const formatFields = [
-          'input[name^="quantity_"]',
           'input[name^="BaljuUnitPrice_"]',
           'input[name^="BaljuPrice_"]',
           'input[name^="BaljuVat_"]',
@@ -516,6 +515,25 @@
               formatNumberInput($(this).val(), this);
             }
           });
+          // 수량은 정수만, 콤마 없음
+          $row.find('input[name^="quantity_"]')
+            .attr({ inputmode: 'numeric', autocomplete: 'off' })
+            .off('.num')
+            .on('keydown.num', function(e) {
+              // 숫자/편집키만 허용
+              const k = e.key, ctrl = e.ctrlKey || e.metaKey;
+              if (/^\d$/.test(k)) return; // 숫자
+              if (['Backspace','Delete','Tab','Enter','ArrowLeft','ArrowRight','Home','End'].includes(k)) return;
+              if (ctrl && /[acv]/i.test(k)) return; // Ctrl+C/V/A
+              e.preventDefault();
+            })
+            .on('input.num', function() {
+              // 숫자만 남기기 (콤마 X)
+              let val = $(this).val().replace(/[^0-9]/g, '');
+              $(this).val(val);
+            })
+            .on('paste.num drop.num', (e) => e.preventDefault());
+
         });
 
         // 계산 이벤트 바인딩
@@ -1560,6 +1578,14 @@
       let cleaned = inputValue.replace(/[^0-9]/g, '').replace(/,/g, '');// 숫자만 남기기
       let formatted = cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, ',');// 쉼표 넣기
       $(targetSelector).val(formatted);// 값 넣기
+    }
+    function allowOnlyNumberKeys(e, { allowDot = false } = {}) {
+      const k = e.key, ctrl = e.ctrlKey || e.metaKey;
+      if (['Backspace','Delete','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(k)) return;
+      if (ctrl && /[acvxyz]/i.test(k)) return;      // Ctrl/⌘ + A/C/V/X/Z/Y
+      if (/^\d$/.test(k)) return;
+      if (allowDot && k === '.') return;
+      e.preventDefault();
     }
 
     function calculateAmount({ row: $row, $content }) {

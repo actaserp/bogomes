@@ -11,7 +11,7 @@
       </div>
       <ul class="page-navi">
         <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
-        <li>근태현황</li>
+        <li>검사관리</li>
         <li>작업자근무관리</li>
       </ul>
     </div>
@@ -99,11 +99,11 @@
               <input type="date" id="InspectionDate" name="InspectionDate" style="width: 250px;">
             </td>
             <th style="text-align: center">
-              <label for="WorkCenter_id">사원명</label>
+              <label for="person_id">사원명</label>
             </th>
             <td >
              <input type="hidden" id="person_id" name="person_id" style="width: 230px;"/>
-             <input id="person_name" name="person_nmae" style="width: 230px;"/>
+             <input id="person_name" name="person_name" style="width: 230px;"/>
             </td>
           </tr>
          </table>
@@ -142,8 +142,9 @@
         const [year, month] = yyyymm.split('-').map(Number);
 
         const fixedColumns = [
-          {binding: 'person_name', header: '사원명', width: 120, align: 'left', allowSorting: true},
+          {binding: 'person_name', header: '사원명', width: 120, align: 'left', allowMerging: true},
           {binding: 'work', header: '업무구분', width: 200, align: 'left'},
+         // {binding: 'total', header: '계', width: 100, align: 'right', format: 'n0'},
           {binding: 'person_id', header: '사원id', visible: false},
         ];
         const dayColumns = getDayColumnsByMonth(year, month);
@@ -158,6 +159,7 @@
           //selectionMode: wijmo.grid.SelectionMode.Row,
           selectionMode: wijmo.grid.SelectionMode.Cell,
           headersVisibility: wijmo.grid.HeadersVisibility.Column,
+          allowMerging: wijmo.grid.AllowMerging.Cells,
           autoGenerateColumns: false,
           showMarquee: true,
           frozenColumns: 2,
@@ -193,6 +195,14 @@
           itemFormatter: (panel, row, col, cell) => {
             if (panel.cellType === wijmo.grid.CellType.Cell) {
               cell.contentEditable = false; // 직접 입력 방지
+              const colName = panel.columns[col].binding;
+              if (['person_name'].includes(colName)) {
+                cell.style.textAlign = 'center';
+                cell.style.verticalAlign = 'middle';
+                cell.style.display = 'flex';
+                cell.style.alignItems = 'center';
+                cell.style.justifyContent = 'center';
+              }
             }
           },
 
@@ -277,16 +287,22 @@
 
         this.$btnEdit.click(() => {
           const selection = this.grid.selection;
+          const row = selection?.row ?? -1;
+          const col = selection?.col ?? -1;
 
-          const row = selection.row;
-          const col = selection.col;
-
+          if (row < 0 || col < 0) return;                 // 유효성 체크
           if ($('.popup:visible').length > 0) return;
 
+          // 현재 행의 원본 데이터
+          const item = this.grid.rows[row]?.dataItem;
+          if (!item) return;
+
+          // 고정 컬럼 값 뽑기
+          const personId = item.person_id;                // ← fixedColumns에 있는 필드
+          const personName = item.person_name;
 
           const colObj = this.grid.columns[col];
-          const headerText = colObj.header;
-          //console.log('선택 셀:', selection.row, selection.col);
+          const headerText = colObj?.header ?? '';
 
           // 숫자 형태의 날짜 열만 허용 (1~31 등)
           if (!/^\d+$/.test(headerText)) {
@@ -303,22 +319,18 @@
 
           const [year, month] = yyyymm.split('-').map(Number);
           const picked = new Date(year, month - 1, day);
-          const isoDate = formatDateToYYYYMMDD(picked); // YYYY-MM-DD 형식으로 변환
+          const isoDate = formatDateToYYYYMMDD(picked); // YYYY-MM-DD
 
-          const workCenterId = $('#depart').val();
-          if (!workCenterId) {
-            Alert.alert('알림', '직원을 선택하세요.');
-            return;
-          }
-
-          // 팝업 띄우기
+          // 팝업 띄우기 (사번/이름 함께 전달)
           this.showTestAddNewForm({
             mode: 'edit',
             InspectionDate: isoDate,
-            WorkCenter_id: workCenterId,
-            spjangcd: this.$spjangcd
+            spjangcd: this.$spjangcd,
+            person_id: personId,
+            person_name: personName,
           });
         });
+
 
         $('#depart').off('change').on('change', function () {
           _this.searchMainData();
@@ -330,7 +342,7 @@
           return Array.from({length: lastDay}, (_, i) => ({
             binding: `day_${i + 1}`,
             header: `${i + 1}`,
-            width: 80,
+            width: 50,
             align: 'right',
             allowSorting: false,
             format: 'n0',
@@ -413,8 +425,9 @@
         });
 
         const loadDefects = () => {
-
           AjaxUtil.getAsyncData('/api/clock/work_management/defects', {
+            // InspectionDate: inspectionDate,   // 근무일
+            // person_id: personId               // 사원 ID
           }, (res) => {
             const list = (res.data || []).map(r => ({
               code: r.code,
@@ -422,6 +435,7 @@
               defect_qty: r.defect_qty || 0,
               inspection_qty: r.inspection_qty || 0
             }));
+
             _this.defectGrid.itemsSource.sourceCollection = list;
             _this.defectGrid.itemsSource.refresh();
 
@@ -433,28 +447,40 @@
           });
         };
 
+
         // 초기 로드 및 변경 시 다시 로드
         loadDefects();
 
         $inspectionDate.on('change', () => loadDefects());
 
         if (data && data.mode === 'edit') {
-          // 날짜 설정
+          const $form           = $('#TestDailyReportAddNewForm');
+          const $inspectionDate = $form.find('#InspectionDate');
+          const $personId       = $form.find('#person_id');
+          const $personName     = $form.find('#person_name');
+
+          // 값 세팅
           $inspectionDate.val(data.InspectionDate);
-          console.log('🎯 input에 실제 세팅된 값:', $inspectionDate.val());
+          $personId.val(data.person_id || '');
+          $personName.val(data.person_name || '');
 
-          // 워크센터 설정
-          $workCenter.val(data.WorkCenter_id);
+          console.log('📌 바인딩 완료:', {
+            InspectionDate: $inspectionDate.val(),
+            person_id: $personId.val(),
+            person_name: $personName.val()
+          });
 
-          // 🚀 loadDefects 즉시 호출 (타이밍 문제 없이 정확하게 동작)
-          loadDefects(data.WorkCenter_id, data.InspectionDate);
+          // 결함 데이터 로드
+          // loadDefects(data.InspectionDate, data.person_id);
+          loadDefects();
 
-          // UI 제어 (비동기 이후에 실행해도 무방한 영역)
+          // UI 제어
           setTimeout(() => {
-            $workCenter.css({'pointer-events': 'none', 'background-color': '#EDEFF5'});
             $inspectionDate.prop('readonly', true);
+            $personName.prop('readonly', true);
           }, 0);
         }
+
 
         $btnPopSave.off('click').on('click', function () {
           // 1) 그리드 데이터 수집
@@ -552,8 +578,8 @@
           _this.viewData.sourceCollection = Object.values(grouped);
 
           // 풋터 3줄 보장 + 집계
-          ensureThreeFooterRows.call(_this);
-          updateFootersByWork.call(_this);
+          // ensureThreeFooterRows.call(_this);
+          // updateFootersByWork.call(_this);
         };
 
         AjaxUtil.getAsyncData(url, data, fnsuccess);
