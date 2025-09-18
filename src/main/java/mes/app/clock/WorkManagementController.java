@@ -37,5 +37,14 @@ public class WorkManagementController {
 
     return result;
   }
+  @GetMapping("/defects")
+  public AjaxResult defectsList () {
+
+    List<Map<String, Object>> items = this.workManagementService.defectsList();
+    AjaxResult result = new AjaxResult();
+    result.data = items;
+
+    return result;
+  }
 
 }

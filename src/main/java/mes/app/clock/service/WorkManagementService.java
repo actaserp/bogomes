@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
 
-import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +15,6 @@ public class WorkManagementService {
 
   @Autowired
   SqlRunner sqlRunner;
-
 
   public List<Map<String, Object>> getWorkManagementList(String start, String end, String depart) {
     MapSqlParameterSource params = new MapSqlParameterSource()
@@ -50,7 +48,7 @@ public class WorkManagementService {
       join tb_pb201 tp on p.id = tp.personid
       where to_date(tp.workym::text || lpad(tp.workday::text, 2, '0'), 'YYYYMMDD')
             between cast(:date_from as date) and cast(:date_to as date)
-  """);
+    """);
 
     // 동적 필터 추가
     if (departId != null) {
@@ -74,34 +72,67 @@ public class WorkManagementService {
         end as end_ts
       from base
     ),
+    -- 점심 구간(12:00~13:00) 정의
+    lunch as (
+      select
+        person_id,
+        work_date,
+        (work_date + time '12:00') as lunch_start,
+        (work_date + time '13:00') as lunch_end
+      from base
+    ),
     seg2 as (
       select
-        person_id, person_name, person_code, shift_name,
-        workcd, work, work_date,
-        start_ts, end_ts,
-        case when start_ts is not null and end_ts is not null
-          then greatest(extract(epoch from (end_ts - start_ts))::numeric, 0::numeric)
+        s.person_id, s.person_name, s.person_code, s.shift_name,
+        s.workcd, s.work, s.work_date,
+        s.start_ts, s.end_ts,
+        -- 원래 구간 초
+        case when s.start_ts is not null and s.end_ts is not null
+          then greatest(extract(epoch from (s.end_ts - s.start_ts))::numeric, 0::numeric)
           else 0::numeric
-        end as seg_seconds
-      from seg
+        end as seg_seconds,
+        -- 점심 겹침 초(없으면 0)
+        greatest(
+          extract(
+            epoch from (
+              least(s.end_ts, l.lunch_end) - greatest(s.start_ts, l.lunch_start)
+            )
+          )::numeric,
+          0::numeric
+        ) as lunch_overlap_seconds
+      from seg s
+      left join lunch l
+        on l.person_id = s.person_id
+       and l.work_date = s.work_date
     )
     select
       person_id, person_name, person_code, shift_name,
       workcd, work, work_date,
       to_char(min(start_ts), 'HH24:MI') as first_in,
       to_char(max(end_ts),   'HH24:MI') as last_out,
-      to_char(make_interval(secs => sum(seg_seconds)::double precision), 'HH24:MI') as total_worktime, -- "06:30"
-      round(sum(seg_seconds) / 3600, 2) as total_hours                                                    -- 6.50
+      to_char(make_interval(secs => sum( (seg_seconds - lunch_overlap_seconds) )::double precision), 'HH24:MI') as total_worktime,
+      round(sum(seg_seconds - lunch_overlap_seconds) / 3600, 2) as total_hours
     from seg2
     group by
       person_id, person_name, person_code, shift_name,
       workcd, work, work_date
     order by person_name, work_date, work
-  """);
+    """);
 
-//    log.info("작업자근무관리 read SQL: {}", sql.toString());
-//    log.info("작업자근무관리 Parameters: {}", params.getValues());
+    // log.info("작업자근무관리 read SQL: {}", sql.toString());
+    // log.info("작업자근무관리 Parameters: {}", params.getValues());
     return sqlRunner.getRows(sql.toString(), params);
   }
 
+
+  public List<Map<String, Object>> defectsList() {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    String sql= """
+       select 
+       "Code" as code,
+       "Value" as value
+       from sys_code where "CodeType" ='class_work'; 
+        """;
+    return sqlRunner.getRows(sql.toString(), params);
+  }
 }
