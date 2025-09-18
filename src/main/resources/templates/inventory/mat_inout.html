@@ -37,6 +37,44 @@
             gap: 16px;
         }
 
+
+        @media (max-width: 1366px) {
+
+            /*.write-table input, .write-table select{*/
+            /*    width: 280px;*/
+            /*}*/
+
+            .write-table textarea {
+                height: 80px;
+            }
+
+        }
+
+        .wj-header {
+            text-align: center !important;
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 4px; /* 버튼과 input 사이 여백 */
+            align-items: center;
+        }
+
+        .input-with-button input {
+            flex: 1; /* 나머지 영역 차지 */
+            min-width: 0;
+            padding: 4px;
+        }
+
+        .input-with-button .btn.in_btn {
+            flex-shrink: 0;
+            width: 40px;
+        }
+
+        .input-with-button button img, .btn img {
+            margin-right: 1px;
+        }
+
     </style>
     <style id="print_css">
         @media print {
@@ -200,7 +238,7 @@
                 <a title="북마크" class="bookmark toggle">
                     내 메뉴
                 </a>
-                <button type="button" class="btn-default pull-right mr-1" id="btnHeaderCompress" title="화면 확대/축소"><i class="fas fa-compress" id="iCompress"></i></button>
+<!--                <button type="button" class="btn-default pull-right mr-1" id="btnHeaderCompress" title="화면 확대/축소"><i class="fas fa-compress" id="iCompress"></i></button>-->
             </div>
 
             <ul class="page-navi">
@@ -240,25 +278,25 @@
                                 </dt>
                                 <dd>
                                     <div class="srch-box">
-                                        <select id="cboHouse" name="cboHouse">
+                                        <select id="cboHouse" name="cboHouse" style="width: 120px;">
                                         </select>
                                     </div>
                                 </dd>
                             </dl>
 
-                            <dl>
-                                <dt>
-                                    <label for="cboMatType">
-                                        품목유형<span class="eq"></span>
-                                    </label>
-                                </dt>
-                                <dd>
-                                    <div class="srch-box">
-                                        <select id="cboMatType" name="cboMatType">
-                                        </select>
-                                    </div>
-                                </dd>
-                            </dl>
+<!--                            <dl>-->
+<!--                                <dt>-->
+<!--                                    <label for="cboMatType">-->
+<!--                                        품목유형<span class="eq"></span>-->
+<!--                                    </label>-->
+<!--                                </dt>-->
+<!--                                <dd>-->
+<!--                                    <div class="srch-box">-->
+<!--                                        <select id="cboMatType" name="cboMatType">-->
+<!--                                        </select>-->
+<!--                                    </div>-->
+<!--                                </dd>-->
+<!--                            </dl>-->
 
                             <dl>
                                 <dt>
@@ -268,7 +306,7 @@
                                 </dt>
                                 <dd>
                                     <div class="srch-box">
-                                        <select id="cboMatGroup" name="cboMatGroup">
+                                        <select id="cboMatGroup" name="cboMatGroup" style="width: 120px;">
                                         </select>
                                     </div>
                                 </dd>
@@ -281,7 +319,7 @@
                                 </dt>
                                 <dd>
                                     <div class="srch-box">
-                                        <input id="txtMatName" name="txtMatName"/>
+                                        <input id="txtMatName" name="txtMatName" style="width: 160px;"/>
                                     </div>
                                 </dd>
                             </dl>
@@ -298,22 +336,27 @@
                                 </dd>
                             </dl>
                         </div>
-                        <div class="button-wrap" style="white-space: nowrap;">
-                            <ul>
-                                <li>
-                                    <a class="btn" title="품목 입고" id="btnInput" style="background-color: #03428E; color: white;">
-                                        입출고 등록
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+<!--                        <div class="button-wrap" style="white-space: nowrap;">-->
+<!--                            <ul>-->
+<!--                                <li>-->
+<!--                                    <a class="btn" title="품목 입고" id="btnInput" style="background-color: #03428E; color: white;">-->
+<!--                                        입출고 등록-->
+<!--                                    </a>-->
+<!--                                </li>-->
+<!--                            </ul>-->
+<!--                        </div>-->
                     </div>
                 </form>
                 <div class="button-wrap">
                     <ul>
+<!--                        <li>-->
+<!--                            <a class="btn" title="등록" id="btnShowMovePopup">-->
+<!--                                창고 이동-->
+<!--                            </a>-->
+<!--                        </li>-->
                         <li>
-                            <a class="btn" title="등록" id="btnShowMovePopup">
-                                창고 이동
+                            <a class="btn" title="자재 입고" id="btnInput">
+                                자재 입고
                             </a>
                         </li>
                         <li>
@@ -322,15 +365,25 @@
                             </a>
                         </li>
                         <li>
-                            <a class="btn" title="다중 입고" id="btnMultiInput">
-                                다중 입고
+                            <a class="btn" title="불출 입고" id="btnOutput" >
+                                불출 등록
                             </a>
                         </li>
                         <li>
-                            <a class="btn" title="입고검사" id="btnInputTest">
-                                입고검사
+                            <a class="btn" title="품목 입고" id="btnDisposal">
+                                폐기 등록
                             </a>
                         </li>
+<!--                        <li>-->
+<!--                            <a class="btn" title="다중 입고" id="btnMultiInput">-->
+<!--                                다중 입고-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a class="btn" title="입고검사" id="btnInputTest">-->
+<!--                                입고검사-->
+<!--                            </a>-->
+<!--                        </li>-->
                         <li>
                             <a class="btn" title="로트 입고 등록" id="btnLotInput">
                                 로트 입고 등록
@@ -359,16 +412,39 @@
                                 <td>
                                     <input class="form-control2" id="inoutDate" name="inoutDate" type="datetime-local">
                                 </td>
-                                <th style="text-align: center">
+                                <th style="text-align: center; display:none;">
                                     <label for="inoutSelect">입출 구분</label>
                                 </th>
-                                <td>
+                                <td style="display:none;">
                                     <select id="inoutSelect" name="inoutSelect">
-                                        <option value="in">품목 입고</option>
+                                        <option value="in" >품목 입고</option>
                                         <option value="out">품목 출고</option>
                                         <option value="return">입고 반품</option>
                                         <option value="recall">출고 회수</option>
                                     </select>
+                                    <input type="hidden" id="inoutSelect_hidden" name="inoutSelect_hidden">
+                                </td>
+                                 <th style="text-align: center">
+                                    <label for="InoutType">구분</label>
+                                </th>
+                                <td colspan="3">
+                                    <select class="select_input" id="InoutType" name="InoutType" disabled></select>
+                                    <input id="InoutType_hidden" name="InoutType_hidden" type="hidden">
+                                </td>
+                            </tr>
+                            <tr id="trCompany">
+                                <th style="text-align: center">
+                                    <label for="cboCompany">거래처</label>
+                                </th>
+                                <td colspan="3">
+                                    <input id="cboCompany" name="cboCompany" type="hidden">
+                                    <input  type="text" id="CompanyName" name="CompanyName"
+                                     placeholder="검색버튼을 클릭하여 거래처를 검색하세요" readonly/>
+                                    &nbsp;
+                                    <a class="btn btn-delete" title="검색" id="btnCompanySearch">
+                                        <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                        거래처 검색
+                                    </a>
                                 </td>
                             </tr>
                             <tr>
@@ -418,18 +494,10 @@
                             </tr>
                             <tr>
                                 <th style="text-align: center">
-                                    <label for="InoutType">구분</label>
-                                </th>
-                                <td colspan="3">
-                                    <select id="InoutType" name="InoutType"></select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th style="text-align: center">
                                     <label for="Description">비고</label>
                                 </th>
                                 <td colspan="3">
-                                    <textarea style="height:80px;" id="Description" name="Description"></textarea>
+                                    <textarea id="Description" name="Description"></textarea>
                                 </td>
                             </tr>
                         </tbody>
@@ -515,49 +583,51 @@
 
     <script type="text/x-tmpl" id="addBaljuInputPopup">
         <div class="content_wrap popup">
-            <div class="section-top">
-                <div class="search-wrap" style="justify-content: flex-start;">
-                  <dl>
-                    <dt style="display:flex;">
-                      조회기간
-                    </dt>
-                    <dd>
-                      <ul class="date-box">
-                        <li>
-                          <input type="date" id="srchStartDt" name="srchStartDt">
-                          <label for="srchStartDt" class="hide">시작일</label>
-                        </li>
-                        <li>
-                          <input type="date" id="srchEndDt" name="srchEndDt">
-                          <label for="srchEndDt" class="hide">종료일</label>
-                        </li>
-                      </ul>
-                    </dd>
-                  </dl>
+            <div class="table-wrap">
+                <div class="section-top">
+                    <div class="search-wrap" style="justify-content: flex-start;">
+                      <dl>
+                        <dt style="display:flex;">
+                          조회기간
+                        </dt>
+                        <dd>
+                          <ul class="date-box">
+                            <li>
+                              <input type="date" id="srchStartDt" name="srchStartDt">
+                              <label for="srchStartDt" class="hide">시작일</label>
+                            </li>
+                            <li>
+                              <input type="date" id="srchEndDt" name="srchEndDt">
+                              <label for="srchEndDt" class="hide">종료일</label>
+                            </li>
+                          </ul>
+                        </dd>
+                      </dl>
 
-                  <dl>
-                    <dt>&nbsp;</dt>
-                    <dd>
-                      <li>
-                        <a class="btn btn-delete" title="검색" id="btnSearch">
-                          <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
-                          <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
-                          검색
-                        </a>
-                      </li>
-                    </dd>
-                  </dl>
+                      <dl>
+                        <dt>&nbsp;</dt>
+                        <dd>
+                          <li>
+                            <a class="btn btn-delete" title="검색" id="btnSearch">
+                              <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                              <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                              검색
+                            </a>
+                          </li>
+                        </dd>
+                      </dl>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div id="balju-input-grid" style="max-height: 400px;min-height: 200px;"></div>
+                </div>
+                <div class="popup-button">
+                    <button type="button" class="btn-popup y_write_auth" id="btnBaljuAction"><span data-labelCd="입고처리">입고처리</span></button>
+                    <button type="button" class="btn-popup" id="modal-close-button">닫기</button>
                 </div>
             </div>
-            <div class="container-fluid">
-                <div id="balju-input-grid" style="height: 400px;"></div>
-            </div>
-            <div class="popup-button">
-                <button type="button" class="btn-popup y_write_auth" id="btnBaljuAction"><span data-labelCd="입고처리">입고처리</span></button>
-                <button type="button" class="btn-popup" id="modal-close-button">닫기</button>
-            </div>
-
         </div>
+
     </script>
 
     <script type="text/x-tmpl" id="matMovePopup">
@@ -901,6 +971,7 @@
 <th:block layout:fragment="scripts">
     <script type="text/javascript" src="/resource/jsBarcode/JsBarcode.all.min.js"></script>
     <th:block th:replace="/common/popup_material :: popup_material"></th:block>
+    <th:block th:replace="/common/popup_company :: popup_company"></th:block>
 
     <script type="text/javascript">
         class materialStorehouse {
@@ -978,15 +1049,28 @@
                 new FlexGridContextMenu(this.grid);
                 this.grid.downloadFileName = '자재 입출고 내역';
 
-                this.grid.hostElement.addEventListener('dblclick', function (e) {
-                    let ht = _this.grid.hitTest(e); // 마우스 위치 기반 셀 hit test
-                    if (ht.cellType === wijmo.grid.CellType.Cell) {
-                        let row = _this.grid.rows[ht.row]; // 해당 행
-                        let item = _this.grid.rows[ht.row].dataItem; // 해당 row의 데이터
+                let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-                        _this.modify([item]); // 배열로 넘기는 걸 유지하려면 이렇게
-                    }
-                });
+                if (isTouchDevice) {
+                    // 📱 태블릿/모바일: 단일 클릭
+                    this.grid.hostElement.addEventListener('click', function (e) {
+                        let ht = _this.grid.hitTest(e);
+                        if (ht.cellType === wijmo.grid.CellType.Cell) {
+                            let item = _this.grid.rows[ht.row].dataItem;
+                            _this.modify([item]);
+                        }
+                    });
+                } else {
+                    // 💻 PC: 더블클릭
+                    this.grid.hostElement.addEventListener('dblclick', function (e) {
+                        let ht = _this.grid.hitTest(e);
+                        if (ht.cellType === wijmo.grid.CellType.Cell) {
+                            let item = _this.grid.rows[ht.row].dataItem;
+                            _this.modify([item]);
+                        }
+                    });
+                }
+
 
 
                 // 로트입고 버튼 클릭
@@ -995,9 +1079,9 @@
                 });
 
                 // 입고검사 버튼 클릭
-                document.getElementById('btnInputTest').addEventListener('click', () => {
-                    this.showInputTestPopup();
-                });
+                // document.getElementById('btnInputTest').addEventListener('click', () => {
+                //     this.showInputTestPopup();
+                // });
             }
 
             modify(selectedItem) {
@@ -1057,7 +1141,33 @@
                 let modalContainer = null;
                 modalContainer = new PopupDraggable('품목 입출고');
 
-                modalContainer.open({width: 1000, height: 450, $content});
+                function getModalSize() {
+                    let winW = window.innerWidth;
+                    if (winW <= 1366) {
+                        return { width: 810, height: 400 };
+                    } else {
+                        return { width: 1000, height: 470 };
+                    }
+                }
+
+                // 초기 오픈
+                let size = getModalSize();
+                modalContainer.open({
+                    width: size.width,
+                    height: size.height,
+                    $content
+                });
+
+                // 리사이즈 시 다시 조정
+                $(window).on('resize.modalResize', function () {
+                    let size = getModalSize();
+                    let $root = modalContainer.modal.$["root"];
+                    $root.css({
+                        width: size.width + "px",
+                        height: size.height + "px"
+                    });
+                });
+
                 popup = new materialInoutPopup();
                 //AjaxUtil.fillSelectOptions($content.find('#StoreHouse_id'), 'store_house', 'choose', 3);    // 3:자재창고
                 AjaxUtil.fillSelectOptions($content.find('#StoreHouse_id'), 'store_house', 'choose', '');    // 3:자재창고
@@ -1078,7 +1188,6 @@
                 $inoutDate.val(localISOString);
 
                 let type = null;
-
                 $content.find('#inoutSelect').on('change', function () {
                     type = $(this).val(); // 또는 $content.find('#inoutSelect').val();
 
@@ -1163,11 +1272,30 @@
                     poppage.show(searchcallback);
                 });
 
+                $content.find('#btnCompanySearch').click(function () {
+                    let poppage = new PopCompComponent();
+                    let $poppage = $(poppage);
+                    let searchcallback = function (items) {
+                        $content.find('#cboCompany').val(items.id);
+                        $content.find('#CompanyName').val(items.compname);
+                    };
+
+                    poppage.show(searchcallback);
+                });
+
                 if (data && data.mode === 'edit') {
                     $content.find('#inoutSelect').val(data[0].inoutSelect);
 
-                    // 1-2. 옵션 로딩 트리거
+                        // 1-2. 옵션 로딩 트리거
                     $content.find('#inoutSelect').trigger('change');
+                    setTimeout(function () {
+                        $content.find('#InoutType').prop('disabled', true);
+                    }, 50);
+                    let outPutType = data[0].OutputType;
+                    if (outPutType === 'disposal_out') {
+                        $content.find('#trCompany').hide();
+                    }
+
 
                     setTimeout(function () {
                         FormUtil.BindDataForm(data[0], form);
@@ -1260,6 +1388,9 @@
 
                             if (binding === 'StoreHouse_id' || binding === 'inputQty' || binding === 'Description2') {
                                 e.cell.style.color = '#5567ff'; // 글자 색 적용
+                            } else {
+                                // 초기화 안 하면 다른 컬럼에도 색이 따라옴
+                                e.cell.style.color = '';
                             }
                         }
                     },
@@ -2336,9 +2467,20 @@
             $('#searchForm').find('#cboHouse').change(function (e) {
                 page.searchDataBind();
             });
-            // 기타입고
             $('#btnInput').on('click', function () {
-                page.addDataPopup();
+                page.addDataPopup('in');
+                AjaxUtil.fillSelectOptions($('#InoutType'), 'system_code', '', 'etc_in', 'input_type');
+            });
+
+            $('#btnOutput').on('click', function () {
+                page.addDataPopup('out');
+                AjaxUtil.fillSelectOptions($('#InoutType'), 'system_code', '', 'etc_out', 'output_type');
+            });
+
+            $('#btnDisposal').on('click', function () {
+                page.addDataPopup('out');
+                AjaxUtil.fillSelectOptions($('#InoutType'), 'system_code', '', 'disposal_out', 'output_type');
+                $('#trCompany').hide();
             });
 
             $('#btnMultiInput').on('click', function () {

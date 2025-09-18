@@ -560,10 +560,8 @@ class PopupModalContaniner {
     }
 }
 
-
 class PopupDraggable {
     constructor(title_str) {
-
         let _this = this;
         this.modal = new ax5.ui.modal({
             theme: "primary",
@@ -571,19 +569,16 @@ class PopupDraggable {
                 title: title_str,
                 btns: {
                     minimize: {
-                        label: '<i class="fa fa-minus" style="color:white"></i>', onClick: function () {
-                            _this.modal.minimize();
-                        }
+                        label: '<i class="fa fa-minus" style="color:white"></i>',
+                        onClick: function () { _this.modal.minimize(); }
                     },
                     restore: {
-                        label: '<i class="fa fa-square" style="color:white" ></i>', onClick: function () {
-                            _this.modal.restore();
-                        }
+                        label: '<i class="fa fa-square" style="color:white"></i>',
+                        onClick: function () { _this.modal.restore(); }
                     },
                     close: {
-                        label: '<i class="fa fa-times"  style="color:white"></i>', onClick: function () {
-                            _this.modal.close();
-                        }
+                        label: '<i class="fa fa-times" style="color:white"></i>',
+                        onClick: function () { _this.modal.close(); }
                     }
                 }
             }
@@ -591,20 +586,77 @@ class PopupDraggable {
 
         this.mask = new ax5.ui.mask();
         this.$content = null;
+        this.fixedWidth = null;
+        this.fixedHeight = null;
     }
+
+    adjustPosition(retry = 0) {
+        const $root = $(".ax5modal[data-modal-els='root']:last");
+        if (!$root.length) return;
+
+        const iframe = window.frameElement;
+        if (!iframe) return;
+
+        const rect = iframe.getBoundingClientRect();
+        const iframeWidth = rect.width;
+        const iframeHeight = rect.height;
+
+        const parentDoc = window.top.document;
+        const headerEl = parentDoc.querySelector(".dashboard-layout-header");
+        const tabsEl   = parentDoc.querySelector(".page-tabs");
+
+        const headerHeight = (headerEl && headerEl.offsetParent !== null) ? headerEl.offsetHeight : 0;
+        const tabsHeight   = (tabsEl && tabsEl.offsetParent !== null) ? tabsEl.offsetHeight : 0;
+
+        const usableHeight = iframeHeight - headerHeight - tabsHeight;
+        const modalWidth = Math.min(window.innerWidth * 0.96, 1100);
+
+        // modalHeight 계산 로직 (생략 가능, 지금 쓰시는 방식 그대로)
+        const contentH = $root.find(".table-wrap").outerHeight(true) || 0;
+        const buttonH  = $root.find(".popup-button").outerHeight(true) || 0;
+        let modalHeight = contentH + buttonH + 80;
+        if (modalHeight > usableHeight) modalHeight = usableHeight * 0.9;
+
+        const middleTop = (usableHeight - modalHeight) / 2;
+        let finalTop = middleTop - modalHeight * 0.1;
+        if (finalTop < 0) finalTop = 0;
+
+        const leftPos = (iframeWidth - modalWidth) / 2;
+
+        // 전체 모달 사이즈 세팅
+        $root.css({
+            top: finalTop + "px",
+            width: modalWidth + "px",
+            height: modalHeight + "px",
+            left: leftPos + "px",
+            transform: "none"
+        });
+
+        // 👉 body 높이 강제 수정 (header 빼고 남은 공간)
+        const headerH = $root.find("[data-modal-els='header']").outerHeight(true) || 0;
+        $root.find(".ax-modal-body").css({
+            height: (modalHeight - headerH) + "px",
+            overflow: "auto"
+        });
+
+        // console.log("adjustPosition", { usableHeight, modalWidth, modalHeight, finalTop, leftPos });
+    }
+
+
 
     open({ width, height, $content }) {
         let _this = this;
-
         this.$content = $content;
+        this.fixedWidth = width;
+        this.fixedHeight = height;
+
         var config = {
-            width: width,
-            height: height,
+            width, height,
             onStateChanged: function () {
-                if (this.state === 'open') {
+                if (this.state === "open") {
                     _this.mask.open();
-                }
-                else if (this.state === 'close') {
+                    // setTimeout(() => _this.adjustPosition(), 50);
+                } else if (this.state === "close") {
                     _this.mask.close();
                 }
             }
@@ -612,12 +664,10 @@ class PopupDraggable {
 
         _this.modal.open(config, function () {
             this.$["body-frame"].append($content);
+            setTimeout(() => _this.adjustPosition(), 50);
         });
 
-        i18n.applyContentLabel($content);
-        yullinAuth.removeWriteButton($content);
-
-        $content.find('#modal-close-x, #modal-close-button').on('click', function () {
+        $content.find("#modal-close-x, #modal-close-button").on("click", () => {
             _this.close();
         });
 
@@ -625,10 +675,8 @@ class PopupDraggable {
     }
 
     close() {
-
         this.modal.close();
     }
-
 }
 
 $(document).ready(function () {
