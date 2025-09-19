@@ -38,64 +38,64 @@ public class SujuService {
 		dicParam.addValue("spjangcd", spjangcd);
 		
 		String sql = """
-				WITH suju_state_summary AS (
-				  SELECT
+		WITH suju_state_summary AS (
+					SELECT
 					sh.id AS suju_head_id,
 					-- 상태 요약 계산
-				CASE
-				  WHEN COUNT(DISTINCT s."State") = 1 THEN MIN(s."State")
-				  WHEN BOOL_AND(s."State" IN ('received', 'planned')) AND BOOL_OR(s."State" = 'planned') THEN 'part_planned'
-				  WHEN BOOL_AND(s."State" IN ('received', 'ordered', 'planned')) AND BOOL_OR(s."State" = 'ordered') THEN 'part_ordered'
-				  ELSE '기타'
-					END AS summary_state			  
-				  FROM suju_head sh
-				  JOIN suju s ON s."SujuHead_id" = sh.id			  
-				  GROUP BY sh.id
+					CASE
+						WHEN COUNT(DISTINCT s."State") = 1 THEN MIN(s."State")
+						WHEN BOOL_AND(s."State" IN ('received', 'planned')) AND BOOL_OR(s."State" = 'planned') THEN 'part_planned'
+						WHEN BOOL_AND(s."State" IN ('received', 'ordered', 'planned')) AND BOOL_OR(s."State" = 'ordered') THEN 'part_ordered'
+						ELSE '기타'
+					END AS summary_state					
+					FROM suju_head sh
+					JOIN suju s ON s."SujuHead_id" = sh.id					
+					GROUP BY sh.id
 				),
 				shipment_summary AS (
 					SELECT
 						s."SujuHead_id",
-					SUM(s."SujuQty") AS total_qty,
-					COALESCE(SUM(shp."shippedQty"), 0) AS total_shipped,
-					CASE
-					  WHEN COUNT(shp."shippedQty") = 0 THEN ''
-					  WHEN SUM(shp."shippedQty") >= SUM(s."SujuQty") THEN 'shipped'
-					  WHEN SUM(shp."shippedQty") < SUM(s."SujuQty") THEN 'partial'
-					ELSE ''
-					END AS shipment_state
-				  FROM suju s
-				  LEFT JOIN (
-					SELECT "SourceDataPk", SUM("Qty") AS "shippedQty"
-					FROM shipment
-					GROUP BY "SourceDataPk"
-				  ) shp ON shp."SourceDataPk" = s.id
-				  GROUP BY s."SujuHead_id"
+						SUM(s."SujuQty") AS total_qty,
+						COALESCE(SUM(shp."shippedQty"), 0) AS total_shipped,
+						CASE
+							WHEN COUNT(shp."shippedQty") = 0 THEN ''
+							WHEN SUM(shp."shippedQty") >= SUM(s."SujuQty") THEN 'shipped'
+							WHEN SUM(shp."shippedQty") < SUM(s."SujuQty") THEN 'partial'
+						ELSE ''
+						END AS shipment_state
+						FROM suju s
+						LEFT JOIN (
+						SELECT "SourceDataPk", SUM("Qty") AS "shippedQty"
+						FROM shipment
+						GROUP BY "SourceDataPk"
+						) shp ON shp."SourceDataPk" = s.id
+						GROUP BY s."SujuHead_id"
 				)	
-				select
-				sh.id,
-				sh."Company_id" ,
-				c."Name" AS "CompanyName",
-				sh."JumunDate" ,
-				sh."DeliveryDate" as "DueDate",
-				m."Name" as product_name,
-				s."SujuQty",
-				s."UnitPrice",
-				s."Price" ,
-				sh.matcolor,
-				sss.summary_state AS "State",
-				sc_state."Value" AS "StateName",
-				sc_ship."Value" AS "ShipmentStateName",
-				sh.contaddres
-				from suju_head sh
-				LEFT JOIN company c ON c.id = sh."Company_id"
-				left join suju s on sh.id = s."SujuHead_id"
-				left JOIN material m ON m.id = s."Material_id"
-				left JOIN shipment_summary ss ON ss."SujuHead_id" = sh.id
-				LEFT JOIN suju_state_summary sss ON sss.suju_head_id = sh.id
-				LEFT JOIN sys_code sc_state ON sc_state."Code" = sss.summary_state AND sc_state."CodeType" = 'suju_state'
-				LEFT JOIN sys_code sc_ship ON sc_ship."Code" = ss.shipment_state AND sc_ship."CodeType" = 'shipment_state'
-			where 1 = 1
-			and sh.spjangcd = :spjangcd
+					select
+					sh.id,
+					sh."Company_id" ,
+					c."Name" AS "CompanyName",
+					sh."JumunDate" ,
+					sh."DeliveryDate" as "DueDate",
+					m."Name" as product_name,
+					s."SujuQty",
+					s."UnitPrice",
+					s."Price" ,
+					sh.matcolor,
+					sss.summary_state AS "State",
+					sc_state."Value" AS "StateName",
+					sc_ship."Value" AS "ShipmentStateName",
+					sh.contaddres
+					from suju_head sh
+					LEFT JOIN company c ON c.id = sh."Company_id"
+					left join suju s on sh.id = s."SujuHead_id"
+					left JOIN material m ON m.id = s."Material_id"
+					left JOIN shipment_summary ss ON ss."SujuHead_id" = sh.id
+					LEFT JOIN suju_state_summary sss ON sss.suju_head_id = sh.id
+					LEFT JOIN sys_code sc_state ON sc_state."Code" = sss.summary_state AND sc_state."CodeType" = 'suju_state'
+					LEFT JOIN sys_code sc_ship ON sc_ship."Code" = ss.shipment_state AND sc_ship."CodeType" = 'shipment_state'
+				where 1 = 1
+				and sh.spjangcd = :spjangcd
 			""";
 
 		if (date_kind.equals("sales")) {
