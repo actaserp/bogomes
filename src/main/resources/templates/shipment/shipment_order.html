@@ -177,6 +177,13 @@
                             <li>
                                 <a class="btn btn-delete"
                                    style="border: 1px solid red; color: red"
+                                   title="취소" id="btnCancelShipMat">
+                                    취소
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn btn-delete"
+                                   style="border: 1px solid red; color: red"
                                    title="강제 완료" id="btnDeleteShipMat">
                                     강제 완료
                                 </a>
@@ -226,7 +233,7 @@
 
                             <tr>
                                 <th>
-                                    <label for="vechidno"><span class="eq">*</span>차대번호</label>
+                                    <label for="vechidno"><span class="eq">*</span>지시량</label>
                                 </th>
                                 <td  colspan="2">
                                     <input type="text" style="width: 100%;" id="vechidno"
@@ -499,20 +506,7 @@
                         {binding: 'suju_qty', header: '수주량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'cur_stock', header: '현재고', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'order_qty', header: '기지시량', width: 80, align: 'right', isReadOnly: true},
-                        //{ binding: 'order_input_qty', header: '추가지시량', width: '*', align: 'right', isReadOnly: false },
-                        {
-                            binding: 'order_input_qty',
-                            header: '지시량',
-                            width: 100,
-                            align: 'right',
-                            isReadOnly: false, // 편집 가능
-                            editor: new wijmo.input.InputNumber(document.createElement('div'), {
-                                format: 'n0', // 정수 형식
-                                min: 0,       // 최소값 설정
-                                max: 99999,   // 최대값 설정
-                                step: 1       // 증가/감소 단위
-                            })
-                        },
+                        { binding: 'state', header: '수주상태', width: 80, align: 'center', isReadOnly: true },
                         {binding: 'shipment_qty', header: '출하량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'CompanyName', header: '판매처', width: 100, align: 'left', isReadOnly: true},
                         {binding: 'JumunDate', header: '수주일', width: 100, align: 'center', isReadOnly: true},
@@ -577,13 +571,14 @@
                     autoGenerateColumns: false,
                     showMarquee: true,
                     allowSorting: 'MultiColumn',
+                    headersVisibility: wijmo.grid.HeadersVisibility.Column,
                     selectionMode: wijmo.grid.SelectionMode.Row, // 행 단위 선택
                     isReadOnly: true,
                     columns: [
                         // {binding: 'mat_id', header: '품목번호', width: 100, align: 'right'},  // width: 40
-                        {binding: 'mat_type', header: '품목유형', width: 100, align: 'left'},
-                        {binding: 'mat_grp', header: '품목그룹', width: 100, align: 'left'},
-                        {binding: 'mat_code', header: '품목코드', width: 100, align: 'left'},
+                        {binding: 'mat_type', header: '품목유형', width: 100, align: 'center'},
+                        {binding: 'mat_grp', header: '품목그룹', width: 100, align: 'center'},
+                        {binding: 'mat_code', header: '품목코드', width: 100, align: 'center'},
                         {binding: 'mat_name', header: '품목명', width: '*', align: 'left'},
                         {binding: 'unit_name', header: '단위', width: 80, align: 'center'},
                         {binding: 'cur_stock', header: '현재고', width: 80, align: 'right'}
@@ -603,13 +598,6 @@
                 });
                 new FlexGridContextMenu(this.grid_product);
                 this.grid_product.downloadFileName = '제품';
-
-                let selector2 = new wijmo.grid.selector.Selector(this.grid_product, {
-                    itemChecked: (e, ctx) => {
-                        SelectItem2 = this.grid_product.rows.filter(r => r.isSelected);
-                    }
-                })
-
 
                 $('#div_product').hide();
                 AjaxUtil.fillSelectOptions($('#company_id'), 'company', 'choose', '', 'sale');
