@@ -242,25 +242,25 @@
           const dayColumns = this.grid.columns.filter(col => /^\d+$/.test(col.header));
 
           dayColumns.forEach(col => {
-            const field      = col.binding;           // 예: day_05
-            const totalField = `total_${field}`;      // 예: total_day_05
+            const field      = col.binding;
+            const totalField = `total_${field}`;
 
-            let baseSum = 8;  // 기본 (inspection_qty 합)
-            let itemSum = 0;  // item 합 (defect_qty 합)
-
+            let itemSum = 0;
             (this.viewData.items || []).forEach(item => {
-              baseSum += Number(item[totalField] || 0);
               itemSum += Number(item[field] || 0);
             });
 
-            const overtime = itemSum - baseSum ;
+            //  기본: 8 이상이면 8, 아니면 '-'
+            totalQtyData[field]  = (itemSum >= 8 ? 8 : '-');
 
-            totalQtyData[field]  = baseSum > 0 ? baseSum : '-';      // 기본
-            // totalQtyData[field]  = itemSum > 0 ? itemSum : '-';
-            overtimeData[field]  = (overtime > 0) ? overtime : '-';  // 초과분만 표시
-            const sumValue = (baseSum > 0 ? baseSum : 0) + (overtime > 0 ? overtime : 0);
-            sumData[field] = sumValue > 0 ? sumValue : '-';
+            //  초과분만 표시
+            const overtime = itemSum - 8;
+            overtimeData[field]  = (overtime > 0) ? overtime : '-';
+
+            //  합계: 실제 item 합
+            sumData[field] = (itemSum > 0 ? itemSum : '-');
           });
+
 
           rowDefaultTime.dataItem = totalQtyData;
           rowOvertime.dataItem    = overtimeData;
