@@ -26,7 +26,10 @@ public class ASManagementService {
         m."Name" as itemcode,
         b.regno,
         a.fixtext ,
-        a.pernm
+        a.pernm,
+        a.uamt ,
+        a.totamt ,
+        a.workpay 
         from tb_as011 a
         left join tb_as010 b on a.asid = b.id 
         left join material m on b.itemcode::int = m.id

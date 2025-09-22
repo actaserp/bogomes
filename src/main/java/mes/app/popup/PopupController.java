@@ -863,10 +863,11 @@ public class PopupController {
 			m."Name" as itemcode,
 			a."owner" ,
 			a.vechidno ,
-			a.regno
+			a.regno,
+				a.regdate 
 			from tb_as010 a
 			left join material m on a.itemcode::int = m.id
-			where 1=1
+			where a.endflag ='1'
 			""";
 
 		if (owner != null && !owner.isEmpty()) {
@@ -879,7 +880,7 @@ public class PopupController {
 			paramMap.addValue("vechidno", "%" + vechidno + "%");
 		}
 
-		sql += " ORDER BY a.id ASC ";
+		sql += " ORDER BY a.regdate ASC ";
 
 		result.data = this.sqlRunner.getRows(sql, paramMap);
 

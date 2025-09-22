@@ -121,7 +121,7 @@
 
         let content = tmpl('popup_asListSearchTemplate', {});
         let $content = $(content);
-        this.modalContainer.open({width: 800, height: 500, $content});
+        this.modalContainer.open({width: 850, height: 550, $content});
 
         setTimeout(() => {
 
@@ -143,10 +143,11 @@
             keyActionEnter: wijmo.grid.KeyAction.None,
             columns: [
               {binding: 'asid', header: 'as_id', visible: false},
-              {binding: 'itemcode', header: '차명', width: 120, align: 'center'},
-              {binding: 'vechidno', header: '차대번호', width: '*', align: 'left'},
+              {binding: 'itemcode', header: '차명', width: 200, align: 'center'},
+              {binding: 'vechidno', header: '차대번호', width: 170, align: 'left'},
               {binding: 'owner', header: '차주', width: 150, align: 'left'},
               {binding: 'regno', header: '등록번호', width: 200, align: 'left'},
+              {binding: 'regdate', header: '접수일자', width: 120, align: 'center'},
             ],
             itemsSource: this.viewData,
           });

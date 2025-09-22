@@ -342,6 +342,16 @@
               </tr>
               <tr>
                 <th>
+                  <label for="mileage">주행거리</label>
+                </th>
+                <td>
+                  <input type="text" id="mileage" name="mileage" placeholder="주행거리 -KM">
+                </td>
+                <th></th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>
                   <label for="fixText">작업내용</label>
                 </th>
                 <td colspan="5">
@@ -390,14 +400,7 @@
                   <input type="text" id="pernm" name="pernm" placeholder="정비기사">
                 </td>
               </tr>
-              <tr>
-                <th>
-                  <label for="mileage">주행거리</label>
-                </th>
-                <td>
-                  <input type="text" id="mileage" name="mileage" placeholder="주행거리 -KM">
-                </td>
-              </tr>
+
               </tbody>
             </table>
           </form>
@@ -442,6 +445,9 @@
             {binding: 'fixdate', header: '점검일자', width: 120, align: 'center'},
             {binding: 'fixtext', header: '작업내용', width: 210, align: 'left'},
             {binding: 'pernm', header: '정비기사', width: 100, align: 'center'},
+            {binding: 'uamt', header: '부품단가', width: 100, align: 'center'},
+            {binding: 'totamt', header: '합계', width: 100, align: 'center'},
+            {binding: 'workpay', header: '공임', width: 100, align: 'center'},
           ],
           itemsSource: this.viewData, // 데이터를 설정할 배열
         });

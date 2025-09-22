@@ -153,6 +153,9 @@
   "wm_approval_progress": { "name": "결재진행현황", "templates": { "default": "approval/approval_progress.html" } },
   "wm_approval_register": { "name": "결재라인등록", "templates": { "default": "approval/approval_register.html" } },
 
+  "wm_as_list_status": { "name": "AS 접수현황", "templates": { "default": "as/as_list_status.html" } },
+  "wm_as_repair_status": { "name": "AS 수리현황", "templates": { "default": "as/as_repair_status.html" } },
+
 
   "wm_haccp_task_master": { "name": "HACCP 업무설정", "templates": { "default": "precedence/master/haccp_task_master.html" } },
   "wm_haccp_item": { "name": "HACCP 관리항목", "templates": { "default": "haccp/master/haccp_item.html" } },

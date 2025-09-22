@@ -1,0 +1,188 @@
+<html layout:decorate="~{layout_page}">
+
+<head>
+  <style>
+      .grid-cell-red {
+          background: rgb(248, 210, 203) !important;
+      }
+
+  </style>
+</head>
+
+<th:block layout:fragment="content">
+  <div class="layout-contents">
+    <div class="page-title-wrap">
+      <div class="left">
+        <h2>AS 접수현황</h2>
+        <a title="북마크" class="bookmark toggle">
+          내 메뉴
+        </a>
+      </div>
+      <ul class="page-navi">
+        <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+        <li>AS 관리</li>
+        <li>AS 접수현황</li>
+      </ul>
+    </div>
+    <section class="section">
+      <div class="section-top">
+        <div class="search-wrap">
+          <dl>
+            <dt>
+              조회기간<span class="eq">*</span>
+            </dt>
+            <dd>
+              <ul class="date-box">
+                <li>
+                  <input type="date" id="srchStartDt" name="srchStartDt">
+                  <label for="srchStartDt" class="hide">시작일</label>
+                </li>
+                <li>
+                  <input type="date" id="srchEndDt" name="srchEndDt">
+                  <label for="srchEndDt" class="hide">종료일</label>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+          <dl>
+            <dt>
+              <label for="txtvechidno">
+                차대번호<span class="eq"></span>
+              </label>
+            </dt>
+            <dd>
+              <div class="srch-box">
+                <input id="txtvechidno" name="txtvechidno" placeholder="차대번호" />
+              </div>
+            </dd>
+          </dl>
+          <dl>
+            <dt>
+              <label for="cboEndflag">
+                출고여부<span class="eq"></span>
+              </label>
+            </dt>
+            <dd>
+              <div class="srch-box">
+                <select id="cboEndflag" name="cboEndflag">
+                  <option value="">전체</option>
+                  <option value="1">미출고</option>
+                  <option value="0">출고</option>
+                </select>
+              </div>
+            </dd>
+          </dl>
+
+          <dl>
+            <dt>&nbsp;</dt>
+            <dd>
+              <li>
+                <a class="btn btn-delete" title="검색" id="btnSearch">
+                  <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                  <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                  검색
+                </a>
+              </li>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="container-fluid">
+        <div id="as-list-grid" style="height: 730px;"></div>
+      </div>
+    </section>
+  </div>
+</th:block>
+
+<th:block layout:fragment="scripts">
+
+  <script type="text/javascript">
+    class ASListStatusPage {
+      constructor() {
+        this.gird = null;
+        this.init();
+        this.url = '/api/aftersales/as_list_status';
+      }
+
+      init() {
+        let _this = this;
+        this.grid = new wijmo.grid.FlexGrid('#as-list-grid', {
+          autoGenerateColumns: false,
+          frozenColumns: 0, // 열 고정
+          headersVisibility: wijmo.grid.HeadersVisibility.Column,
+          selectionMode: wijmo.grid.SelectionMode.None, // 다중 선택 불가
+          allowSorting: true, // 정렬 가능
+          formatItem: (sender, e) => {
+            if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
+              e.cell.style.textAlign = 'center';
+            }
+          },
+          columns: [
+            {binding: 'id', header: 'id', visible: false},
+            {binding: 'spcmngno', header: '차량구분', width: 80, align: 'center'},
+            {binding: 'regno', header: '등록번호', width: 120, align: 'center'},
+            {binding: 'ItemCode', header: '차명', width: 200, align: 'left'},
+            {binding: 'vechidno', header: '차대번호', width: 200, align: 'center'},
+            {binding: 'owner', header: '차주', width: 150, align: 'center'},
+            {binding: 'regdate', header: '접수일자', width: 120, align: 'center'},
+            {binding: 'inputdate', header: '작업(완료)일자', width: 120, align: 'center'},
+            {binding: 'outdate', header: '출고일자', width: 120, align: 'center'},
+            {binding: 'endflag', header: '출고여부', width: 100, align: 'center'}
+          ],
+          itemsSource: new wijmo.collections.CollectionView([]), // 빈 데이터로 초기화
+        });
+        new FlexGridContextMenu(this.grid);
+        this.grid.downloadFileName = 'as 접수현황';
+
+        $('#txtvechidno').on('keypress', function (e) {
+          if (e.keyCode === 13) {
+            _this.searchMainData();
+          }
+        })
+
+      }
+
+      searchMainData() {
+        let _this = this;
+        let start = $('#srchStartDt').val();  //시작일
+        let end = $('#srchEndDt').val();
+
+        let param = {
+          'start': start,
+          'end': end,
+          'txtvechidno': $('#txtvechidno').val(),
+          'cboEndflag' : $('#cboEndflag').val(),
+        };
+
+        let result = AjaxUtil.getSyncData(this.url + '/read', param);
+        if (result != null) {
+          _this.grid.itemsSource.sourceCollection = result.data;
+        }
+      }
+
+    }
+
+    let page = null;
+
+    $(document).ready(function (e) {
+
+      page = new ASListStatusPage();
+
+      $('#srchStartDt').val(CommonUtil.getYYYYMMDD(-7));
+      $('#srchEndDt').val(CommonUtil.getYYYYMMDD());
+
+      // 검색버튼
+      $('#btnSearch').click(function (e) {
+        page.searchMainData();
+
+      });
+
+      page.searchMainData();
+
+    });
+
+
+  </script>
+</th:block>
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+</html>
