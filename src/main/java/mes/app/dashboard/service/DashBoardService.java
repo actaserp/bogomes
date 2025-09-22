@@ -1,5 +1,6 @@
 package mes.app.dashboard.service;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -820,5 +821,143 @@ public class DashBoardService {
 	        
 	     return items;
 	}
+
+	public List<Map<String, Object>> getList(Timestamp start, Timestamp end, String state, String co_nm, String ve_id, String spjangcd) {
+
+		MapSqlParameterSource dicParam = new MapSqlParameterSource();
+		dicParam.addValue("start", start);
+		dicParam.addValue("end", end);
+		dicParam.addValue("state", state);
+		dicParam.addValue("co_nm", co_nm);
+		dicParam.addValue("ve_id", ve_id);
+		dicParam.addValue("spjangcd", spjangcd);
+
+		StringBuilder sql = new StringBuilder("""
+        WITH suju_state_summary AS (
+          SELECT
+            sh.id AS suju_head_id,
+            CASE
+              WHEN COUNT(DISTINCT s."State") = 1 THEN MIN(s."State")
+              WHEN BOOL_AND(s."State" IN ('received', 'planned')) AND BOOL_OR(s."State" = 'planned') THEN 'part_planned'
+              WHEN BOOL_AND(s."State" IN ('received', 'ordered', 'planned')) AND BOOL_OR(s."State" = 'ordered') THEN 'part_ordered'
+              ELSE '기타'
+            END AS summary_state
+          FROM suju_head sh
+          JOIN suju s ON s."SujuHead_id" = sh.id
+          GROUP BY sh.id
+        ),
+        shipment_summary AS (
+          SELECT
+            s."SujuHead_id",
+            shp.vechidno,
+            SUM(s."SujuQty") AS total_qty,
+            COALESCE(SUM(shp."shippedQty"), 0) AS total_shipped,
+            CASE
+              WHEN COUNT(shp."shippedQty") = 0 THEN ''
+              WHEN SUM(shp."shippedQty") >= SUM(s."SujuQty") THEN 'shipped'
+              WHEN SUM(shp."shippedQty") < SUM(s."SujuQty") THEN 'partial'
+              ELSE ''
+            END AS shipment_state
+          FROM suju s
+          LEFT JOIN (
+            SELECT "SourceDataPk", SUM("Qty") AS "shippedQty", sh.vechidno
+            FROM shipment sh
+            GROUP BY "SourceDataPk", sh.vechidno
+          ) shp ON shp."SourceDataPk" = s.id
+          GROUP BY s."SujuHead_id", shp.vechidno
+        )
+        
+        SELECT *
+        FROM (
+            SELECT
+              sh.id,
+              sh."JumunNumber",
+              to_char(sh."JumunDate", 'yyyy-mm-dd') AS "JumunDate",
+              to_char(sh."DeliveryDate", 'yyyy-mm-dd') AS "DueDate",
+              sh."Company_id",
+              c."BusinessNumber",
+              SUM(s."Price") AS "sujuPrice",
+              SUM(s."Vat") AS "sujuVat",
+              c."Name" AS "company_name",
+              sh."TotalPrice",
+              sh."Description",
+              sc_type."Value" AS "SujuTypeName",
+              m."Class3" as class3,
+              m."ProductionClass",
+              m."Usage",
+              ss.vechidno,
+              CASE
+                WHEN COUNT(DISTINCT s."Material_id") = 1 THEN MAX(m."Name")
+                ELSE CONCAT(MAX(m."Name"), ' 외 ', COUNT(DISTINCT s."Material_id") - 1, '개')
+              END AS product_name,
+              sss.summary_state AS "State",
+              sc_state."Value" AS "StateName",
+              sc_ship."Value" AS "ShipmentStateName",
+              sc_job."Value" AS "JobResState",
+              CASE
+                 WHEN sc_ship."Value" IS NOT NULL THEN sc_ship."Value"
+                 WHEN sc_job."Value" IS NOT NULL THEN sc_job."Value"
+                 ELSE sc_state."Value"
+              END AS final_state
+            FROM suju_head sh
+            JOIN suju s ON s."SujuHead_id" = sh.id
+            JOIN material m ON m.id = s."Material_id"
+            LEFT JOIN (
+              SELECT "SourceDataPk", SUM("Qty") AS "shippedQty"
+              FROM shipment
+              GROUP BY "SourceDataPk"
+            ) shp ON shp."SourceDataPk" = s.id
+            LEFT JOIN job_res jr ON jr."SourceTableName" = 'suju' AND jr."SourceDataPk" = s.id
+            LEFT JOIN company c ON c.id = sh."Company_id"
+            LEFT JOIN shipment_summary ss ON ss."SujuHead_id" = sh.id
+            LEFT JOIN suju_state_summary sss ON sss.suju_head_id = sh.id
+            LEFT JOIN sys_code sc_state ON sc_state."Code" = sss.summary_state AND sc_state."CodeType" = 'suju_state'
+            LEFT JOIN sys_code sc_type ON sc_type."Code" = sh."SujuType" AND sc_type."CodeType" = 'suju_type'
+            LEFT JOIN sys_code sc_ship ON sc_ship."Code" = ss.shipment_state AND sc_ship."CodeType" = 'shipment_state'
+            LEFT JOIN sys_code sc_job ON sc_job."Code" = jr."State" AND sc_job."CodeType" = 'job_state'
+            WHERE 1=1
+              AND sh.spjangcd = :spjangcd
+              AND sh."JumunDate" BETWEEN :start AND :end
+              /* ✅ 동적 필터 (company) */
+    """);
+
+		if (co_nm != null && !co_nm.isEmpty()) {
+			sql.append(" AND c.\"Name\" LIKE :co_nm ");
+			dicParam.addValue("co_nm", "%" + co_nm + "%");
+		}
+		if (ve_id != null && !ve_id.isEmpty()) {
+			sql.append(" AND UPPER(ss.vechidno) LIKE UPPER(:ve_id) ");
+			dicParam.addValue("ve_id", "%" + ve_id + "%");
+		}
+
+		sql.append("""
+            GROUP BY
+              sh.id, sh."JumunNumber", sh."JumunDate", sh."DeliveryDate",
+              sh."Company_id", c."Name", c."BusinessNumber", sh."TotalPrice",
+              sh."Description", sh."SujuType", sss.summary_state,
+              sc_state."Value", sc_type."Value", sc_ship."Value", sc_job."Value",
+              m."Class3", m."ProductionClass", ss.vechidno, m."Usage"
+        ) t
+        WHERE 1=1
+    """);
+
+		if (state != null && !state.isEmpty()) {
+			if ("출하".equals(state)) {
+				// 출하 선택 시, 부분출하도 포함
+				sql.append(" AND t.final_state IN ('출하','부분출하') ");
+			} else {
+				sql.append(" AND t.final_state = :state ");
+				dicParam.addValue("state", state);
+			}
+		}
+
+
+		sql.append("""
+        ORDER BY t."JumunDate" DESC, t.id DESC
+    """);
+
+		return this.sqlRunner.getRows(sql.toString(), dicParam);
+	}
+
 
 }

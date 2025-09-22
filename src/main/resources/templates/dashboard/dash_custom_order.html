@@ -31,52 +31,128 @@
     <div class="layout-contents">
         <div class="page-title-wrap">
             <div class="left">
-                <h2>수주 진행 현황</h2>
+                <h2>진행 현황</h2>
                 <a title="북마크" class="bookmark toggle">
                     내 메뉴
                 </a>
             </div>
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
-                <li>대시보드</li>
-                <li>수주 진행 현황</li>
+                <li>모니터링</li>
+                <li>진행 현황</li>
             </ul>
         </div>
-        <div class="tab-wrap" style="height: 100%;">
-            <div class="tab-contents" style="height: 100%;">
-                <!-- Section -->
-                <div class="row" style="margin-bottom: 0; height: 100%;">
-                    <section class="wp100" style="margin-right: 10px; border-radius:15px; display: flex; flex-direction: column; height: 100%;">
-                        <div class="title-wrap">
-                            <h3>수주현황</h3>
-                        </div>
-                        <div class="content-wrap" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
-                            <p class="card-text">금년 수주액 크기순으로 10개 표시합니다.</p>
-
-                            <div style="flex: 3; min-height: 0;">
-                                <div id="suju-grid" class="wj-flexgrid" style="height: 100%;"></div>
+        <section class="section">
+            <div class="section-top">
+                <div class="search-wrap">
+                    <dl>
+                        <dt>
+                            <label for="srchStartDt">
+                                기간<span class="eq"></span>
+                            </label>
+                        </dt>
+                        <dd>
+                            <div class="srch-box">
+                                <input type="date" id="srchStartDt">&nbsp; ~&nbsp;
+                                <input type="date" id="srchEndDt">
                             </div>
-
-                            <div style="flex: 2; margin-top: 10px;">
-                                <canvas id="suju-chart" class="chart-canvas" style="width: 100%; height: 100%;"></canvas>
-                            </div>
-                        </div>
-                    </section>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            진행상태
+                        </dt>
+                        <dd>
+                            <select class="form-control2" id="cboProd" name="cboProd" ></select>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            법인명
+                        </dt>
+                        <dd>
+                            <input class="form-control2" id="cboCoNm" name="cboCoNm" >
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            차대번호
+                        </dt>
+                        <dd>
+                            <input class="form-control2" id="cboProNm" name="cboProNm" >
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>&nbsp;</dt>
+                        <dd>
+                            <li>
+                                <a class="btn btn-delete" title="검색" id="btnSearch">
+                                    <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                                    <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                    검색
+                                </a>
+                            </li>
+                        </dd>
+                    </dl>
                 </div>
+
             </div>
-        </div>
+            <div class="container-fluid" style="display:flex; flex-direction:column; height:600px;">
+                <div class="chart-wrapper" style="flex:2; min-height:0;">
+                    <canvas id="progress-chart" class="chart-canvas" style="width:100% !important; height:100% !important;"></canvas>
+                </div>
+                <div id="theGrid" style="flex:1; min-height:0;"></div>
+            </div>
+
+        </section>
 
     </div>
 </th:block>
 <th:block layout:fragment="scripts">
-    <script src="/resource/apexcharts/apexcharts.3.26.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script type="text/javascript">
         class CustomOrderPage {
             constructor() {
+                this.viewData = new wijmo.collections.CollectionView();
                 this.init();
                 this.setData();
             }
+
+            // 공통 매핑 정의
+            statePriority = {
+                "수주": 1,
+                "계획": 2,
+                "지시": 3,
+                "작업중": 4,
+                "완료": 5,
+                "출하": 6,
+                "부분출하": 6,
+                "검사": 7,
+                "출고": 8
+            };
+
+            stateLabels = {
+                1: "수주",
+                2: "계획",
+                3: "지시",
+                4: "작업중",
+                5: "완료",
+                6: "출하",
+                7: "검사",
+                8: "출고"
+            };
+
+            stateColors = {
+                1: "#9999ff",  // 수주
+                2: "#66ccff",  // 계획
+                3: "#33cccc",  // 지시
+                4: "#33cc66",  // 작업중
+                5: "#66cc33",  // 완료
+                6: "#ff9933",  // 출하/부분출하
+                7: "#cc33ff",  // 검사
+                8: "#ff3333"   // 출고
+            };
 
             init() {
                 this.initGrids();
@@ -84,68 +160,200 @@
             }
 
             initGrids() {
-                this.sujuGrid = new wijmo.grid.FlexGrid('#suju-grid', {
+                this.theGrid = new wijmo.grid.FlexGrid('#theGrid', {
                     autoGenerateColumns: false,
                     headersVisibility: wijmo.grid.HeadersVisibility.Column,
                     isReadOnly: true,
+                    showMarquee: true,
+                    selectionMode: wijmo.grid.SelectionMode.Row,
                     formatItem: (s, e) => {
                         if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
                             e.cell.style.textAlign = 'center';
                         }
                     },
                     columns: [
-                        { header: '제품그룹', binding: 'prod_grp', width: 200, align: 'center' },
-                        { header: '품목구분', binding: 'mat_type_name', width: 200, align: 'center' },
-                        { header: '품목코드', binding: 'prod_code', width: 200, align: 'center' },
-                        { header: '제품', binding: 'prod', width: 500, align: 'center' },
-                        { header: '수주액', binding: 'sujup', width: '*', align: 'right', format: 'n0' }
-                    ]
+                        {binding: 'JumunDate', header: '주문일자', width: 120, align: 'center'},
+                        {binding: 'DueDate', header: '납기예정일', width: 120, align: 'center'},
+                        {binding: 'company_name', header: '법인명', width: 120, align: 'center'},
+                        {binding: 'product_name', header: '차명', width: 250, align: 'left'},
+                        {binding: 'class3', header: '형식', width: 150, align: 'center'},
+                        {binding: 'ProductionClass', header: '차량구분', width: 120, align: 'center'},
+                        {binding: 'final_state', header: '상태', width: 80, align: 'center'},
+                        {binding: 'vechidno', header: '차대번호', width: 120, align: 'center'},
+                        {binding: 'Usage', header: '상세사양', width: '*', align: 'left'},
+                    ],
+                    itemsSource: this.viewData,
                 });
             }
 
             initCharts() {
-                this.sujuChart = new Chart(document.getElementById('suju-chart'), {
+                let _this = this; // 클래스 참조 보존
+                this.Chart = new Chart(document.getElementById('progress-chart'), {
                     type: 'bar',
-                    data: { labels: [], datasets: [{ label: '수주액', data: [], backgroundColor: '#36A2EB' }] },
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: '진행상태',
+                            data: [],
+                            backgroundColor: []
+                        }]
+                    },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        indexAxis: 'y',
                         scales: {
-                            x: { ticks: { autoSkip: false } },
-                            y: { title: { display: true, text: '₩' } }
+                            x: {
+                                min: 0,
+                                max: 8,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: (value) => this.stateLabels[value] || value
+                                },
+                                title: { display: true, text: "상태" }
+                            },
+                            y: {
+                                title: { display: true, text: "법인명" },
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.7
+                            }
                         },
                         plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function (tooltipItem) {
-                                        return tooltipItem.raw.toLocaleString() + " 원";
-                                    }
+                            tooltip: { enabled: false },
+                            legend: { display: false },
+                            datalabels: {
+                                color: '#fff',
+                                align: 'center',
+                                anchor: 'center',
+                                font: { weight: 'bold' },
+                                borderRadius: 4,
+                                padding: 6,
+                                backgroundColor: (context) => {
+                                    return context.dataset.backgroundColor[context.dataIndex];
+                                },
+                                formatter: (value) => this.stateLabels[value] || value
+                            }
+                        },
+                        // ✅ 차트 클릭 이벤트
+                        onClick: function (evt, elements) {
+                            if (elements.length > 0) {
+                                let chartElement = elements[0];
+                                let index = chartElement.index;   // 클릭된 막대 index (labels 배열의 위치)
+
+                                // 그리드에서 동일한 인덱스 선택
+                                if (_this.theGrid) {
+                                    _this.theGrid.select(index, 0);
+                                    _this.theGrid.focus();
                                 }
-                            },
-                            legend: { display: false }
+                            }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
 
-            setData(_pageNo) {
-                let sujuData = AjaxUtil.getSyncData('/api/dashboard/custom_order');
-                this.sujuGrid.itemsSource = sujuData.data;
-                this.updateChart(this.sujuChart, sujuData.data, 'prod', 'sujup');
+
+            setData() {
+                let _this = this;
+                let start = $('#srchStartDt').val();
+                let end = $('#srchEndDt').val();
+                let state = $('#cboProd').val();
+                let co_nm = $('#cboCoNm').val();
+                let ve_id = $('#cboProNm').val();
+                let url = '/api/dashboard/dash_progress';
+
+                let data = {
+                    'start': start,
+                    'end': end,
+                    'state': state,
+                    'co_nm': co_nm,
+                    've_id': ve_id,
+
+                };
+
+                let fnsuccess = function (result) {
+                    if (result != null) {
+                        console.log('result', result);
+
+                        result.data.forEach(item => {
+                            // 최종 상태값은 서버에서 final_state 로 내려옴
+                            let stateLabel = item.final_state;
+                            let stateValue = _this.statePriority[stateLabel] || 1;
+
+                            item._stateValue = stateValue; // 차트용 값
+                        });
+
+                        _this.viewData.sourceCollection = result.data;
+                        _this.updateChart(_this.Chart, result.data);
+                    }
+                };
+                AjaxUtil.getAsyncData(url, data, fnsuccess);
             }
 
-            updateChart(chart, data, labelKey, valueKey) {
-                let labels = data.map(item => item[labelKey]);
-                let values = data.map(item => item[valueKey]);
+            updateChart(chart, data) {
+                let labels = [];
+                let values = [];
+                let colors = [];
+
+                data.forEach(item => {
+                    labels.push(item.company_name);
+                    values.push(item._stateValue || 1);
+                    colors.push(this.stateColors[item._stateValue] || "#cccccc");
+                });
+
+                // dummy 추가
+                while (labels.length < 10) {
+                    labels.push("");    // 빈 라벨
+                    values.push(null);  // 값 없음
+                    colors.push("rgba(0,0,0,0)"); // 투명
+                }
+
                 chart.data.labels = labels;
                 chart.data.datasets[0].data = values;
+                chart.data.datasets[0].backgroundColor = colors;
                 chart.update();
             }
+
         }
 
         let page = null;
 
         $(document).ready(function (e) {
+            const currentDate = new Date();
+            const today = currentDate.toISOString().split('T')[0];
+
+            // 1주일 전 날짜 계산
+            const oneWeekAgo = new Date(currentDate);
+            oneWeekAgo.setDate(currentDate.getDate() - 7);
+            const oneWeekAgoFormatted = oneWeekAgo.toISOString().split('T')[0];
+
+            // 기본값 설정
+            $('#srchStartDt').val(oneWeekAgoFormatted);
+            $('#srchEndDt').val(today);
+
+
+            $('#btnSearch').click(function (e) {
+                page.setData();
+            });
+
+            let states = [
+                { value: "", text: "전체" },
+                { value: "수주", text: "수주" },
+                { value: "계획", text: "계획" },
+                { value: "지시", text: "지시" },
+                { value: "작업중", text: "작업중" },
+                { value: "완료", text: "완료" },
+                { value: "출하", text: "출하" },
+                { value: "검사", text: "검사" },
+                { value: "출고", text: "출고" }
+            ];
+
+            let $cboProd = $('#cboProd');
+            $cboProd.empty();
+            states.forEach(st => {
+                $cboProd.append(new Option(st.text, st.value));
+            });
+
             page = new CustomOrderPage();
         });
     </script>

@@ -1,5 +1,6 @@
 package mes.app.dashboard;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -160,8 +161,36 @@ public class DashBoardController {
 		
 		return result;
 	}
-	
-	
-	
-	
+
+	@GetMapping("/dash_progress")
+	private AjaxResult dash_progress(
+			@RequestParam(value="start", required=false) String start_date,
+			@RequestParam(value="end", required=false) String end_date,
+			@RequestParam(value="state", required=false) String state,
+			@RequestParam(value="co_nm", required=false) String co_nm, // 법인명
+			@RequestParam(value="ve_id", required=false) String ve_id, // 차대번호
+			@RequestParam("spjangcd") String spjangcd,
+			Authentication auth,
+			HttpServletRequest request
+	) {
+
+		start_date = start_date + " 00:00:00";
+		end_date = end_date + " 23:59:59";
+
+		Timestamp start = Timestamp.valueOf(start_date);
+		Timestamp end = Timestamp.valueOf(end_date);
+
+		List<Map<String, Object>> items = this.dashBoardService.getList(start, end, state, co_nm, ve_id, spjangcd);
+
+		AjaxResult result = new AjaxResult();
+		result.data = items;
+
+		return result;
+	}
+
+
+
+
+
+
 }
