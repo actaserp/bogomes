@@ -79,6 +79,7 @@ public class ASVehicleController {
       String owner      = (String) payload.get("OWNER");
       String pernm      = (String) payload.get("PERNM");
       String inputDate  = (String) payload.get("inputDate");
+      String regdate  = (String) payload.get("regdate");
       String outDate    = (String) payload.get("outDate");
       String endflag    = (String) payload.get("endflag"); // 0/1
       String fixText    = (String) payload.get("fixText");
@@ -103,6 +104,7 @@ public class ASVehicleController {
       as010.setPernm(pernm);
       as010.setInputdate(CommonUtil.trySqlDate(inputDate));
       as010.setOutdate(CommonUtil.trySqlDate(outDate));
+      as010.setRegdate(CommonUtil.trySqlDate(regdate));
       as010.setEndflag(endflag);
       as010.setFixtext(fixText);
       as010.setRegno(regno);
@@ -117,6 +119,16 @@ public class ASVehicleController {
       result.success = false;
       result.message = "저장 실패: " + e.getMessage();
     }
+    return result;
+  }
+
+  @GetMapping("/search_vechidno")
+  public AjaxResult getSearchVechidno(@RequestParam(value = "vechidno", required = false) String vechidno,
+                                      @RequestParam(value = "owner", required = false) String owner){
+
+    List<Map<String, Object>> items = this.asVehicleService.getSearchVechidno(vechidno, owner);
+    AjaxResult result = new AjaxResult();
+    result.data = items;
     return result;
   }
 

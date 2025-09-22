@@ -143,7 +143,7 @@
           <div class="search-wrap">
             <dl>
               <dt>
-                <label>제원</label>
+                <label>차량구분</label>
               </dt>
               <dd>
                 <div class="srch-box">
@@ -219,17 +219,23 @@
               <tbody>
               <tr>
                 <th>
-                  <label for="spcmngno"><span class="eq">*</span>제원</label>
+                  <label for="spcmngno"><span class="eq">*</span>차량구분</label>
                 </th>
                 <td>
                   <select id="spcmngno" name="spcmngno" style="width:210px;">
                   </select>
                 </td>
                 <th>
+
                   <label for="vechidno"><span class="eq">*</span>차대번호</label>
                 </th>
                 <td>
-                  <input id="vechidno" name="vechidno" placeholder="차대번호" style="width: 100%;">
+                  <div class="input-with-button">
+                  <input id="vechidno" name="vechidno" placeholder="차대번호 입후 엔터" style="width: 100%;">
+                    <a class="btn in_btn" title="품목 검색" id="btnVechidnoSearch" >
+                      <img src="/images/icon/btn-srch-black.svg" alt="검색 아이콘" />
+                    </a>
+                  </div>
                 </td>
               </tr>
               <tr>
@@ -239,22 +245,21 @@
                 <td>
                   <input id="regno" name="regno" placeholder="등록번호" style="width: 100%;">
                 </td>
-                <th></th>
-                <td></td>
+                <th>
+                  <label for="regdate"><span class="eq">*</span>접수일자</label>
+                </th>
+                <td>
+                  <input type="date" id="regdate" name="regdate">
+                </td>
               </tr>
               <tr>
                 <th>
                   <label><span class="eq">*</span>차량</label>
                 </th>
                   <td>
-                    <div class="input-with-button">
-                      <input type="text" id="txtProductName" name="txtProductName"
-                             placeholder="코드 또는 차종 입력 후 엔터" autocomplete="off" style="width: 250px;"/>
-                      <input type="hidden" id ="Material_id" name="Material_id" />
-                      <a class="btn in_btn" title="품목 검색" id="btnProductSearch" >
-                        <img src="/images/icon/btn-srch-black.svg" alt="검색 아이콘" />
-                      </a>
-                    </div>
+                    <input type="text" id="txtProductName" name="txtProductName"
+                           placeholder="코드 또는 차종 입력 후 엔터" autocomplete="off" style="width: 100%;"/>
+                    <input type="hidden" id ="Material_id" name="Material_id" />
                   </td>
                 <th>
                   <label for="OWNER">차주</label>
@@ -313,6 +318,7 @@
   <th:block th:replace="/common/ax5_uploader :: ax5_uploader"></th:block>
   <th:block th:replace="/common/upload_one_image_box :: upload_one_image_box"></th:block>
   <th:block th:replace="/common/multiform_material :: multiform_material"></th:block>
+  <th:block th:replace="/as/popup_vehicle_list :: popup_Vechidno"></th:block>
   <script type="text/javascript">
     class ASVehiclePage {
       constructor() {
@@ -339,13 +345,14 @@
           },
           columns: [
             {binding: 'id', header: 'id', visible: false},
-            {binding: 'spcmngno', header: '제원', width: 100, align: 'left'},
-            {binding: 'regno', header: '등록번호', width: 200, align: 'left'},
+            {binding: 'spcmngno', header: '차량구분', width: 80, align: 'left'},
+            {binding: 'regno', header: '등록번호', width: 120, align: 'center'},
             {binding: 'ItemCode', header: '차명', width: 200, align: 'left'},
             {binding: 'vechidno', header: '차대번호', width: 200, align: 'center'},
             {binding: 'owner', header: '차주', width: 150, align: 'center'},
+            {binding: 'regdate', header: '접수일자', width: 120, align: 'center'},
+            {binding: 'inputdate', header: '작업(완료)일자', width: 120, align: 'center'},
             {binding: 'outdate', header: '출고일자', width: 120, align: 'center'},
-            {binding: 'inputdate', header: '완료일자', width: 120, align: 'center'},
             {binding: 'endflag', header: '출고여부', width: 100, align: 'center'}
           ],
           itemsSource: this.viewData, // 데이터를 설정할 배열
@@ -439,6 +446,7 @@
           OWNER:       $ctx.find('#OWNER').val(),
           PERNM:       $ctx.find('#PERNM').val(),
           inputDate:   $ctx.find('#inputDate').val(),
+          regdate:     $ctx.find('#regdate').val(),
           outDate:     $ctx.find('#outDate').val(),
           endflag:     $ctx.find('#endflag').is(':checked') ? '0' : '1',
           fixText:     $ctx.find('#fixText').val(),
@@ -497,21 +505,34 @@
       }
     }
 
-    $('#btnProductSearch').click(function () {
-      const $row = $(this).closest('tr');
+    // 여러 폼(모달/원본) 모두 대응: 위임 이벤트 권장
+    $(document).on('click', '#btnVechidnoSearch', function () {
+      const $form = $(this).closest('form'); // ✅ table보다 form 스코프가 안전
 
-      const $productInput = $row.find('input[name^="txtProductName"]');
-      const $productId = $row.find('input[name^="Material_id"]');
+      const $productInput = $form.find('input[name="txtProductName"]');
+      const $productId    = $form.find('input[name="Material_id"]');
+      const $spcmngno     = $form.find('select[name="spcmngno"]'); // ✅ select 지정
+      const $owner        = $form.find('input[name="OWNER"]');
+      const $vechidno     = $form.find('input[name="vechidno"]');
 
-      const pop = new PopMatComponent();
-      pop.material_type = 'product,sangpum';
-
+      const pop = new PopVechidnoComponent();
       pop.show(function (item) {
-        $productInput.val(item.Name);
-        $productId.val(item.id);
+        // 키 불일치 대비 + 문자열 캐스팅
+        const matGroupId = String(
+          item.material_group_id ?? item.MaterialGroup_id ?? ''
+        );
 
+        // ✅ select2 대응: val() 후 change 트리거 필수
+        $spcmngno.val(matGroupId).trigger('change.select2');
+
+        // 나머지 텍스트/hidden은 .val()로 충분
+        $owner.val(item.company_name ?? item.CompanyName ?? '');
+        $productInput.val(item.mat_name ?? item.mat_naem ?? ''); // 과거 오타 대비
+        $productId.val(item.material_id ?? item.Material_id ?? '');
+        $vechidno.val(item.vechidno ?? '');
       });
     });
+
     function fillProductFields($row, item) {
       const $productInput  = $row.find('input[name^="txtProductName"]');
       const $productId     = $row.find('input[name^="Material_id"]');
@@ -627,13 +648,24 @@
         $clone[0].reset();
         $clone.find('input[type="hidden"]').val('');
         const today = new Date();
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        $clone.find('#inputDate').val(CommonUtil.formatYYYYMMDD(monthStart));
-        $clone.find('#outDate').val(CommonUtil.formatYYYYMMDD(today));
+        $clone.find('#inputDate').val(CommonUtil.formatYYYYMMDD(today));
+        $clone.find('#regdate').val(CommonUtil.formatYYYYMMDD(today));
       }
 
       // 수정일 때 바인딩
-      if (mode === 'edit' && initialData) fillForm($clone, initialData);
+      // if (mode === 'edit' && initialData) fillForm($clone, initialData);
+
+      if (mode === 'edit' && initialData) {
+        fillForm($clone, initialData);
+        // 예: 기존 데이터가 출고처리였다면 체크해두기
+        if (initialData.endflag === true || initialData.endflag === 'Y' || initialData.endflag === 1) {
+          $clone.find('#endflag').prop('checked', true);
+        }
+      }
+
+      // ✅ 여기서 클론 폼에 disabled 토글 초기화
+      initOutDateToggle($clone);
+
 
       // === 반응형 사이즈로 오픈 ===
       const size = calcModalSize();
@@ -719,8 +751,24 @@
       const INNER_GAP = 96; // 타이틀/하단버튼/내부패딩 합
       return { w, h, bodyH: h - INNER_GAP };
     }
+    function initOutDateToggle($ctx) {
+      const $endflag = $ctx.find('#endflag');
+      const $outDate = $ctx.find('#outDate');
 
+      function syncOutDateState() {
+        const enabled = $endflag.is(':checked');
+        $outDate.prop('disabled', !enabled);   // ✅ disabled 토글
+        if (!enabled) $outDate.val('');        // (선택) 해제 시 값 초기화
+      }
 
+      // 네임스페이스로 중복 바인딩 방지
+      $endflag.off('change.endflag').on('change.endflag', syncOutDateState);
+      syncOutDateState(); // 초기 상태 반영
+    }
+    $(function () {
+      const $baseForm = $('#basicForm');
+      if ($baseForm.length) initOutDateToggle($baseForm);
+    });
     $(document).ready(function (e) {
 
       // ===== 반응형: 오른쪽 버튼영역을 왼쪽 상단으로 이동 =====
@@ -757,10 +805,9 @@
       page = new ASVehiclePage();
 
       let today = new Date();
-      let monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-      $('#inputDate').val(CommonUtil.formatYYYYMMDD(monthStart));
-      $('#outDate').val(CommonUtil.formatYYYYMMDD(today));
+      //$('#inputDate').val(CommonUtil.formatYYYYMMDD(today));
+      $('#regdate').val(CommonUtil.formatYYYYMMDD(today));
 
       AjaxUtil.fillSelectOptions($('#cboSpcmngno'), 'material_group', 'all', false);
       AjaxUtil.fillSelectOptions($('#spcmngno'), 'material_group', 'choose', false);
@@ -805,12 +852,9 @@
         $('#basicForm').find('input[type="hidden"]').val('');
 
         const today = new Date();
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-
-        let startStr = CommonUtil.formatYYYYMMDD(monthStart);
         let endStr   = CommonUtil.formatYYYYMMDD(today);
-        $('#inputDate').val(startStr).trigger('change');
-        $('#outDate').val(endStr).trigger('change');
+        $('#inputDate').val(endStr).trigger('change');
+        $('#regdate').val(endStr).trigger('change');
       });
 
     });

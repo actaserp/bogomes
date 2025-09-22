@@ -69,6 +69,7 @@ public class ASVehicleService {
            a."owner" ,
            a.outdate ,
            a.inputdate ,
+           a.regdate  ,
            a.endflag ,
            a.fixtext,
            a.regno
@@ -79,5 +80,41 @@ public class ASVehicleService {
         """;
     return this.sqlRunner.getRow(sql, param);
 
+  }
+
+  public List<Map<String, Object>> getSearchVechidno(String vechidno, String owner) {
+    MapSqlParameterSource param = new MapSqlParameterSource();
+    param.addValue("vechidno", vechidno);
+    param.addValue("owner", owner);
+
+    String sql= """
+      select
+        s.vechidno,
+        su."CompanyName"           as company_name,
+        su."Material_id"           as material_id,
+        m."Name"                   as mat_name, 
+        m."MaterialGroup_id"       as material_group_id
+      from shipment s
+      left join suju_head sh on sh.id = s.suju_head_id
+      left join suju su     on sh.id = su."SujuHead_id"
+      left join material m  on m.id = su."Material_id"
+      left join mat_grp mg  on m."MaterialGroup_id" = mg.id
+      where 1=1
+      """;
+
+
+    if(vechidno != null && !vechidno.isEmpty()) {
+      sql += """
+           and LOWER(s.vechidno) LIKE '%' || LOWER(:vechidno) || '%'
+           """;
+    }
+
+    if(owner != null && !owner.isEmpty()) {
+      sql += """
+           and su."CompanyName" like '%' || :owner || '%'
+           """;
+    }
+
+    return this.sqlRunner.getRows(sql, param);
   }
 }

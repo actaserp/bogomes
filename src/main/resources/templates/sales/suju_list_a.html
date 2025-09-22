@@ -929,25 +929,39 @@
                     const $tbody    = $scope.find('.SuJu_remark-table tbody');
                     const $template = $tbody.find('.remark-template-row');
 
-                    rows.forEach(row => {
-                        const idx = page.nextRemarkIndex();
+                    // ✅ 템플릿 숨김 + 기존 표시 행 제거(템플릿 제외)
+                    $template.hide();
+                    $tbody.find('tr:visible').not('.remark-template-row').remove();
+
+                    // ✅ 인덱스 초기화(있으면 사용)
+                    if (typeof page.resetRemarkIndex === 'function') page.resetRemarkIndex();
+
+                    // ✅ 최소 2행 보장
+                    const total = Math.max(Array.isArray(rows) ? rows.length : 0, 2);
+
+                    for (let i = 0; i < total; i++) {
+                        const row = rows[i] || {}; // 부족분은 빈 행으로
+                        const idx = (typeof page.nextRemarkIndex === 'function') ? page.nextRemarkIndex() : i;
+
                         const $tr = $template.clone(true, true).removeClass('remark-template-row').show();
 
-                        // name 인덱싱
-                        $tr.find('textarea,input').each(function () {
-                            const $el = $(this);
+                        // name 인덱싱 (textarea, input, select 모두 대상)
+                        $tr.find('textarea,input,select').each(function () {
+                            const $el  = $(this);
                             const base = ($el.attr('name') || '').replace(/_\d+$/, '');
                             if (base) $el.attr('name', `${base}_${idx}`);
                         });
 
                         // 값 세팅
                         $tr.find(`textarea[name="sjremark_${idx}"]`).val(row.sjremark || '');
+                        $tr.find(`input[name="remark_id_${idx}"]`).val(row.id || '');
 
-                        // 삭제 버튼 id
+                        // 삭제 버튼 id 충돌 방지
                         $tr.find('a[title="삭제"]').attr('id', `btnDelRemark_${idx}`);
 
+
                         $tbody.append($tr);
-                    });
+                    }
                 }
 
                 // === 옵션 합계 + 상단 금액 계산 모듈 (showSujuForm 내부) ===

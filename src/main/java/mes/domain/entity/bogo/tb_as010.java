@@ -48,4 +48,7 @@ public class tb_as010 { //as 차량관리
   @Column(name="regno")
   String regno;
 
+  @Column(name="regdate")
+  Date regdate;
+
 }
