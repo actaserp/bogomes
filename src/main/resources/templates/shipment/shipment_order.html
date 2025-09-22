@@ -600,7 +600,7 @@
                 this.grid_product.downloadFileName = '제품';
 
                 $('#div_product').hide();
-                AjaxUtil.fillSelectOptions($('#company_id'), 'company', 'choose', '', 'sale');
+                AjaxUtil.fillSelectOptions($('#company_id'), 'company', 'choose', '', 'sale-purchase,sale');
             }
 
             searchMain() {
@@ -705,6 +705,13 @@
                     let detailData = res.data;
                     FormUtil.BindDataForm(detailData, $('#matBasicForm'));
                     Notify.success('수주데이터 조회 완료');
+                    if (res.data.CompanyNm) {
+                        // 수주데이터 조회시
+                        document.getElementById('company_id').value = res.data.CompanyId
+                    }else{
+                        // 품목데이터 조회시
+
+                    }
 
                 } else {
                     const message = res.message ?? '수주데이터 조회 실패';

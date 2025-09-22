@@ -1,19 +1,18 @@
 package mes.app.definition.service.material;
 
-import java.util.List;
-import java.util.Map;
-
+import io.micrometer.core.instrument.util.StringUtils;
+import mes.domain.services.CommonUtil;
+import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
-import io.micrometer.core.instrument.util.StringUtils;
-import mes.domain.services.CommonUtil;
-import mes.domain.services.SqlRunner;
+import java.util.List;
+import java.util.Map;
 
 @Service
-public class MaterialService {
+public class ConsumablesService {
 	
 	@Autowired
 	SqlRunner sqlRunner;
@@ -69,7 +68,6 @@ public class MaterialService {
                 , m."SafetyStock" as safety_stock
                 , m."MaxStock" as max_stock
                 , m."ProcessSafetyStock" as process_safety_stock
-                , m."ValidDays" as valid_days
                 , m."InTestYN" as intest_yn
                 , m."OutTestYN" as outtest_yn 
                 , r."Name" as routing_name
@@ -99,6 +97,7 @@ public class MaterialService {
             left join bom b on b."Material_id" = m.id
             where 1=1
             AND m.spjangcd = :spjangcd
+            AND (mg."MaterialType" IS NULL OR mg."MaterialType" <> 'product')
         """;
         if (StringUtils.isEmpty(matType)==false) sql +=" and mg.\"MaterialType\" = :mat_type ";
         if (StringUtils.isEmpty(matGroupId)==false) sql +=" and m.\"MaterialGroup_id\" = (:mat_group_id)::int ";
@@ -156,7 +155,6 @@ public class MaterialService {
             , u."Name" as unit_name
             , m."UnitPrice"
             , m."ProcessSafetyStock" 
-            , m."ValidDays" 
             , m."LotUseYN" as "lotUseYn"
             , m."Mtyn" as mtyn
             , m."Useyn" as useyn
@@ -187,7 +185,7 @@ public class MaterialService {
 
 	public int saveMaterial(MultiValueMap<String, Object> data) {
 		Integer id = CommonUtil.tryIntNull(data.getFirst("id"));
-		
+
 		MapSqlParameterSource dicParam = new MapSqlParameterSource();
 		dicParam.addValue("id", id);
 		dicParam.addValue("code", CommonUtil.tryString(data.getFirst("Code")));
@@ -205,10 +203,9 @@ public class MaterialService {
 		dicParam.addValue("safetyStock", CommonUtil.tryFloatNull(data.getFirst("SafetyStock")));
 		dicParam.addValue("maxStock", CommonUtil.tryFloatNull(data.getFirst("MaxStock")));
 		dicParam.addValue("processSafetyStock", CommonUtil.tryFloatNull(data.getFirst("ProcessSafetyStock")));
-		dicParam.addValue("validDays", Integer.parseInt(data.getFirst("ValidDays").toString()));
-		
+
 		if(data.containsKey("lot_use_yn")) {
-			dicParam.addValue("lotUseYN", data.getFirst("lot_use_yn").toString());			
+			dicParam.addValue("lotUseYN", data.getFirst("lot_use_yn").toString());
 		} else {
 			dicParam.addValue("lotUseYN", null);
 		}
@@ -232,7 +229,7 @@ public class MaterialService {
 		dicParam.addValue("maxOrder", CommonUtil.tryFloatNull(data.getFirst("MaxOrder")));
 		dicParam.addValue("lotSize", CommonUtil.tryFloatNull(data.getFirst("LotSize")));
 		dicParam.addValue("leadTime", CommonUtil.tryFloatNull(data.getFirst("LeadTime")));
-		
+
 		dicParam.addValue("standardTime", CommonUtil.tryFloatNull(data.getFirst("StandardTime")));
 		dicParam.addValue("standardTimeUnit", CommonUtil.tryString(data.getFirst("StandardTimeUnit")));
 		dicParam.addValue("thickness", CommonUtil.tryFloatNull(data.getFirst("Thickness")));
@@ -243,7 +240,7 @@ public class MaterialService {
 		dicParam.addValue("color", CommonUtil.tryString(data.getFirst("Color")));
 		dicParam.addValue("usage", CommonUtil.tryString(data.getFirst("Usage")));
 		dicParam.addValue("class1", CommonUtil.tryString(data.getFirst("Class1")));
-		
+
 		dicParam.addValue("class2", CommonUtil.tryString(data.getFirst("Class2")));
 		dicParam.addValue("class3", CommonUtil.tryString(data.getFirst("Class3")));
 		dicParam.addValue("standard1", CommonUtil.tryString(data.getFirst("Standard1")));
@@ -254,7 +251,7 @@ public class MaterialService {
 		dicParam.addValue("inputManHour", CommonUtil.tryFloatNull(data.getFirst("InputManHour")));
 		dicParam.addValue("purchaseOrderStandard", CommonUtil.tryString(data.getFirst("PurchaseOrderStandard")));
 		dicParam.addValue("vatExemptionYN", CommonUtil.tryString(data.getFirst("VatExemptionYN")));
-		
+
 		dicParam.addValue("routingId", CommonUtil.tryIntNull(data.getFirst("Routing_id")));
 		dicParam.addValue("unitPrice", CommonUtil.tryFloatNull(data.getFirst("UnitPrice")));
 		dicParam.addValue("user_id", CommonUtil.tryIntNull(data.getFirst("user_id").toString()));
@@ -266,9 +263,9 @@ public class MaterialService {
 		dicParam.addValue("wheel", CommonUtil.tryString(data.getFirst("wheel")));
 		dicParam.addValue("cone", CommonUtil.tryString(data.getFirst("cone")));
 
-		
+
 		String sql = "";
-		
+
 		if(id == null) {
 			sql = """
 					INSERT INTO public.material
@@ -287,7 +284,6 @@ public class MaterialService {
 						, "SafetyStock" 
 						, "MaxStock" 
 						, "ProcessSafetyStock" 
-						, "ValidDays"
 						, "LotUseYN" 
 						, "PackingUnitQty" 
 						, "PackingUnitName" 
@@ -345,7 +341,6 @@ public class MaterialService {
 						, :safetyStock
 						, :maxStock
 						, :processSafetyStock
-						, :validDays
 						, :lotUseYN
 						, :packingUnitQty
 						, :packingUnitName
@@ -406,7 +401,6 @@ public class MaterialService {
 					, "SafetyStock" = :safetyStock
 					, "MaxStock" = :maxStock
 					, "ProcessSafetyStock" = :processSafetyStock
-					, "ValidDays" = :validDays
 					, "LotUseYN" = :lotUseYN
 					, "PackingUnitQty" = :packingUnitQty 
 					, "PackingUnitName" = :packingUnitName
@@ -450,9 +444,9 @@ public class MaterialService {
 					AND spjangcd = :spjangcd
 					""";
 		}
-		
-		
-		
+
+
+
 		return this.sqlRunner.execute(sql, dicParam);
 	}
 	

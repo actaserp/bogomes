@@ -134,7 +134,7 @@ public class CommonController {
 			@RequestParam(value="cond1", required = false) String cond1,  
 			@RequestParam(value="cond2", required = false) String cond2,
 			@RequestParam(value="cond3", required = false) String cond3
-			) {		
+			) {
         List<Map<String, Object>> items = this.comboService.getComboList(comboType, cond1, cond2, cond3);
         AjaxResult result = new AjaxResult();
         result.data = items;

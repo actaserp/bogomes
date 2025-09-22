@@ -302,6 +302,7 @@ public class ShipmentOrderService {
 				select sj.*,
 				sh.*,
 				cp."Name" as "CompanyNm",
+				cp.id as "CompanyId",
 				cp.*,
 				m."Name" as "matName",
 				m.id as "matId",

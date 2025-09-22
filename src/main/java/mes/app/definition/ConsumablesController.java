@@ -1,30 +1,6 @@
 package mes.app.definition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import mes.app.definition.service.material.BomByMatService;
-import mes.app.definition.service.material.MaterialService;
-import mes.app.definition.service.material.RoutingByMatService;
-import mes.app.definition.service.material.TestByMatService;
-import mes.app.definition.service.material.UnitPriceService;
+import mes.app.definition.service.material.*;
 import mes.domain.entity.Material;
 import mes.domain.entity.TestMastMat;
 import mes.domain.entity.User;
@@ -32,13 +8,26 @@ import mes.domain.model.AjaxResult;
 import mes.domain.repository.MaterialRepository;
 import mes.domain.repository.TestMastMatRepository;
 import mes.domain.services.CommonUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/definition/material")
-public class MaterialController {
+@RequestMapping("/api/definition/consumables")
+public class ConsumablesController {
 	
 	@Autowired
-	private MaterialService materialService;
+	private ConsumablesService consumablesService;
 	
 	@Autowired
 	private UnitPriceService unitPriceService;
@@ -73,7 +62,7 @@ public class MaterialController {
     		@RequestParam("keyword") String keyword,
 			@RequestParam(value ="spjangcd") String spjangcd) {
        
-        List<Map<String, Object>> items = this.materialService.getMaterialList(matType, matGroupId, keyword,spjangcd);
+        List<Map<String, Object>> items = this.consumablesService.getMaterialList(matType, matGroupId, keyword,spjangcd);
                		
         AjaxResult result = new AjaxResult();
         result.data = items;        				
@@ -90,7 +79,7 @@ public class MaterialController {
 	@GetMapping("/detail")
 	public AjaxResult getMaterial(@RequestParam("id") int matPk,
 								  @RequestParam(value ="spjangcd") String spjangcd) {
-        Map<String, Object> item = this.materialService.getMaterial(matPk,spjangcd);
+        Map<String, Object> item = this.consumablesService.getMaterial(matPk,spjangcd);
                		
         AjaxResult result = new AjaxResult();
         result.data = item;        				
@@ -102,7 +91,7 @@ public class MaterialController {
 	public AjaxResult batchDelete(@RequestBody Map<String, Object> param) {
 		List<Integer> ids = (List<Integer>) param.get("ids");
 		AjaxResult result = new AjaxResult();
-		int count = materialService.deleteMaterials(ids); // 여러개 삭제하는 서비스 메서드 필요
+		int count = consumablesService.deleteMaterials(ids); // 여러개 삭제하는 서비스 메서드 필요
 		result.success = count == ids.size();
 		result.data = count;
 		result.message = result.success ? "삭제 성공" : "삭제 실패";
@@ -124,7 +113,7 @@ public class MaterialController {
         
         AjaxResult result = new AjaxResult();
 		
-        if (this.materialService.saveMaterial(data) > 0) {
+        if (this.consumablesService.saveMaterial(data) > 0) {
         	
         } else {
         	result.success = false;
@@ -145,7 +134,7 @@ public class MaterialController {
         
         AjaxResult result = new AjaxResult();
 		
-        if (this.materialService.deleteMaterial(matPk) > 0) {
+        if (this.consumablesService.deleteMaterial(matPk) > 0) {
         	
         } else {
         	result.success = false;

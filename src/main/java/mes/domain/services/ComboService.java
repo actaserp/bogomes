@@ -647,8 +647,8 @@ public class ComboService {
         return this.sqlRunner.getRows(sql, dicParam);
 	};
 	
-	ComboDataFunction system_code = (String cond1, String cond2, String cond3)-> { 
-		
+	ComboDataFunction system_code = (String cond1, String cond2, String cond3)-> {
+		System.out.println(cond2);
 		String sql = """
 		select "Code" as value ,"Value" as text from sys_code where 1=1 
         """;
