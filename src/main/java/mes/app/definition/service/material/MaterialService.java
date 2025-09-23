@@ -397,7 +397,7 @@ public class MaterialService {
 					, "Name" = :name
 					, "MaterialGroup_id" = :matGroupId
 					, "Unit_id" = :unitId
-					, "Factory_id" = :factoryId
+					, "Factory_id" = 1
 					, "WorkCenter_id" = :workcenterId
 					, "Equipment_id" = :equipmentId
 					, "StoreHouse_id" = :storeHouseId
