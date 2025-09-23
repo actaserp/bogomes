@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Entity
 @Table(name="shipment")
 @Setter
@@ -66,4 +68,23 @@ public class Shipment extends AbstractAuditModel{
 
 	@Column(name = "\"suju_head_id\"")
 	Integer suju_head_id;
+
+	@Column(name = "\"spcno\"")
+	String spcno;
+
+	@Column(name = "\"spcmngno\"")
+	String spcmngno;
+
+	@Column(name = "\"vechidno\"")
+	String vechidno;
+
+	@Column(name = "\"shipdate\"")
+	Date shipdate;
+
+	@Column(name = "\"devdate\"")
+	Date devdate;
+
+	@Column(name = "\"addmaterial\"")
+	String addmaterial;
+
 }

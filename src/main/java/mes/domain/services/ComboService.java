@@ -164,7 +164,8 @@ public class ComboService {
         return this.sqlRunner.getRows(sql, dicParam);
 	};
 	
-	ComboDataFunction company=(String cond1, String cond2, String cond3)-> { 
+	ComboDataFunction company=(String cond1, String cond2, String cond3)-> {
+		System.out.println(cond1);
 		String sql = "select id as value, \"Name\" as text from company where 1=1 ";
 		if (StringUtils.hasText(cond1)) { 
 			//sql +="and \"CompanyType\" = :cond1 ";
@@ -629,7 +630,7 @@ public class ComboService {
 	ComboDataFunction store_house=(String cond1, String cond2, String cond3)-> {
 		String sql = "select id as value,\"Name\" as text from store_house where 1=1 ";
 		if (StringUtils.hasText(cond1)) sql +="and \"HouseType\" in (select unnest(string_to_array(:cond1,',')))";
-		sql += " order by \"Name\" ";
+		sql += " order by \"Code\" ";
 		
 		MapSqlParameterSource dicParam = new MapSqlParameterSource();
 		dicParam.addValue("cond1", cond1);

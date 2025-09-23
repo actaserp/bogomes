@@ -85,14 +85,14 @@
                                         <li>
                                             <button type="button" class="btn-delete btn-danger" id="btnDelete"
                                                     style="width: 115px; height: 36px;">
-                                                <i class="fas fa-trash"></i>삭제
+                                                <i class="fas fa-trash"></i>출고취소
                                             </button>
                                         </li>
 
                                         <li>
-                                            <button disabled type="button" class="btn-excellt btn-default" id="btnSave"
+                                            <button type="button" class="btn-excellt btn-default" id="btnSave"
                                                     style="width: 115px; height: 36px;">
-                                                <i class="fas fa-save"></i>저장
+                                                <i class="fas fa-save"></i>출고처리
                                             </button>
                                         </li>
                                     </ul>
@@ -100,7 +100,7 @@
                             </div>
                             <div>
                                 <form id="matBasicForm">
-                                    <input type="hidden" id="searchId" name="searchId">
+
                                     <table class="write-table">
                                         <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
                                         <colgroup>
@@ -111,7 +111,8 @@
                                             <col class="wp16">
                                             <col class="wp17">
                                         </colgroup>
-                                        <input type="hidden" id="matId" name="matId" readonly>
+                                        <input type="hidden" id="id" name="id" readonly>
+                                        <input type="hidden" id="searchId" name="searchId">
                                         <tbody>
                                         <tr>
                                             <th>
@@ -458,7 +459,8 @@
                         {binding: 'vechidno', header: '차대번호', width: 130, align: 'center', isReadOnly: true},
                         {binding: 'CompanyNm', header: '차주', width: 120, align: 'center', isReadOnly: true},
                         {binding: 'devdate', header: '출고일자', width: 110, align: 'center', isReadOnly: true},
-                        {binding: 'matName', header: '차명', width: 200, align: 'left', isReadOnly: true},
+                        {binding: 'headState', header: '출고상태', width: 110, align: 'center', isReadOnly: true},
+                        {binding: 'matName', header: '차명', width: 260, align: 'left', isReadOnly: true},
                         {binding: 'CompanyNm', header: '법인명', width: 120, align: 'center', isReadOnly: true},
                     ],
                     itemsSource: this.viewData,
@@ -475,11 +477,12 @@
                     if (hitTest.cellType === wijmo.grid.CellType.Cell) {
                         let row = hitTest.row;
                         let selectedItem = this.grid1.rows[row].dataItem;
-                        let searchId = selectedItem.suju_pk;
+                        let searchId = selectedItem.id;
+                        let searchType = selectedItem.State;
                         document.getElementById('searchId').value = searchId;
 
                         // 출하 상세조회
-                        searchDetailSuju(searchId);
+                        searchDetailSuju(searchId, searchType);
                     }
                 });
                 new FlexGridContextMenu(this.grid1);
@@ -495,7 +498,7 @@
                     columns: [
                         {binding: 'ship_pk', header: 'pk', width: '*', align: 'left', visible: false},
                         {binding: 'spcno', header: '제원', width: 80, align: 'left'},
-                        {binding: 'spcmngno', header: '제원관리번호', width: 180, align: 'center', isReadOnly: true},
+                        {binding: 'CustomerBarcode', header: '제원관리번호', width: 180, align: 'center', isReadOnly: true},
                         {binding: 'vechidno', header: '차대번호', width: 200, align: 'left', isReadOnly: true},
                         {binding: 'gubunnm', header: '차량구분', width: 100, align: 'center', isReadOnly: true},
                         {binding: 'wheel', header: '륜', width: 80, align: 'center', isReadOnly: true},
@@ -570,6 +573,7 @@
                 let result = AjaxUtil.getSyncData(gUrl + "/order_list", data);
                 if (result.data != null) {
                     this.viewData.sourceCollection = result.data;
+                    document.getElementById('searchId').value = result.data.id;
                 }
             }
 
@@ -593,6 +597,38 @@
                     page.searchMain();
                 }
             });
+
+            $('#btnSave').click(function (e) {
+                let data = FormUtil.extractForm($('#matBasicForm'));
+
+                if (data.vechidno === null || data.vechidno === undefined) {
+                    Alert.alert('출하처리', '차대번호를 작성해주세요');
+                    return;
+                }
+                Alert.confirm('출하처리', "출하 처리하시겠습니까?", function () {
+                    shipmentStateComplete(data.vechidno, data.id);
+                });
+            });
+
+            //출고처리
+            function shipmentStateComplete(vechidno, searchid) {
+                let _this = this;
+                let data = {vechidno: vechidno, searchId : searchid};
+                let url = gUrl + '/shipment_status_complete';
+                let fnSuccess = function (result) {
+                    if (result.success) {
+                        page.searchMain();
+                        Notify.success("출하 처리 완료.");
+                    } else {
+                        if (result.message != '') {
+                            Notify.success(result.message);
+                        } else {
+                            Notify.success("출하 처리 실패.");
+                        }
+                    }
+                }
+                AjaxUtil.postAsyncData(url, data, fnSuccess);
+            }
         });
 
 
@@ -622,16 +658,10 @@
         })
 
         // 수주 및 제품 상세조회 그리드 더블클릭
-        function searchDetailSuju(searchId){
+        function searchDetailSuju(searchId, searchType){
             let data = {};
-            if ($('#cboSource').val() == 'product') {
-                data['TableName'] = 'product';
+                data['searchType'] = searchType;
                 data['searchId'] = searchId;
-            }
-            else {
-                data['TableName'] = 'suju';
-                data['searchId'] = searchId;
-            }
 
             let fnSuccess = function (res) {
                 if (res.success) {
@@ -648,6 +678,8 @@
             AjaxUtil.getAsyncData(gUrl + '/search_detail_suju', data, fnSuccess);
 
         }
+
+
 
 
     </script>

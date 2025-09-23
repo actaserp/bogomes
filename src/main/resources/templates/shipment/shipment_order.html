@@ -15,7 +15,7 @@
             </ul>
         </div>
         <div style="display: flex; gap: 5px;">
-            <section class="section" style="flex: 4;">
+            <section class="section" style="flex: 5;">
                 <form id="searchForm">
                     <div class="section-top">
                         <div class="search-wrap">
@@ -134,7 +134,7 @@
                 </div>
             </section>
 
-            <section class="section" style="flex: 3; min-width: 0;">
+            <section class="section" style="flex: 4; min-width: 0;">
                 <div class="section-top">
                     <div class="search-wrap">
                         <dl>
@@ -215,7 +215,7 @@
                             <tbody>
                             <tr>
                                 <th>
-                                    <label for="spcno"><span class="eq">*</span>제원</label>
+                                    <label for="spcno">제원</label>
                                 </th>
                                 <td colspan="2">
                                     <input type="text" id="spcno" name="spcno"
@@ -223,7 +223,7 @@
                                 </td>
 
                                 <th>
-                                    <label for="CustomerBarcode"><span class="eq">*</span>제원<br>관리번호</label>
+                                    <label for="CustomerBarcode">제원<br>관리번호</label>
                                 </th>
                                 <td colspan="2">
                                     <input type="text" id="CustomerBarcode" name="CustomerBarcode"
@@ -237,10 +237,10 @@
                                 </th>
                                 <td  colspan="2">
                                     <input type="text" style="width: 100%;" id="vechidno"
-                                           name="vechidno" required>
+                                           name="vechidno" value="1" required readonly>
                                 </td>
                                 <th>
-                                    <label for="MaterialGroup_id"><span class="eq">*</span>차량구분</label>
+                                    <label for="MaterialGroup_id">차량구분</label>
                                 </th>
                                 <td colspan="2">
                                     <select style="width: 100%;" id="MaterialGroup_id"
@@ -368,7 +368,7 @@
                                            style="width: 100%;">
                                 </td>
                                 <th>
-                                    <label for="SafetyStock">최대적재량</label>
+                                    <label for="SafetyStock">최대<br>적재량</label>
                                 </th>
                                 <td>
                                     <input type="text" id="SafetyStock" name="SafetyStock"
@@ -434,7 +434,7 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="addmaterial">출고시추가지급품</label>
+                                    <label for="addmaterial">출고시<br>추가지급품</label>
                                 </th>
                                 <td colspan="5">
                                     <input type="text" id="addmaterial" name="addmaterial"
@@ -450,7 +450,6 @@
     </div>
 
 </th:block>
-
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
     <th:block th:replace="/common/multiform_material :: multiform_material"></th:block>
@@ -502,11 +501,11 @@
                         {binding: 'JumunNumber', header: '수주번호', width: 130, align: 'center', isReadOnly: true},
                         {binding: 'DueDate', header: '납기일', width: 100, align: 'center', isReadOnly: true},
                         {binding: 'mat_code', header: '제품코드', width: 90, align: 'center', isReadOnly: true},
-                        {binding: 'mat_name', header: '제품명', width: 120, align: 'left', isReadOnly: true},
+                        {binding: 'mat_name', header: '제품명', width: 260, align: 'left', isReadOnly: true},
                         {binding: 'suju_qty', header: '수주량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'cur_stock', header: '현재고', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'order_qty', header: '기지시량', width: 80, align: 'right', isReadOnly: true},
-                        { binding: 'state', header: '수주상태', width: 80, align: 'center', isReadOnly: true },
+                        { binding: 'State', header: '수주상태', width: 80, align: 'center', isReadOnly: true },
                         {binding: 'shipment_qty', header: '출하량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'CompanyName', header: '판매처', width: 100, align: 'left', isReadOnly: true},
                         {binding: 'JumunDate', header: '수주일', width: 100, align: 'center', isReadOnly: true},
@@ -600,7 +599,7 @@
                 this.grid_product.downloadFileName = '제품';
 
                 $('#div_product').hide();
-                AjaxUtil.fillSelectOptions($('#company_id'), 'company', 'choose', '', 'sale-purchase,sale');
+                AjaxUtil.fillSelectOptions($('#company_id'), 'company', 'choose', false, 'sale-purchase,sale');
             }
 
             searchMain() {
@@ -646,12 +645,14 @@
                 let data = FormUtil.extractForm($form);
                 data['Company_id'] = $('#company_id').val();
                 data['ShipDate'] = $('#shipdate').val();
-                if ($('#cboSource').val() === 'product') {
+                if ($('#cboSource').val() === 'product') { // 품목출하
                     data['TableName'] = 'product';
                     data['mat_id'] = $('#searchId').val();
-                } else {
+                    data['vechidno'] = $('#vechidno').val();
+                } else {                                    // 수주 출하
                     data['TableName'] = 'suju'
                     data['suju_pk'] = $('#searchId').val();
+                    data['vechidno'] = $('#vechidno').val();
                 }
                 let bucket = [];
                 bucket.push({ suju_pk: $('#searchId').val() });
@@ -728,13 +729,13 @@
 
         $(document).ready(function (e) {
             page = new ShipmentOrderPage();
-            new CompanySelector('condCompanySelect', 'combobox', 'cboCompany', 'sale', {
+            new CompanySelector('condCompanySelect', 'combobox', 'cboCompany', 'sale-purchase,sale', {
                 null_option: 'all',
                 selected_value: '',
                 data_fill: true,
                 condition1: ''
             });
-            new CompanySelector('dataCompanySelect', 'combobox', 'company_id', 'sale', {
+            new CompanySelector('dataCompanySelect', 'combobox', 'company_id', 'sale-purchase,sale', {
                 null_option: 'choose',
                 selected_value: '',
                 data_fill: true,

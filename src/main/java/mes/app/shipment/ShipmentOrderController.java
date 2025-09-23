@@ -118,12 +118,12 @@ public class ShipmentOrderController {
 				? Integer.valueOf(sujuData.getFirst("mat_id").toString())
 				: Integer.valueOf(sujuData.getFirst("matId").toString());
 
-		Integer orderQty = sujuData.getFirst("order_qty") != null
-				? Integer.valueOf(sujuData.getFirst("order_qty").toString())
+		Integer orderQty = sujuData.getFirst("vechidno") != null
+				? Integer.valueOf(sujuData.getFirst("vechidno").toString())
 				: 0;
 
-		String matName = sujuData.getFirst("mat_name") != null
-				? sujuData.getFirst("mat_name").toString()
+		String matName = sujuData.getFirst("matName") != null
+				? sujuData.getFirst("matName").toString()
 				: "";
 
 		// ✅ 수주일 경우 relationSujuList 조회
@@ -200,6 +200,10 @@ public class ShipmentOrderController {
 					sm.setUnitPrice(unitPrice);
 					sm.setPrice(priceSum);
 					totalPrice += priceSum;
+				}
+				if (item.getSujuHeadId() != null) {
+					int headId = item.getSujuHeadId();
+					sm.setSuju_head_id(headId);
 				}
 				sm.setSourceTableName("rela_data");
 			}
