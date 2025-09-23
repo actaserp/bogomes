@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -92,6 +93,78 @@ public class PopupController {
 		paramMap.addValue("keyword", keyword);
 		paramMap.addValue("spjangcd", spjangcd);
 		result.data = this.sqlRunner.getRows(sql, paramMap);
+		return result;
+	}
+	@RequestMapping("/search_tab_material")
+	public AjaxResult getSearch_tab_material(
+			@RequestParam(value="material_type", required=false) String material_type,
+			@RequestParam(value="material_group", required=false) Integer material_group,
+			@RequestParam(value="keyword", required=false) String keyword,
+			@RequestParam(value="spjangcd") String spjangcd
+	) {
+		AjaxResult result = new AjaxResult();
+
+		StringBuilder sql = new StringBuilder("""
+        select 
+            m.id
+          , m."Code"
+          , m."Name"
+          , m."MaterialGroup_id"
+          , mg."Name" as group_name
+          , mg."MaterialType"
+          , sc."Value" as "MaterialTypeName"
+          , sc."Code" as "MaterialTypeCode"
+          , u."Name" as unit_name
+          , m."Mtyn" as mtyn
+          , m."WorkCenter_id"
+          , m."Equipment_id"
+          , m."VatExemptionYN"
+          , m."Standard1" as "Spec"
+        from material m
+        left join unit   u  on m."Unit_id" = u.id
+        left join mat_grp mg on m."MaterialGroup_id" = mg.id
+        left join sys_code sc on mg."MaterialType"   = sc."Code" and sc."CodeType" = 'mat_type'
+        where 1=1
+          and "Useyn" = '0'
+          and m."spjangcd" = :spjangcd
+    """);
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("spjangcd", spjangcd);
+
+		// material_type: "somo,other,jajae" → ['somo','other','jajae']
+		if (StringUtils.hasText(material_type)) {
+			List<String> materialTypes = Arrays.stream(material_type.split(","))
+					.map(String::trim)
+					.filter(s -> !s.isEmpty())
+					.toList();
+
+			if (!materialTypes.isEmpty()) {
+				sql.append("""
+                and mg."MaterialType" in (:material_type)
+            """);
+				paramMap.addValue("material_type", materialTypes);
+			}
+		}
+
+		if (material_group != null) {
+			sql.append("""
+            and mg."id" = :material_group
+        """);
+			paramMap.addValue("material_group", material_group, java.sql.Types.INTEGER);
+		}
+
+		if (StringUtils.hasText(keyword)) {
+			sql.append("""
+            and (m."Name" ilike concat('%%', :keyword, '%%')
+             or  m."Code" ilike concat('%%', :keyword, '%%'))
+        """);
+			paramMap.addValue("keyword", keyword);
+		}
+
+		sql.append(" order by mg.\"Name\", m.\"Name\" ");
+
+		result.data = this.sqlRunner.getRows(sql.toString(), paramMap);
 		return result;
 	}
 
