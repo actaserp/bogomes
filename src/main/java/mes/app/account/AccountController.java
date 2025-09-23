@@ -188,7 +188,8 @@ public class AccountController {
 
 	@PostMapping("/pda/login")
 	public Map<String, Object> pdaLogin(@RequestParam String username,
-										@RequestParam String password) {
+										@RequestParam String password,
+										HttpServletRequest request) {
 		Map<String, Object> result = new HashMap<>();
 
 		try {
@@ -199,6 +200,11 @@ public class AccountController {
 			if (auth != null && auth.isAuthenticated()) {
 				User user = (User) auth.getPrincipal();
 
+				SecurityContext sc = SecurityContextHolder.getContext();
+				sc.setAuthentication(auth);
+				HttpSession session = request.getSession(true);
+				session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+
 				result.put("code", "OK");
 				result.put("userid", user.getUsername());
 				result.put("username", user.getFirst_name());  // 필요 시 lastName 도 추가
@@ -208,7 +214,7 @@ public class AccountController {
 						.stream()
 						.map(GrantedAuthority::getAuthority)
 						.collect(Collectors.toList()));
-				result.put("dbnm", "ERP_SWSPANEL"); // PDA용 고정값이라면 추가
+				result.put("sessionId", session.getId());
 
 			} else {
 				result.put("code", "NOUSER");
