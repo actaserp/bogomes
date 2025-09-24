@@ -19,26 +19,26 @@ public class ASManagementService {
     dicParam.addValue("regno", regno);
     String sql= """
         select
-        a.id,
-        a.asid as as_id,
-        a.regdate, 
-        a.fixdate,
-        m."Name" as itemcode,
-        b.regno,
-        a.fixtext ,
-        a.pernm,
-        a.uamt ,
-        a.totamt ,
-        a.workpay 
-        from tb_as011 a
-        left join tb_as010 b on a.asid = b.id 
-        left join material m on b.itemcode::int = m.id
-        where 1=1
-        -- and a.regdate between :start and :end
+           a.id ,
+           a.asid as as_id,
+           a.regdate ,
+           a.vechregno ,
+           m."Name" as itemcode ,
+           a.fixdate ,
+           a.pernm ,
+           a.partamt,
+           a.workamt ,
+           a.amount ,
+           a.vamt ,
+           a.totamt 
+           from tb_as011 a
+           left join tb_as010 b on b.id = a.asid
+           left join material m on m.id = b.itemcode::int
+           where 1=1
         """;
     if(regno != null && !regno.isEmpty()) {
       sql += """
-           and  b.regno like '%' || :regno || '%'
+           and  a.vechregno like '%' || :regno || '%'
            """;
     }
     return this.sqlRunner.getRows(sql, dicParam);
@@ -47,34 +47,45 @@ public class ASManagementService {
   public Map<String, Object> getDetail(Integer id) {
     MapSqlParameterSource dicParam = new MapSqlParameterSource();
     dicParam.addValue("id", id);
-    String sql= """
+    String head_sql= """
         select
-        a.id,
-        a.asid as as_id,
-        b.spcmngno ,
-        b.itemcode as "Material_id",
-        m."Name" as itemcode,
-        a.vechidno,
-        a.pernm,
-        a.regdate,
-        a.fixdate,
-        a.endflag ,
-        a.fixtext,
-        a.partgroup ,
-        a.partqty ,
-        a.uamt,
-        a.totamt,
-        a.workpay,
-        a.mileage ,
-        b."owner",
-        b.regno,
-        b.vechidno
-        from tb_as011 a
-        left join tb_as010 b on a.asid = b.id
-        left join mat_grp mg on mg.id = b.spcmngno::int
-        left join material m on b.itemcode::int = m.id
-        where a.id = :id
+             a.id ,
+             a.asid as as_id,
+             a.regdate ,
+             a.vechregno ,
+             m."Name" as itemcode ,
+             a.fixdate ,
+             a.mileage  ,
+             a.pernm ,
+             a.partamt,
+             a.workamt ,
+             a.amount ,
+             a.vamt ,
+             a.totamt as h_totamt
+          from tb_as011 a
+          left join tb_as010 b on a.asid = b.id
+          left join material m on b.itemcode::int = m.id
+          where a.id = :id
         """;
-    return this.sqlRunner.getRow(sql, dicParam);
+
+    String detail_sql = """
+        select
+           id,
+           fixtext ,
+           partgroup ,
+           partqty ,
+           uamt ,
+           totamt ,
+           workpay 
+           from tb_as012
+           where repid = :id;
+        """;
+    Map<String, Object> head = this.sqlRunner.getRow(head_sql, dicParam);
+
+    // 디테일 여러 건
+    List<Map<String, Object>> items = this.sqlRunner.getRows(detail_sql, dicParam);
+
+    head.put("items", items);  // ← 같이 리턴
+    return head;
   }
 }

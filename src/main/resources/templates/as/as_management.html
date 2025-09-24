@@ -376,7 +376,6 @@
                 </th>
                 <td>
                   <input type="hidden" id="vechidno" name="vechidno">
-                  <input type="hidden" id="Material_id" name="Material_id">
                   <input id="itemcode" name="itemcode" placeholder="차량명칭(차종)" readonly>
                 </td>
               </tr>
@@ -410,10 +409,10 @@
               </tr>
               <tr>
                 <th>
-                  <label for="totalUamt">부품합계</label>
+                  <label for="partamt">부품합계</label>
                 </th>
                 <td>
-                  <input type="text" id="totalUamt" name="totalUamt" style="text-align:right;" placeholder="부품합계">
+                  <input type="text" id="partamt" name="partamt" style="text-align:right;" placeholder="부품합계">
                 </td>
                 <th>
                   <label for="total_workpay">공임합계</label>
@@ -424,10 +423,10 @@
               </tr>
               <tr>
                 <th>
-                  <label for="totalAmt">공금가액</label>
+                  <label for="total_amt">공금가액</label>
                 </th>
                 <td>
-                  <input type="text" id="totalAmt" name="totalAmt" style="text-align:right;" placeholder="공금가액">
+                  <input type="text" id="total_amt" name="total_amt" style="text-align:right;" placeholder="공금가액">
                 </td>
                 <th>
                   <label for="vat">부과세</label>
@@ -540,17 +539,16 @@
           },
           columns: [
             {binding: 'id', header: 'id', visible: false},
-            {binding: 'as_id', header: 'id', visible: false},
+            {binding: 'asid', header: 'id', visible: false},
             {binding: 'regdate', header: '등록일자', width: 120, align: 'center'},
-            {binding: 'regno', header: '등록번호', width: 110, align: 'center'},
+            {binding: 'vechregno', header: '등록번호', width: 110, align: 'center'},
             {binding: 'itemcode', header: '차량명칭', width: 180, align: 'left'},
             {binding: 'fixdate', header: '점검일자', width: 120, align: 'center'},
-            {binding: 'fixtext', header: '작업내용', width: 210, align: 'left'},
             {binding: 'pernm', header: '정비기사', width: 100, align: 'center'},
-            {binding: 'uamt', header: '부품합계', width: 100, align: 'right'},
-            {binding: 'workpay', header: '공임합계', width: 100, align: 'right'},
-            {binding: 'workpay', header: '공급가액', width: 100, align: 'right'},
-            {binding: 'vatamt', header: '부과세', width: 100, align: 'right'},
+            {binding: 'partamt', header: '부품합계', width: 100, align: 'right'},
+            {binding: 'workamt', header: '공임합계', width: 100, align: 'right'},
+            {binding: 'amount', header: '공급가액', width: 100, align: 'right'},
+            {binding: 'vamt', header: '부과세', width: 100, align: 'right'},
             {binding: 'totamt', header: '합계', width: 100, align: 'right'},
           ],
           itemsSource: this.viewData, // 데이터를 설정할 배열
@@ -580,7 +578,6 @@
           let searchcallback = function (items) {
             console.log('items : ', items);
             document.getElementById('as_id').value = items.asid;
-            document.getElementById('Material_id').value = items.Material_id;
             document.getElementById('itemcode').value = items.itemcode;
             document.getElementById('regno').value = items.regno;
             document.getElementById('vechidno').value = items.vechidno;
@@ -634,20 +631,13 @@
               const $ctx = $('#basicForm_modal');
 
               // 우선 값 채우기(필요 시 fillForm로 대체)
-              // fillForm($ctx, d);  // 이미 쓰신다면 이 한 줄로 모두 바인딩
-              $ctx.find('#itemcode').val(d.itemcode || '');
-              // 숫자 필드 포맷
-              formatNumberInput(d.partqty ?? '', '#partqty', $ctx);
-              formatNumberInput(d.uamt    ?? '', '#uamt',    $ctx);
-              formatNumberInput(d.totamt  ?? '', '#totamt',  $ctx);
-              formatNumberInput(d.workpay ?? '', '#workpay', $ctx);
-
-              // 마일리지는 km 전용 포맷
+              fillForm($ctx, d);  // 이미 쓰신다면 이 한 줄로 모두 바인딩
+              // // 마일리지는 km 전용 포맷
               $ctx.find('#mileage').val(d.mileage ?? '');
               formatMileageInput($ctx.find('#mileage'));
 
               // 합계 보정
-              calculateTotal($ctx);
+              //calculateTotal($ctx);
 
               // 포커스
               $ctx.find('#spcmngno').focus();
@@ -661,7 +651,7 @@
             // 숫자 필드 포맷
             formatNumberInput(d.partqty ?? '', '#partqty', $ctx);
             formatNumberInput(d.uamt    ?? '', '#uamt',    $ctx);
-            formatNumberInput(d.totamt  ?? '', '#totamt',  $ctx);
+            formatNumberInput(d.h_totamt  ?? '', '#totamt',  $ctx);
             formatNumberInput(d.workpay ?? '', '#workpay', $ctx);
 
             // 마일리지는 km 전용 포맷
@@ -723,30 +713,24 @@
           Alert.alert('', '등록번호를 입력하세요.');
           return;
         }
-        if (!$ctx.find('#Material_id').val()) {
-          Alert.alert('', '차량명칭(차종)을 선택하세요.');
-          return;
-        }
         if (!$ctx.find('#itemcode').val()) {
           Alert.alert('', '차량명칭(차종)을 입력하세요.');
           return;
         }
         const data = {
-          id:          $ctx.find('#id').val(),
-          as_id:       $ctx.find('#as_id').val(),
-          regno:       $ctx.find('#regno').val(),
-          itemcode:    $ctx.find('#itemcode').val(),
-          Material_id: $ctx.find('#Material_id').val(),
-          regdate:     $ctx.find('#regdate').val(),
-          vechidno:    $ctx.find('#vechidno').val(),
-          fixdate:     $ctx.find('#fixdate').val(),
-          pernm:       $ctx.find('#pernm').val(),
-          mileage: $ctx.find('#mileage').val().replace(/,/g, ''),
+          id: $ctx.find('#id').val(),
+          as_id: $ctx.find('#as_id').val(),
+          regno: $ctx.find('#regno').val(), //등록번호
+          regdate: $ctx.find('#regdate').val(),
+          vechidno: $ctx.find('#vechidno').val(),  //차대번호
+          fixdate: $ctx.find('#fixdate').val(),
+          pernm: $ctx.find('#pernm').val(),
+          mileage: $ctx.find('#mileage').val().replace(/,/g, '').replace(/km/gi, '').trim() ,
 
           // 상단 요약
-          totalUamt: $ctx.find('#totalUamt').val().replace(/,/g, ''),
+          partamt: $ctx.find('#partamt').val().replace(/,/g, ''),
           total_workpay: $ctx.find('#total_workpay').val().replace(/,/g, ''),
-          totalAmt: $ctx.find('#totalAmt').val().replace(/,/g, ''),
+          total_amt: $ctx.find('#total_amt').val().replace(/,/g, ''),
           vat: $ctx.find('#vat').val().replace(/,/g, ''),
           totamt:$ctx.find('#totamt').val().replace(/,/g, ''),
 
@@ -782,24 +766,26 @@
 
         Alert.confirm('', '삭제하시겠습니까?', () => {
           const url = this.url + '/delete';
-          const data = {id};
+          const data = { id };
 
           AjaxUtil.postAsyncData(url, data, (res) => {
             if (res && res.success) {
               Notify.success('삭제되었습니다.');
               this.searchMainData();
-              if (opts.closeModal) {
-                const $ctx  = opts.$ctx || $('#basicForm_modal');
-                const modal = $ctx.data('modal');
-                if (modal && typeof modal.close === 'function') {
-                  modal.close();
-                }
+
+              // ✅ 모달 모드 처리
+              const $ctx  = opts.$ctx || $('#basicForm_modal');
+              const modal = $ctx.data && $ctx.data('modal');
+              const isModal = !!(opts.closeModal || ($ctx.length && modal));
+
+              if (isModal) {
+                if (modal && typeof modal.close === 'function') modal.close();
               } else {
-                // 일반 화면에서는 기존처럼 초기화
+                // 큰 화면만 초기화
                 $('#btnNew').click();
               }
             } else {
-              Alert.alert('', res && res.message ? res.message : '삭제에 실패했습니다.');
+              Alert.alert('', (res && res.message) ? res.message : '삭제에 실패했습니다.');
             }
           });
         });
@@ -810,34 +796,67 @@
       return $('#basicForm_modal').length ? $('#basicForm_modal') : $('#basicForm');
     }
 
-    function fillForm($root, d) {
+    // ✅ 옵션: bindItems(기본 true), format(기본 true)
+    function fillForm($root, d, opts = {}) {
+      const { bindItems = true, format = true } = opts;
+
+      // --- 기본 필드 ---
       $root.find('#id').val(d.id || '');
       $root.find('#as_id').val(d.as_id || '');
-      $root.find('#regno').val(d.regno || '');
-      $root.find('#Material_id').val(d.Material_id || '');
-      $root.find('#itemcode').val(d.itemcode || '');   // ✅ 소문자 가정
+      $root.find('#regno').val(d.vechregno || '');
+      $root.find('#itemcode').val(d.itemcode || '');
       $root.find('#regdate').val(d.regdate || '');
       $root.find('#fixdate').val(d.fixdate || '');
-      $root.find('#fixText').val(d.fixtext || '');
       $root.find('#pernm').val(d.pernm || '');
       $root.find('#mileage').val(d.mileage || '');
-      $root.find('#endflag').prop('checked', d.endflag === '0');
+      $root.find('#partamt').val(d.partamt || '');
+      $root.find('#total_workpay').val(d.workamt || '');
+      $root.find('#total_amt').val(d.amount || '');
+      $root.find('#vat').val(d.vamt || '');
+      $root.find('#totamt').val(d.h_totamt || '');
 
+      // --- 아이템 배열 바인딩 ---
+      if (bindItems) {
+        // ※ 프로젝트에 이미 있는 함수 재사용
+        populateItemRows($root, d.items || []);
 
-      if (d.total_partqty != null) $root.find('#total_partqty').val(d.total_partqty);
-      if (d.totalUamt     != null) $root.find('#totalUamt').val(d.totalUamt);
-      if (d.total_workpay!= null) $root.find('#total_workpay').val(d.total_workpay);
-      if (d.totamt        != null) $root.find('#totamt').val(d.totamt);
+        // ※ 비어있으면 1행 추가(UX 유지)
+        const $rows = $root.find('.item-table tbody tr:not(.item-template-row)');
+        if ($rows.length === 0) addItemRow($root);
+
+        // 각 행 금액 재계산(필요시)
+        $root.find('.item-table tbody tr:not(.item-template-row)').each(function () {
+          recalcTotals($(this)); // 이미 가지고 계신 계산 함수 사용
+        });
+      }
+
+      // --- 포맷/합계 보정 ---
+      if (format) {
+        formatMileageInput($root.find('#mileage')); // km 포맷
+        // 총계 필드 포맷(있는 경우만)
+        ['#partamt', '#total_workpay', '#total_amt', '#vat', '#totamt'].forEach(sel => {
+          const $el = $root.find(sel);
+          if ($el.length) formatNumberInput($el.val() ?? '', sel, $root);
+        });
+      }
     }
 
-
+    // 기존 행에 우선 바인딩하고, 부족하면 그때만 행 추가
     function populateItemRows($root, items) {
       const $tbody = $root.find('.item-table tbody');
-      // 기존 행 제거(템플릿 제외)
-      $tbody.find('tr:not(.item-template-row)').remove();
-      RowIdx.next = 0;
+      let $rows = $tbody.find('tr:not(.item-template-row)');
 
-      (items || []).forEach(it => {
+      // 기본 1행도 없다면 1행 만들어 둠(UX 유지)
+      if ($rows.length === 0) {
+        addItemRow($root);
+        $rows = $tbody.find('tr:not(.item-template-row)');
+      }
+
+      // 현재 DOM에 있는 행들부터 순서대로 채운다
+      const list = items || [];
+
+      // 필요한 만큼만 추가 (items가 더 많을 때만)
+      while ($rows.length < list.length) {
         const idx = RowIdx.nextIndex();
         const $tmpl = $tbody.find('.item-template-row')
           .first()
@@ -846,33 +865,61 @@
           .show();
 
         applyIndexToRow($tmpl, idx);
-        if ($tbody.find('tr:not(.item-template-row)').length === 0) {
-          addItemRow($root);
-        }
-        reindexAllRows($root);
-        // 값 주입
-        $tmpl.find(`[name="fixtext_${idx}"]`).val(it.fixtext || '');
-        $tmpl.find(`[name="txtProductName_${idx}"]`).val(it.txtProductName || '');
-        $tmpl.find(`[name="part_id_${idx}"]`).val(it.part_id || '');
-        $tmpl.find(`[name="partqty_${idx}"]`).val(it.partqty || '');
-        $tmpl.find(`[name="uamtPrice_${idx}"]`).val(it.uamtPrice || '');
-        $tmpl.find(`[name="amt_${idx}"]`).val(it.amt || '');
-        $tmpl.find(`[name="workpay_${idx}"]`).val(it.workpay || '');
-        $tmpl.find(`[name="State_${idx}"]`).val(it.State || '');
-        $tmpl.find(`[name="balju_StateName_${idx}"]`).val(it.balju_StateName || '');
+        $tbody.append($tmpl);
+        $rows = $tbody.find('tr:not(.item-template-row)');
+      }
+
+      // 인덱싱을 DOM 기준으로 다시 정렬(필요 시)
+      reindexAllRows($root);
+
+      // 최신 행 목록/인덱스 재확인
+      $rows = $tbody.find('tr:not(.item-template-row)');
+
+      // i번째 아이템 → i번째 기존 행에 바인딩
+      for (let i = 0; i < list.length; i++) {
+        const it = list[i];
+        const $row = $rows.eq(i);
+        const idx = $row.attr('data-row-index');
+
+        $row.find(`[name="as_detail_id_${idx}"]`).val(it.id ?? '');
+        $row.find(`[name="fixtext_${idx}"]`).val(it.fixtext ?? '');
+        $row.find(`[name="txtProductName_${idx}"]`).val(it.partgroup ?? '');
+        $row.find(`[name="part_id_${idx}"]`).val(it.part_id ?? '');
+        $row.find(`[name="partqty_${idx}"]`).val(it.partqty ?? '');
+        $row.find(`[name="uamtPrice_${idx}"]`).val(it.uamt ?? '');
+        $row.find(`[name="amt_${idx}"]`).val(it.totamt ?? '');
+        $row.find(`[name="workpay_${idx}"]`).val(it.workpay ?? '');
 
         // 숫자 필드 포맷
-        ['partqty','uamtPrice','amt','workpay'].forEach(key => {
+        ['partqty', 'uamtPrice', 'amt', 'workpay'].forEach(key => {
           const sel = `[name="${key}_${idx}"]`;
-          formatNumberInput($tmpl.find(sel).val(), sel, $root);
+          formatNumberInput($row.find(sel).val(), sel, $root);
         });
 
-        $tbody.append($tmpl);
-      });
+        // 행 단위 재계산(있다면)
+        if (typeof recalcTotals === 'function') recalcTotals($row);
+      }
 
-      recalcTotals(); // 상단 합계 갱신
+      // 남는 기존 행은 비워두기(삭제하지 않음)
+      for (let j = list.length; j < $rows.length; j++) {
+        const $row = $rows.eq(j);
+        const idx = $row.attr('data-row-index');
+        clearItemRowValues($row, idx); // 아래 헬퍼
+      }
+
+      // 상단 합계 갱신
+      if (typeof recalcTotals === 'function') recalcTotals();
+      if (typeof calculateTotal === 'function') calculateTotal($root);
     }
 
+    // 남는 행 클리어 헬퍼
+    function clearItemRowValues($row, idx) {
+      [
+        `as_detail_id_${idx}`, `fixtext_${idx}`, `txtProductName_${idx}`,
+        `part_id_${idx}`, `partqty_${idx}`, `uamtPrice_${idx}`,
+        `amt_${idx}`, `workpay_${idx}`
+      ].forEach(name => $row.find(`[name="${name}"]`).val(''));
+    }
 
     // 1) 뷰포트 기반 모달 크기 계산(아이패드 대응 포함)
     function calcModalSize() {
@@ -933,18 +980,21 @@
       const $actions = $('<div class="modal-actions" style="margin-top:12px; display:flex; justify-content:center; flex-wrap:wrap; gap:8px;"></div>');
 
       // AS 접수선택 (모달 내부)
-      const $btnASListInModal = $('<button type="button" class="btn-default btn-aslist">AS 접수선택</button>');
-      $btnASListInModal.on('click', function () {
-        let poppage = new PopASListComponent();
-        poppage.show(function (items) {
-          if (!items) return;
-          $clone.find('#as_id').val(items.asid || '');
-          $clone.find('#Material_id').val(items.Material_id || '');
-          $clone.find('#itemcode').val(items.itemcode || '');
-          $clone.find('#regno').val(items.regno || '');
+      let $btnASListInModal = null;
+      if (mode === 'new') {   // ✅ 신규 등록일 때만 보이게
+        $btnASListInModal = $('<button type="button" class="btn-default btn-aslist">AS 접수선택</button>');
+        $btnASListInModal.on('click', function () {
+          let poppage = new PopASListComponent();
+          poppage.show(function (items) {
+            if (!items) return;
+            $clone.find('#as_id').val(items.asid || '');
+            $clone.find('#itemcode').val(items.itemcode || '');
+            $clone.find('#regno').val(items.regno || '');
+          });
         });
-      });
-      $actions.append($btnASListInModal);
+        $actions.append($btnASListInModal);
+      }
+
 
       // 저장
       const $btnSaveModal = $('<button type="button" class="btn-default btn-aslist">저장</button>');
@@ -959,9 +1009,7 @@
         $btnDeleteModal = $('<button type="button" class="btn-danger">삭제</button>');
         $btnDeleteModal.on('click', function () {
           const id = $clone.find('#id').val();
-          page.deleteASData(id);
-          const modalInst = $clone.data('modal');
-          if (modalInst && typeof modalInst.close === 'function') modalInst.close();
+          page.deleteASData(id, { closeModal: true, $ctx: $clone });
         });
         $actions.append($btnDeleteModal);
       }
@@ -1199,7 +1247,7 @@
     // 🔹 행 공임 입력 시: 포맷 + 전체 합계 즉시 갱신
     $(document).on('input', '.item-table input[name^="workpay_"]', function () {
       const $form = $(this).closest('form');
-      const sel = $(this).attr('name'); // 예: workpay_0
+      const sel = $(this).attr('name');
       formatNumberInput(this.value, `[name="${sel}"]`, $form); // 콤마 포맷
       recalcTotals(); // 상단 합계(공임 포함) 반영
     });
@@ -1253,38 +1301,48 @@
 
       // 표기
       formatNumberInput(String(totalQty),   '#total_partqty',   $form); // 사용 중이면 유지
-      formatNumberInput(String(partsTotal), '#totalUamt',       $form); // 부품합계
+      formatNumberInput(String(partsTotal), '#partamt',       $form); // 부품합계
       formatNumberInput(String(sumWork),    '#total_workpay',   $form); // 공임합계
-      formatNumberInput(String(supply),     '#totalAmt',        $form); // 공급가액
+      formatNumberInput(String(supply),     '#total_amt',        $form); // 공급가액
       formatNumberInput(String(vat),        '#vat',             $form); // 부과세
       formatNumberInput(String(grand),      '#totamt',          $form); // 합계
     }
 
     // 모든 행을 객체 배열로 추출
-    function collectItemRows() {
+    function collectItemRows($scope = getActiveForm()) {
       const items = [];
-      const $rows = $('.item-table tbody tr:not(.item-template-row)');
+      const $rows = $scope.find('.item-table tbody tr:not(.item-template-row)');
+
       $rows.each(function () {
-        const $r = $(this);
+        const $r  = $(this);
         const idx = $r.attr('data-row-index');
 
+        // base만 넘기면 name="${base}_${idx}"로 찾음
         const getVal = (base) => $r.find(`[name="${base}_${idx}"]`).val() || '';
+        const num    = (s) => (s || '').replace(/[^0-9]/g, ''); // 소수 허용시 [^0-9.] 로
 
-        let row = {
+        // 빈 행 스킵하고 싶으면 사용 (옵션)
+        const allEmpty =
+          !getVal('fixtext') && !getVal('txtProductName') &&
+          !getVal('partqty') && !getVal('uamtPrice') &&
+          !getVal('amt') && !getVal('workpay');
+        if (allEmpty) return;
+
+        items.push({
           index: parseInt(idx, 10) || 0,
+          as_detail_id: getVal('as_detail_id'), // ← hidden 필드도 같이 담아두면 수정에 유용
           fixtext: getVal('fixtext'),
           txtProductName: getVal('txtProductName'),
           part_id: getVal('part_id'),
-          partqty: getVal('partqty').replace(/[^0-9]/g, ''),
-          uamtPrice: getVal('uamtPrice').replace(/[^0-9]/g, ''),
-          amt: getVal('amt').replace(/[^0-9]/g, ''),
-          workpay: getVal('workpay').replace(/[^0-9]/g, ''),
-        };
-        items.push(row);
+          partqty: num(getVal('partqty')),
+          uamtPrice: num(getVal('uamtPrice')),
+          amt: num(getVal('amt')),
+          workpay: num(getVal('workpay')),
+        });
       });
+
       return items;
     }
-
 
     $(document).ready(function (e) {
 

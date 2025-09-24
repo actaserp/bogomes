@@ -29,7 +29,7 @@
         <div class="search-wrap">
           <dl>
             <dt>
-              조회기간<span class="eq">*</span>
+              등록기간<span class="eq">*</span>
             </dt>
             <dd>
               <ul class="date-box">
@@ -97,11 +97,11 @@
 <th:block layout:fragment="scripts">
 
   <script type="text/javascript">
-    class ASListStatusPage {
+    class ASRepairStatusPage {
       constructor() {
         this.gird = null;
         this.init();
-        this.url = '/api/aftersales/as_list_status';
+        this.url = '/api/aftersales/ASRepairStatus';
       }
 
       init() {
@@ -119,20 +119,61 @@
           },
           columns: [
             {binding: 'id', header: 'id', visible: false},
-            {binding: 'spcmngno', header: '차량구분', width: 80, align: 'center'},
-            {binding: 'regno', header: '등록번호', width: 120, align: 'center'},
-            {binding: 'ItemCode', header: '차명', width: 200, align: 'left'},
-            {binding: 'vechidno', header: '차대번호', width: 200, align: 'center'},
-            {binding: 'owner', header: '차주', width: 150, align: 'center'},
-            {binding: 'regdate', header: '접수일자', width: 120, align: 'center'},
-            {binding: 'inputdate', header: '작업(완료)일자', width: 120, align: 'center'},
-            {binding: 'outdate', header: '출고일자', width: 120, align: 'center'},
-            {binding: 'endflag', header: '출고여부', width: 100, align: 'center'}
+            {binding: 'regdate', header: '등록일자', width: 120, align: 'center'},
+            {binding: 'vechregno', header: '등록번호', width: 110, align: 'center'},
+            {binding: 'itemcode', header: '차량명칭', width: 180, align: 'left'},
+            {binding: 'fixdate', header: '점검일자', width: 120, align: 'center'},
+            {binding: 'pernm', header: '정비기사', width: 100, align: 'center'},
+            {binding: 'partamt', header: '부품합계', width: 100, align: 'right'},
+            {binding: 'workamt', header: '공임합계', width: 100, align: 'right'},
+            {binding: 'amount', header: '공급가액', width: 100, align: 'right'},
+            {binding: 'vamt', header: '부과세', width: 100, align: 'right'},
+            {binding: 'totamt', header: '합계', width: 100, align: 'right'},
+            {binding: 'endflag', header: '출고여부', width: 80, align: 'center'},
+
+            { binding: 'detail_id',      header: '상세ID',  visible: false },
+            { binding: 'fixtext',        header: '작업내용', width: 220, align: 'left'   },
+            { binding: 'partgroup',      header: '부품구분', width: 120, align: 'left'   },
+            { binding: 'partqty',        header: '수량',     width: 70,  align: 'right', format: 'n0' },
+            { binding: 'uamt',           header: '단가',     width: 100, align: 'right', format: 'n0' },
+            { binding: 'detail_totamt',  header: '합계',     width: 100, align: 'right', format: 'n0' },
+            { binding: 'detail_workpay', header: '공임',     width: 100, align: 'right', format: 'n0' },
           ],
           itemsSource: new wijmo.collections.CollectionView([]), // 빈 데이터로 초기화
         });
         new FlexGridContextMenu(this.grid);
-        this.grid.downloadFileName = 'as 접수현황';
+        this.grid.downloadFileName = 'as 수리현황';
+
+        this.grid.formatItem.addHandler((s, e) => {
+          if (e.panel !== s.cells) return;
+
+          const row = s.rows[e.row];
+
+          // 1) 그룹행(GroupRow) 타이틀 커스터마이즈
+          if (row instanceof wijmo.grid.GroupRow) {
+            const group = row.dataItem;      // CollectionViewGroup
+            const first = group.items[0];    // 그룹 안 첫번째 데이터
+
+            if (first) {
+              e.cell.colSpan = s.columns.length;   // 전체 셀 합치기 (가능한 경우)
+              e.cell.innerHTML = `
+        <strong>등록번호 : ${first.vechregno} /</strong>
+        <strong>차대번호 : ${first.vechidno}</strong>
+`;
+            }
+            return; // 그룹행이면 여기서 끝
+          }
+
+          // 2) 일반 행(디테일) 중복 헤더 컬럼 비우기
+          const item = row.dataItem;
+          const prev = e.row > 0 ? s.rows[e.row - 1].dataItem : null;
+
+          if (prev && item.id === prev.id) {
+            if (['regdate','vechregno','itemcode','fixdate','pernm','partamt','workamt','amount','vamt','totamt','endflag'].includes(s.columns[e.col].binding)) {
+              e.cell.textContent = '';
+            }
+          }
+        });
 
         $('#txtvechidno').on('keypress', function (e) {
           if (e.keyCode === 13) {
@@ -156,17 +197,26 @@
 
         let result = AjaxUtil.getSyncData(this.url + '/read', param);
         if (result != null) {
-          _this.grid.itemsSource.sourceCollection = result.data;
+          const rows = result.data || [];
+
+          // id 기준 그룹핑
+          const cv = new wijmo.collections.CollectionView(rows, {
+            groupDescriptions: [
+              new wijmo.collections.PropertyGroupDescription('id')
+            ]
+          });
+
+          // 그리드에 바인딩
+          _this.grid.itemsSource = cv;
         }
       }
-
     }
 
     let page = null;
 
     $(document).ready(function (e) {
 
-      page = new ASListStatusPage();
+      page = new ASRepairStatusPage();
 
       $('#srchStartDt').val(CommonUtil.getYYYYMMDD(-7));
       $('#srchEndDt').val(CommonUtil.getYYYYMMDD());

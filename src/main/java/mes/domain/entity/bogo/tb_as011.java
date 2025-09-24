@@ -28,30 +28,28 @@ public class tb_as011 {
   @Column(name="fixdate")
   Date fixdate; //정비일자
 
-  @Column(name="partgroup")
-  String partgroup; //부품구분
+  @Column(name="vechregno")
+  String vechregno; //등록 번호
 
-  @Column(name="partqty")
-  Integer partqty;  //부품수량
+  @Column(name="partamt")
+  Integer partamt;  //부품합계
 
-  @Column(name="uamt")
-  Integer uamt;
+  @Column(name="workamt")
+  Integer workamt;  //공임합계
 
-  @Column(name = "totamt")
-  Integer totamt;
+  @Column(name="amount")
+  Integer amount; //공급가액
 
-  @Column(name="workpay")
-  Integer workpay;  //공임
+  @Column(name="vamt")
+  Integer vamt; //부과세
 
-  @Column(name="endflag")
-  String endflag;
+  @Column(name="totamt")
+  Integer totamt; //합계
 
-  @Column(name="pernm")
+  @Column(name = "pernm")
   String pernm;
 
   @Column(name="mileage")
   Integer mileage;  //주행거리
 
-  @Column(name="fixtext")
-  String fixtext;
 }
