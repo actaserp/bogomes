@@ -601,11 +601,11 @@
             $('#btnSave').click(function (e) {
                 let data = FormUtil.extractForm($('#matBasicForm'));
 
-                if (data.vechidno === null || data.vechidno === undefined) {
-                    Alert.alert('출하처리', '차대번호를 작성해주세요');
+                if (data.vechidno === null || data.vechidno === undefined || data.vechidno === '') {
+                    Alert.alert('출고처리', '차대번호를 작성해주세요');
                     return;
                 }
-                Alert.confirm('출하처리', "출하 처리하시겠습니까?", function () {
+                Alert.confirm('출고처리', "출고 처리하시겠습니까?", function () {
                     shipmentStateComplete(data.vechidno, data.id);
                 });
             });
@@ -618,12 +618,12 @@
                 let fnSuccess = function (result) {
                     if (result.success) {
                         page.searchMain();
-                        Notify.success("출하 처리 완료.");
+                        Notify.success("출고 처리 완료.");
                     } else {
                         if (result.message != '') {
                             Notify.success(result.message);
                         } else {
-                            Notify.success("출하 처리 실패.");
+                            Notify.success("출고 처리 실패.");
                         }
                     }
                 }
@@ -679,8 +679,40 @@
 
         }
 
+        // 신규버튼
+        $('#btnNew').click(function (e) {
+            $('#matBasicForm')[0].reset();
+            $('#matBasicForm').find('#id').val('');
 
+        });
 
+        // 출고취소
+        $('#btnDelete').click(function (e) {
+            let data = FormUtil.extractForm($('#matBasicForm'));
+
+            if (data.vechidno === null || data.vechidno === undefined || data.vechidno === '') {
+                Alert.alert('출고취소처리', '차대번호를 작성해주세요');
+                return;
+            }
+            Alert.confirm('출고취소처리', "출고취소 처리하시겠습니까?", function () {
+                let _this = this;
+                let url = gUrl + '/shipment_status_cancel';
+                let fnSuccess = function (result) {
+                    if (result.success) {
+                        page.searchMain();
+                        Notify.success("출고 취소처리 완료.");
+                    } else {
+                        if (result.message != '') {
+                            Notify.success(result.message);
+                        } else {
+                            Notify.success("출고 취소처리 실패.");
+                        }
+                    }
+                }
+                AjaxUtil.postAsyncData(url, data, fnSuccess);
+            });
+
+        });
 
     </script>
 

@@ -89,7 +89,7 @@ public class VehicleDevController {
         return result;
     }
 
-    // 출하 처리
+    // 출고 처리
     @PostMapping("/shipment_status_complete")
     public AjaxResult shipmentStatusComplete(
             @RequestParam(value = "searchId", required = false) Integer searchId,
@@ -138,6 +138,68 @@ public class VehicleDevController {
                         sm.set_audit(user);
                         sm.setVechidno(vechidno);
                         sm.setDevdate(new Date());
+                        Double orderQty = sm.getOrderQty();
+                        sm.setQty(orderQty);
+                        this.shipmentRepository.save(sm);
+                    }
+                }
+            }
+            // 수주헤더 기준으로 출하항목(shipment) 금액합산 정리
+            this.vehicleDevService.updateShipmentStateComplete(searchId);
+            // 관련 수주를 찾아서 수주의 출하 상태를 변경한다.
+            this.vehicleDevService.updateSujuShipmentState(searchId);
+        });
+
+        return result;
+    }
+
+    // 출고 취소
+    @PostMapping("/shipment_status_cancel")
+    public AjaxResult shipmentStatusCancel(
+            @RequestParam(value = "searchId", required = false) Integer searchId,
+            HttpServletRequest request,
+            Authentication auth) {
+
+        AjaxResult result = new AjaxResult();
+
+        User user = (User)auth.getPrincipal();
+
+        // Validation 체크 - 출하처리시 Material.currentStock 값과 Shipment.Qty(처리량)을 비교하여 값이 '-'인 경우 출하가 되지않도록 처리
+        List<Shipment> shipmentList = this.shipmentRepository.findByShipmentHeadId(searchId);
+
+        if (shipmentList != null) {
+            for (int i = 0; i < shipmentList.size(); i++) {
+                Integer materialId = shipmentList.get(i).getMaterialId();
+                Material material = this.materialRepository.getMaterialById(materialId);
+
+                if (material != null) {
+                    Float currentStock = material.getCurrentStock() != null ? material.getCurrentStock() : 0;
+                    Double shipQty = shipmentList.get(i).getQty() != null ? shipmentList.get(i).getQty() : 0;
+
+                    Float parsedShipQty = shipQty.floatValue();
+
+                    if (Float.compare(currentStock, parsedShipQty) < 0) {
+                        result.success = false;
+                        result.message = "재고 수량이 부족합니다.";
+                        return result;
+                    }
+                }
+            }
+        }
+
+        this.transactionTemplate.executeWithoutResult(status->{
+
+            // Shipment 테이블의 상태값 변경시 트리거 사용하여 "a"로 설정시 트리거를 통해 mat_inout 테이블에 출고데이터가 추가됨
+            List<Shipment> smList = this.shipmentRepository.findByShipmentHeadId(searchId);
+
+            if (smList != null) {
+                for (int i = 0; i < smList.size(); i++) {
+                    Shipment sm = smList.get(i);
+
+                    if (sm != null) {
+                        sm.set_status("a");
+                        sm.set_audit(user);
+                        sm.setDevdate(new Date());
 
                         this.shipmentRepository.save(sm);
                     }
@@ -151,4 +213,6 @@ public class VehicleDevController {
 
         return result;
     }
+
+
 }

@@ -521,7 +521,7 @@
 
 
                 if (errflag) {
-                    Alert.alert('', '출하 상태인 출하지시는 취소할 수 없습니다.');
+                    Alert.alert('', '출고 상태인 출하지시는 취소할 수 없습니다.');
                     return;
                 }
 
@@ -545,7 +545,7 @@
 
             saveShipDate() {
                 if (page.ship_state == 'shipped') {
-                    Alert.alert('', '출하상태의 출하일은 변경할 수 없습니다.');
+                    Alert.alert('', '출고상태의 출하일은 변경할 수 없습니다.');
                     return;
                 }
 

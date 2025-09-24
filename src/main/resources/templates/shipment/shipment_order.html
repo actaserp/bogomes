@@ -15,7 +15,7 @@
             </ul>
         </div>
         <div style="display: flex; gap: 5px;">
-            <section class="section" style="flex: 5;">
+            <section class="section" style="flex: 6;">
                 <form id="searchForm">
                     <div class="section-top">
                         <div class="search-wrap">
@@ -98,7 +98,7 @@
                             <dl>
                                 <dt>
                                     <label>
-                                        미출하<span class="eq"></span>
+                                        미출고<span class="eq"></span>
                                     </label>
                                 </dt>
                                 <dd>
@@ -134,7 +134,7 @@
                 </div>
             </section>
 
-            <section class="section" style="flex: 4; min-width: 0;">
+            <section class="section" style="flex: 5; min-width: 0;">
                 <div class="section-top">
                     <div class="search-wrap">
                         <dl>
@@ -177,14 +177,7 @@
                             <li>
                                 <a class="btn btn-delete"
                                    style="border: 1px solid red; color: red"
-                                   title="취소" id="btnCancelShipMat">
-                                    취소
-                                </a>
-                            </li>
-                            <li>
-                                <a class="btn btn-delete"
-                                   style="border: 1px solid red; color: red"
-                                   title="강제 완료" id="btnDeleteShipMat">
+                                   title="강제 완료" id="btnCompletionMat">
                                     강제 완료
                                 </a>
                             </li>
@@ -251,7 +244,7 @@
                                 <th>
                                     <label for="wheel">륜수</label>
                                 </th>
-                                <td>
+                                <td colspan="2">
                                     <input type="text" id="wheel" name="wheel"
                                             style="width: 100%;">
                                 </td>
@@ -259,16 +252,9 @@
                                 <th>
                                     <label for="cone">콘</label>
                                 </th>
-                                <td>
+                                <td colspan="2">
                                     <input type="text" id="cone" name="cone" style="width: 100%;">
                                 </td>
-                                <th>
-                                    <label for="devdate">출고일자</label>
-                                </th>
-                                <td>
-                                    <input type="date" id="devdate" name="devdate" style="width: 100%;">
-                                </td>
-
                             </tr>
                             <tr>
                                 <th>
@@ -434,7 +420,7 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="addmaterial">출고시<br>추가지급품</label>
+                                    <label for="addmaterial" style="font-size: small;">출고시<br>추가지급품</label>
                                 </th>
                                 <td colspan="5">
                                     <input type="text" id="addmaterial" name="addmaterial"
@@ -505,8 +491,8 @@
                         {binding: 'suju_qty', header: '수주량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'cur_stock', header: '현재고', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'order_qty', header: '기지시량', width: 80, align: 'right', isReadOnly: true},
-                        { binding: 'State', header: '수주상태', width: 80, align: 'center', isReadOnly: true },
-                        {binding: 'shipment_qty', header: '출하량', width: 80, align: 'right', isReadOnly: true},
+                        { binding: 'shipment_state', header: '출하상태', width: 80, align: 'center', isReadOnly: true },
+                        {binding: 'shipment_qty', header: '출고량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'CompanyName', header: '판매처', width: 100, align: 'left', isReadOnly: true},
                         {binding: 'JumunDate', header: '수주일', width: 100, align: 'center', isReadOnly: true},
                         {binding: 'mat_grp', header: '제품그룹', width: 100, align: 'left', isReadOnly: true},
@@ -779,30 +765,6 @@
                 $('#divList').toggle(300);
             });
 
-            // 강제 완료
-            $("#btnCompletionMat").click(function (e) {
-
-                if (($("#cboSource").val() == 'suju') && (SelectItem.length === 0 || SelectItem === undefined)) {
-                    Alert.alert('', '제품을 선택해 주세요.');
-                    return;
-                }
-
-                const sujuPkList = SelectItem.map(row => row._data.suju_pk);
-
-                let fnSuccess = function (res) {
-                    if (res.success) {
-                        Notify.success('강제 완료 성공.');
-                        page.searchMain();
-                    } else {
-                        const message = res.message ?? '강제 완료 실패';
-                        Alert.alert('', message);
-                    }
-                };
-
-                AjaxUtil.postJsonData('/api/sales/suju/force-complete', {sujuPkList}, fnSuccess);
-
-            });
-
             $('#srchStartDt').val(CommonUtil.getYYYYMMDD(-7));
             $('#srchEndDt').val(CommonUtil.getYYYYMMDD());
 
@@ -825,6 +787,31 @@
 
 
         })
+
+
+        // 강제 완료
+        $("#btnCompletionMat").click(function (e) {
+            let data = FormUtil.extractForm($('#matBasicForm'));
+            if (data.searchId === '' || data.searchId === null) {
+                Alert.alert('', '제품을 선택해 주세요.');
+                return;
+            }
+
+            const sujuPkList = data.searchId;
+
+            let fnSuccess = function (res) {
+                if (res.success) {
+                    Notify.success('강제 완료 성공.');
+                    page.searchMain();
+                } else {
+                    const message = res.message ?? '강제 완료 실패';
+                    Alert.alert('', message);
+                }
+            };
+
+            AjaxUtil.postJsonData('/api/sales/suju/force-complete', {sujuPkList}, fnSuccess);
+
+        });
     </script>
 
 </th:block>
