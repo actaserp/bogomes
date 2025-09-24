@@ -1,5 +1,6 @@
 package mes.app.common;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -7,12 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import mes.app.system.service.SystemService;
 import mes.domain.entity.LabelCode;
@@ -140,4 +138,45 @@ public class CommonController {
         result.data = items;
 		return result;
 	}
+
+	@GetMapping("/fifo_lot_list")
+	public AjaxResult getFifoLotList(
+			@RequestParam("mat_pk") Integer matPk,
+			@RequestParam("need_qty") Float needQty,
+			@RequestParam(value="spjangcd", required=false) String spjangcd) {
+
+		AjaxResult result = new AjaxResult();
+
+		List<Map<String, Object>> lots = this.sqlRunner.getRows("""
+			SELECT ml.id AS lot_id,
+					ml."LotNumber"   AS lot_number,
+					ml."CurrentStock" AS curr_qty,
+					TO_CHAR(ml."InputDateTime", 'YYYY-MM-DD HH24:MI:SS') AS input_date,
+					ml."EffectiveDate" AS expire_date
+			 FROM mat_lot ml
+			 JOIN material m
+			   ON m.id = ml."Material_id"
+			  AND m."StoreHouse_id" = ml."StoreHouse_id"
+			 WHERE ml."Material_id" = :matPk
+			   AND ml."CurrentStock" > 0
+			 ORDER BY ml."InputDateTime" ASC;
+		""", new MapSqlParameterSource().addValue("matPk", matPk));
+
+		List<Map<String, Object>> fifoList = new ArrayList<>();
+		float remain = needQty;
+
+		for (Map<String, Object> lot : lots) {
+			if (remain <= 0) break;
+			float curr = ((Number) lot.get("curr_qty")).floatValue();
+			float use = Math.min(curr, remain);
+			lot.put("out_qty", use);
+			fifoList.add(lot);
+			remain -= use;
+		}
+
+		result.success = true;
+		result.data = fifoList;
+		return result;
+	}
+
 }

@@ -234,6 +234,7 @@ public class ShipmentOrderService {
             , m."VatExemptionYN" as vat_exempt_yn
             , s."SourceDataPk" as src_data_pk
             , s."SourceTableName" as src_table_name
+            , sh."OrderDate" as prod_date
 			from shipment  s
 			inner join material m on m.id = s."Material_id" 
 			inner join mat_grp mg on mg.id = m."MaterialGroup_id"

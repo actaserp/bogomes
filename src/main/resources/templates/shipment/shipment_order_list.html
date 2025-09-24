@@ -1,4 +1,139 @@
 <html layout:decorate="~{layout_page}">
+
+<head>
+<style id="print_css">
+    @media print {
+        .pagebreak {
+            page-break-before: always;
+        }
+    }
+
+    .bg_gray {
+        background: #dedede;
+    }
+
+    .table_1 td.tar {
+        text-align: right;
+    }
+
+    .table_1 td.tal {
+        text-align: left;
+    }
+
+    .table_1 td.tac {
+        text-align: center;
+    }
+
+    .table_1 {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table_1 td.b2lr {
+        border-left: 2px solid #166614;
+        border-right: 2px solid #166614;
+    }
+
+    .table_1 td.b2lbr {
+        border-left: 2px solid #166614;
+        border-right: 2px solid #166614;
+        border-bottom: 2px solid #166614;
+    }
+
+    .table_1 td.b2tr {
+        border-top: 2px solid #166614;
+        border-right: 2px solid #166614;
+    }
+
+    .table_1 td.b2t {
+        border-top: 2px solid #166614;
+    }
+
+    .table_1 td.b2tb {
+        border-top: 2px solid #166614;
+        border-bottom: 2px solid #166614;
+    }
+
+    .table_1 td.b2lt {
+        border-left: 2px solid #166614;
+        border-top: 2px solid #166614;
+    }
+
+    .table_1 td.b2ltb {
+        border-left: 2px solid #166614;
+        border-top: 2px solid #166614;
+        border-bottom: 2px solid #166614;
+    }
+
+    .table_1 td.b2rtb {
+        border-right: 2px solid #166614;
+        border-top: 2px solid #166614;
+        border-bottom: 2px solid #166614;
+    }
+
+    .table_1 td.b2l {
+        border-left: 2px solid #166614;
+    }
+
+    .table_1 td.b2r {
+        border-right: 2px solid #166614;
+    }
+
+    .table_1 td.b2lb {
+        border-bottom: 2px solid #166614;
+        border-left: 2px solid #166614;
+    }
+
+    .table_1 td.b2b {
+        border-bottom: 2px solid #166614;
+    }
+
+    .table_1 td.b2rb {
+        border-bottom: 2px solid #166614;
+        border-right: 2px solid #166614;
+    }
+
+    .table_1 th, .table_1 td {
+        border: 1px solid black;
+        text-align: center;
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .table_1 .line {
+        border: 1px solid #166614;
+        color: #166614;
+        font-size: 14px;
+    }
+
+    .table_1 .line.clb {
+        color: black;
+        font-weight: 600;
+        font-size: 12px;
+        font-family: 휴먼고딕;
+    }
+
+    .table_1 .line.clb.money {
+        font-size: 20px;
+    }
+
+    .table_1 td > .ts {
+        font-size: 10px;
+    }
+
+    .table_1 td > .ts2 {
+        font-size: 18px;
+        position: relative;
+        top: 10px;
+    }
+
+    .table_1 .title {
+        font-size: 24px;
+        font-weight: 600;
+        padding: 5px;
+    }
+</style>
+</head>
 <th:block layout:fragment="content">
     <div class="layout-contents">
         <div class="page-title-wrap">
@@ -123,8 +258,11 @@
             <section style="flex: 1; min-width: 0">
                 <div class="container-fluid" id="divList2">
                     <div class="title_box">
+                        <button type="button" class="btn" id="btnbarcode" data-labelCd="소요 자재 바코드 출력">소요 자재 바코드 출력
+                        </button>
                         <span class="right_align rpt" data-labelCd="출하 품목">출하 품목</span>
                     </div>
+
                     <div class="container-fluid">
                         <div id="theGrid2"></div>
                     </div>
@@ -134,10 +272,59 @@
 
     </div>
 
+    <script type="text/x-tmpl" id="barcode_tmpl">
+        <div class="content_wrap popup">
+            <section class="pt-2" style="overflow:auto; height:600px;">
+                <div class="row" id="barcodeDiv"></div>
+            </section>
+            <div class="popup-button">
+                <button type="button" class="btn-popup" id="btnPopPrintBarcode" ><span data-labelCd="바코드인쇄">바코드인쇄</span></button>
+                <button type="button" class="btn-popup" id="modal-close-button"><span data-labelCd="닫기">닫기</span></button>
+            </div>
+
+        </div>
+    </script>
+
+    <script type="text/x-tmpl" id="barcode_table_tmpl">
+        <table class="table_1" style="width: 400px;border-collapse: collapse;">
+            <tr>
+                <td class="tac">품목코드</td>
+                <td colspan="3">{%=o.MaterialCode%}</td>
+<!--                <td class="tac">보관방법</td>-->
+<!--                <td></td>-->
+            </tr>
+            <tr>
+                <td class="tac">품명</td>
+                <td colspan="3">{%=o.MaterialName%}</td>
+            </tr>
+            <tr>
+                <td class="tac">LOT수량</td>
+                <td colspan="3">{%=o.InputQty%}</td>
+<!--                <td class="tac">포장단위</td>-->
+<!--                <td>{%=o.UnitName%}</td>-->
+            </tr>
+
+            <tr>
+                <td class="tac">입고일자</td>
+                <td colspan="3">{%=o.InputDateTime%}</td>
+            </tr>
+<!--            <tr>-->
+<!--                <td class="tac">유효기한</td>-->
+<!--                <td colspan="3">{%=o.EffectiveDate%}</td>-->
+<!--            </tr>-->
+            <tr>
+                <td colspan="4" class="barcode_td">
+                </td>
+            </tr>
+        </table>
+        <div style="width:auto;height;0px;page-break-before:always;line-height:5px;">&nbsp;</div>
+
+    </script>
+
 </th:block>
 
 <th:block layout:fragment="scripts">
-    <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+    <script type="text/javascript" src="/resource/jsBarcode/JsBarcode.all.min.js"></script>
 
     <script type="text/javascript">
 
@@ -290,7 +477,9 @@
                         unit_name: data[i].unit_name,
                         order_qty: data[i].order_qty,
                         ship_qty: data[i].ship_qty,
-                        description: data[i].description
+                        description: data[i].description,
+                        mat_pk: data[i].mat_pk,
+                        prod_date: data[i].prod_date
                     };
                     cv.addNew(newRow);
                 }
@@ -379,8 +568,117 @@
                 AjaxUtil.postAsyncData(this.gUrl + '/update_ship_date', data, fnSuccess);
             }
 
+            showBarcode(barcodeItems) {
+
+                let _this = this;
+                let content = tmpl('barcode_tmpl', {});
+                let $content = $(content);
+                let modalContainer = new PopupDraggable('바코드 출력');
+                modalContainer.open({width: 470, height: 700, $content});
+                let $barcodeDiv = $content.find('#barcodeDiv');
+
+                $.each(barcodeItems, function (idx, item) {
+                    let svg_id = "barcode_" + item.LotNumber;
+                    let svg = "<div class='col-12'><svg id='" + svg_id + "'></svg></div>";
+
+                    let tmp_table = tmpl('barcode_table_tmpl', item);
+                    let $tmp_table = $(tmp_table);
+                    $tmp_table.find('.barcode_td').append(svg);
+
+                    $barcodeDiv.append($tmp_table);
+                });
+
+                $.each(barcodeItems, function (idx, item) {
+                    let svg_id = "#barcode_" + item.LotNumber;
+
+                    // use options
+                    JsBarcode(svg_id, item.LotNumber, {
+                        format: 'code128', // 바코드 포맷 / default: code128 / options: EAN, UPC, CODE39, ITF-14, MSI, Pharmacode, Codabar (각 옵션들에 대한 설명은 사이트 참조)
+                        width: 2, // 너비 / default: 2
+                        height: 100, // 높이 / default: 100
+                        displayValue: true, // 텍스트 표시 여부 / default: true
+                        text: item.LotNumber, // 데이터 대신 특정 텍스트 표시 / default: undefined
+                        fontOptions: '', // 폰트 설정 / default: '' / options: bold, italic, bold italic
+                        font: 'monospace', // 폰트 / default: monospace / options: fantasy, etc... 사이트 참조
+                        textAlign: 'center', // 텍스트 위치 / default: center / options: left, center, right
+                        textPosition: 'bottom', // 텍스트 위치 / default: bottom / options: top, bottom
+                        textMargin: 2, // 바코드와 텍스트 사이 여백 / default: 2
+                        fontSize: 20, // 폰트 크기 / default: 20
+                        background: '#ffffff', // 바코드 배경 색 / default: #ffffff
+                        lineColor: '#000000', // 바코드 라인 색 / default: #000000
+                        margin: 10, // 바코드 영역 주변 여백 / default: 10
+                    });
+                });
+
+                let $btnPopPrintBarcode = $content.find('#btnPopPrintBarcode');
+
+                // 바코드 인쇄 버튼 클릭
+                $btnPopPrintBarcode.click(function (e) {
+                    var popupWindow = window.open("barcode_print", "_blank", "width=400px");
+                    let css = $('#print_css')[0].outerHTML;
+
+                    let html = $barcodeDiv.html();
+                    popupWindow.document.write(css);
+                    popupWindow.document.write(html);
+                    popupWindow.print();
+                });
+            }
+
 
         }
+
+        // 바코드 출력 버튼
+        $('#btnbarcode').click(function (e) {
+            let cv = page.grid2.collectionView;
+            if (!cv || cv.sourceCollection.length === 0) {
+                Alert.alert('', '출하 지시 품목이 없습니다.');
+                return;
+            }
+            let item = cv.sourceCollection[0];  // 👈 원래 API 데이터 그대로
+
+            let param = {
+                'prod_mat_id': item.mat_pk,
+                'prod_date': item.prod_date,
+                'need_pro_mat_qty': item.order_qty,
+                'consumed_mode': 'PLAN'
+            };
+
+            let result = AjaxUtil.getSyncData('/api/production/prod_result/consumed_list', param);
+
+            if (result.success && result.data) {
+                // 여기서 BOM 자재별 lot 선입선출 가져오기
+                let barcodeItems = [];
+                $.each(result.data, function (i, bomItem) {
+                    // 자재별 lot를 서버에서 가져옴
+                    let lotParam = {
+                        'mat_pk': bomItem.mat_pk,
+                        'need_qty': bomItem.bom_consumed
+                    };
+                    let lotResult = AjaxUtil.getSyncData('/api/common/fifo_lot_list', lotParam);
+
+                    if (lotResult.success && lotResult.data) {
+                        $.each(lotResult.data, function (j, lot) {
+                            barcodeItems.push({
+                                MaterialCode: bomItem.mat_code,
+                                MaterialName: bomItem.mat_name,
+                                InputQty: lot.out_qty,           // FIFO 계산된 수량
+                                UnitName: bomItem.unit,
+                                InputDateTime: lot.input_date,
+                                EffectiveDate: lot.expire_date,
+                                LotNumber: lot.lot_number
+                            });
+                        });
+                    }
+                });
+
+                if (barcodeItems.length > 0) {
+                    page.showBarcode(barcodeItems);
+                } else {
+                    Alert.alert('', '출력할 LOT이 없습니다.');
+                }
+            }
+        });
+
 
 
         let page = null;

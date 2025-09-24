@@ -1242,25 +1242,25 @@ public class ProductionResultController {
             mc = this.matConsuRepository.save(mc);
 
             //1. mat_inout 생성=> lot 투입이면 투입 수량만큼 lot 없으면 BOM 수량만큼 재고를 차감한다.
-            MaterialInout mic = new MaterialInout();
-            mic.setMaterialInoutHeadId(null);
-            mic.setMaterialId(mc.getMaterialId());
-            mic.setStoreHouseId(consMat.getStoreHouseId());
-            mic.setLotNumber(mp.getLotNumber());
-            mic.setInoutDate(LocalDate.parse(date.format(dateFormat)));
-            mic.setInoutTime(LocalTime.parse(time.format(timeFormat)));
-            mic.setInOut("out");
-            mic.setOutputType("consumed_out");
-            mic.setOutputQty(totalQty);
-            mic.setSourceDataPk(mc.getId());
-            mic.setSourceTableName("mat_consu");
-            mic.setState("confirmed");
-            mic.set_status("a");
-            mic.setDescription("차수생산 투입재고 차감");
-            mic.set_audit(user);
-            mic.setSpjangcd(spjangcd);
-
-            mic = this.matInoutRepository.save(mic);
+//            MaterialInout mic = new MaterialInout();
+//            mic.setMaterialInoutHeadId(null);
+//            mic.setMaterialId(mc.getMaterialId());
+//            mic.setStoreHouseId(consMat.getStoreHouseId());
+//            mic.setLotNumber(mp.getLotNumber());
+//            mic.setInoutDate(LocalDate.parse(date.format(dateFormat)));
+//            mic.setInoutTime(LocalTime.parse(time.format(timeFormat)));
+//            mic.setInOut("out");
+//            mic.setOutputType("consumed_out");
+//            mic.setOutputQty(totalQty);
+//            mic.setSourceDataPk(mc.getId());
+//            mic.setSourceTableName("mat_consu");
+//            mic.setState("confirmed");
+//            mic.set_status("a");
+//            mic.setDescription("차수생산 투입재고 차감");
+//            mic.set_audit(user);
+//            mic.setSpjangcd(spjangcd);
+//
+//            mic = this.matInoutRepository.save(mic);
         } // for문 끝
 
         // 2. mat_inout 생성=> 차수 수량만큼 재고를 증감한다.
