@@ -72,27 +72,27 @@
           #basicForm_modal #spcmngno {
               width:auto !important;
           }
-          .ax5modal[data-modal-els="root"] {
-              height: 70dvh !important;      /* 동적 뷰포트 */
-              height: 70svh !important;      /* iOS safe */
-              height: 70vh  !important;      /* fallback */
-              top: 5dvh !important;          /* 살짝 아래 띄우기(원하면 0) */
+          /*.ax5modal[data-modal-els="root"] {
+              height: 70dvh !important;      !* 동적 뷰포트 *!
+              height: 70svh !important;      !* iOS safe *!
+              height: 70vh  !important;      !* fallback *!
+              top: 5dvh !important;          !* 살짝 아래 띄우기(원하면 0) *!
               display: flex; flex-direction: column;
           }
 
-          /* 라이브러리가 주입한 body의 inline height 무력화: Flex로 채우기 */
+          !* 라이브러리가 주입한 body의 inline height 무력화: Flex로 채우기 *!
           .ax5modal[data-modal-els="root"] .ax-modal-body {
-              height: calc(100vh - 40px) !important;   /* inline height 덮어쓰기 */
-              flex: 1 1 auto;            /* 남은 공간 모두 차지 */
-              min-height: 0;             /* 자식 스크롤 허용 */
+              height: calc(100vh - 40px) !important;   !* inline height 덮어쓰기 *!
+              flex: 1 1 auto;            !* 남은 공간 모두 차지 *!
+              min-height: 0;             !* 자식 스크롤 허용 *!
               top: 20px !important;
-          }
+          }*/
 
-          /* 모달 내부 스크롤 영역 */
+         /* !* 모달 내부 스크롤 영역 *!
           .ax5modal .modal-form-wrap {
               height: 100% !important;
               overflow-y: auto;
-          }
+          }*/
           #basicForm_modal .select2-results__options {
               max-height: 40vh;   /* 필요 시 30~50vh로 조절 */
               overflow-y: auto;

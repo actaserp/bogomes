@@ -590,7 +590,7 @@ class PopupDraggable {
         this.fixedHeight = null;
     }
 
-    adjustPosition(retry = 0) {
+    /*adjustPosition(retry = 0) {
         const $root = $(".ax5modal[data-modal-els='root']:last");
         if (!$root.length) return;
 
@@ -650,7 +650,82 @@ class PopupDraggable {
             height: (modalHeight - headerH) + "px",
             overflow: "auto"
         });
+    }*/
+
+    adjustPosition() {
+        const $root = $(".ax5modal[data-modal-els='root']:last");
+        if (!$root.length) return;
+
+        const iframe = window.frameElement;
+        if (!iframe) return;
+
+        const rect = iframe.getBoundingClientRect();
+        const iframeW = rect.width;
+        const iframeH = rect.height;
+
+        // 상단 레이아웃 높이 차감
+        const parentDoc = window.top.document;
+        const headerEl = parentDoc.querySelector(".dashboard-layout-header");
+        const tabsEl   = parentDoc.querySelector(".page-tabs");
+        const headerHFix = (headerEl && headerEl.offsetParent !== null) ? headerEl.offsetHeight : 0;
+        const tabsHFix   = (tabsEl && tabsEl.offsetParent !== null) ? tabsEl.offsetHeight : 0;
+        const usableH = iframeH - headerHFix - tabsHFix;
+
+        const isDesktop = window.innerWidth > 1366;
+
+        // 현재 root의 인라인 크기(= ax5가 open 때 적용한 값)
+        const rootW = $root.outerWidth();
+        let   rootH = $root.outerHeight();
+
+        // 헤더 높이
+        const headerH = $root.find("[data-modal-els='header']").outerHeight(true) || 0;
+
+        if (isDesktop) {
+            // ✅ 데스크탑: width/height는 건드리지 않고(= 그대로 유지)
+            // 단, 화면보다 너무 높으면 cap만 적용
+            const cappedH = Math.min(rootH, Math.floor(usableH * 0.9));
+            if (cappedH !== rootH) {
+                rootH = cappedH;
+                $root.css({ height: cappedH + "px" }); // 꼭 필요한 경우에만 height 조정
+            }
+
+            // 가운데 정렬(살짝 위)
+            const left = (iframeW - rootW) / 2;
+            let   top  = (usableH - rootH) / 2 - rootH * 0.1;
+            if (top < 0) top = 0;
+
+            $root.css({ left: left + "px", top: top + "px", transform: "none" });
+
+            // body 높이만 계산해서 스크롤 처리
+            const bodyH = Math.max(0, rootH - headerH);
+            $root.find(".ax-modal-body").css({ height: bodyH + "px", overflow: "auto" });
+            return; // ← 데스크탑은 여기서 끝!
+        }
+
+        // 작은 화면(태블릿 이하): 동적 계산
+        const modalW = Math.min(window.innerWidth * 0.96, 1100);
+        const bodyFrameH = $root.find("[data-modal-els='body-frame']").outerHeight(true) || 0;
+        let   modalH = bodyFrameH + 80; // 내용 + 여유
+        modalH = Math.min(modalH, Math.floor(usableH * 0.9));
+
+        const left = (iframeW - modalW) / 2;
+        let   top  = (usableH - modalH) / 2 - modalH * 0.1;
+        if (top < 0) top = 0;
+
+        $root.css({
+            left: left + "px",
+            top:  top  + "px",
+            width:  modalW + "px",
+            height: modalH + "px",
+            transform: "none"
+        });
+
+        $root.find(".ax-modal-body").css({
+            height: Math.max(0, modalH - headerH) + "px",
+            overflow: "auto"
+        });
     }
+
 
 
 
