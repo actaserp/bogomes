@@ -691,7 +691,7 @@
             let data = FormUtil.extractForm($('#matBasicForm'));
 
             if (data.vechidno === null || data.vechidno === undefined || data.vechidno === '') {
-                Alert.alert('출고취소처리', '차대번호를 작성해주세요');
+                Alert.alert('출고취소처리', '출고건을 선택해주세요');
                 return;
             }
             Alert.confirm('출고취소처리', "출고취소 처리하시겠습니까?", function () {

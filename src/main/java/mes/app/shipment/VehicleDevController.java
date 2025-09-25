@@ -156,63 +156,42 @@ public class VehicleDevController {
     // 출고 취소
     @PostMapping("/shipment_status_cancel")
     public AjaxResult shipmentStatusCancel(
-            @RequestParam(value = "searchId", required = false) Integer searchId,
+            @RequestParam(value = "id", required = false) Integer searchId,
             HttpServletRequest request,
             Authentication auth) {
 
         AjaxResult result = new AjaxResult();
+        User user = (User) auth.getPrincipal();
 
-        User user = (User)auth.getPrincipal();
-
-        // Validation 체크 - 출하처리시 Material.currentStock 값과 Shipment.Qty(처리량)을 비교하여 값이 '-'인 경우 출하가 되지않도록 처리
-        List<Shipment> shipmentList = this.shipmentRepository.findByShipmentHeadId(searchId);
-
-        if (shipmentList != null) {
-            for (int i = 0; i < shipmentList.size(); i++) {
-                Integer materialId = shipmentList.get(i).getMaterialId();
-                Material material = this.materialRepository.getMaterialById(materialId);
-
-                if (material != null) {
-                    Float currentStock = material.getCurrentStock() != null ? material.getCurrentStock() : 0;
-                    Double shipQty = shipmentList.get(i).getQty() != null ? shipmentList.get(i).getQty() : 0;
-
-                    Float parsedShipQty = shipQty.floatValue();
-
-                    if (Float.compare(currentStock, parsedShipQty) < 0) {
-                        result.success = false;
-                        result.message = "재고 수량이 부족합니다.";
-                        return result;
-                    }
-                }
-            }
-        }
-
-        this.transactionTemplate.executeWithoutResult(status->{
-
-            // Shipment 테이블의 상태값 변경시 트리거 사용하여 "a"로 설정시 트리거를 통해 mat_inout 테이블에 출고데이터가 추가됨
+        this.transactionTemplate.executeWithoutResult(status -> {
+            // Shipment 리스트 조회
             List<Shipment> smList = this.shipmentRepository.findByShipmentHeadId(searchId);
 
             if (smList != null) {
-                for (int i = 0; i < smList.size(); i++) {
-                    Shipment sm = smList.get(i);
+                for (Shipment sm : smList) {
+                    // 출고 확정("a") 상태인 건만 취소 처리
+                    if (sm != null && "a".equals(sm.get_status())) {
 
-                    if (sm != null) {
-                        sm.set_status("a");
-                        sm.set_audit(user);
-                        sm.setDevdate(new Date());
-
+                        sm.setVechidno(null);
+                        sm.setQty((double) 0);
+                        sm.set_status("t");        // 취소 → 상태를 "t"(임시/ordered) 로 되돌림
+                        sm.set_audit(user);        // 변경자 기록
+                        sm.setDevdate(null); // 처리일시 기록
                         this.shipmentRepository.save(sm);
                     }
                 }
             }
-            // 수주헤더 기준으로 출하항목(shipment) 금액합산 정리
-            this.vehicleDevService.updateShipmentStateComplete(searchId);
-            // 관련 수주를 찾아서 수주의 출하 상태를 변경한다.
-            this.vehicleDevService.updateSujuShipmentState(searchId);
+            // 수주헤더 기준으로 출하항목(shipment) state변경
+            this.vehicleDevService.updateShipmentStateCancel(searchId);
+            // 관련 수주 상태도 취소 처리에 맞게 갱신
+            this.vehicleDevService.updateSujuShipmentStateCancel(searchId);
         });
 
+        result.success = true;
+        result.message = "출고가 취소되었습니다.";
         return result;
     }
+
 
 
 }

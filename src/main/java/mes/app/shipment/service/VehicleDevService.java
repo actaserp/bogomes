@@ -231,4 +231,61 @@ public class VehicleDevService {
 
 		this.sqlRunner.execute(sql, paramMap);
 	}
+
+	// 출고 취소 관련 수주를 찾아서 수주의 출하 상태 출고 전으로 를 변경한다.
+	public void updateSujuShipmentStateCancel (Integer sh_id) {
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("sh_id", sh_id);
+
+		String sql = """
+		        with A as(
+		        select
+		        s.id as shipment_id
+		        ,sh.id as sh_id
+		        , rd."DataPk1" as suju_id
+		        , sj."State"
+		        , sj."ShipmentState"
+		        from shipment s 
+		        inner join shipment_head sh on sh.id=s."ShipmentHead_id"
+		        inner join rela_data rd on rd."TableName1" ='suju' and rd."TableName2" ='shipment' and rd."DataPk2" =s.id
+		        inner join suju sj on sj.id = rd."DataPk1" 
+		        where sh.id = :sh_id
+		        )
+		        update suju set "ShipmentState" ='inpec'
+		        from A where A.suju_id = id
+				""";
+
+		this.sqlRunner.execute(sql, paramMap);
+	}
+	// 출고헤더 기준으로 상태값 (출고상태)변경
+	public void updateShipmentStateCancel (Integer searchId) {
+
+		updateShipmentQantityByLotConsume(searchId, null);
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("searchId", searchId);
+
+		String sql = """
+				with A as(
+				select 
+		        sh.id as sh_id
+		        , count(s.id) as s_count
+		        , sum(s."Price") as "TotalPrice"
+		        , sum(s."Vat") as "TotalVat"
+		        from shipment s 
+		        inner join shipment_head sh on sh.id=s."ShipmentHead_id"
+		        where sh.id=:searchId
+		        group by sh.id 
+		        )
+		        update 
+		        shipment_head 
+		        set "State" = 'ordered'
+		        from A 
+		        where id=A.sh_id
+				""";
+
+		this.sqlRunner.execute(sql, paramMap);
+	}
+
 }
