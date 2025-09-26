@@ -102,8 +102,7 @@
               <label for="person_id">사원명</label>
             </th>
             <td >
-             <input type="hidden" id="person_id" name="person_id" style="width: 230px;"/>
-             <input id="person_name" name="person_name" style="width: 230px;"/>
+             <select id="person_id" name="person_id" style="width: 230px;"></select>
             </td>
           </tr>
          </table>
@@ -111,6 +110,13 @@
     </div>
     <div class="container-fluid">
         <div id="defect-grid" style="height: 375px;"></div>
+    </div>
+    <div style="margin : auto; gap: 10px;">
+      <label for="saveStartTime">시작시간</label>
+      <input type="time" id="saveStartTime"/>
+      <label for="saveEndTime">종료시간</label>
+      <input type="time" id="saveEndTime"/>
+
     </div>
     <div class="popup-button">
       <button type="button" class="btn-popup y_write_auth" id="btnPopTestDailySave">저장</button>
@@ -385,6 +391,7 @@
 
 
         AjaxUtil.fillSelectOptions($defectType, 'defect_type', '', false);
+        AjaxUtil.fillSelectOptions($('#person_id'), 'person', 'choose', false);
         let nowDate = CommonUtil.getYYYYMMDD();
         $inspectionDate.val(nowDate);
         if (mainDepartVal) {
@@ -393,41 +400,31 @@
 
         this.defectGrid = new wijmo.grid.FlexGrid('#defect-grid', {
           autoGenerateColumns: false,
-          selectionMode: wijmo.grid.SelectionMode.Cell, // 다중 선택 불가
+          selectionMode: wijmo.grid.SelectionMode.Cell,
           headersVisibility: wijmo.grid.HeadersVisibility.Column,
           columns: [
             {binding: 'value', header: '업무구분', width: 300, align: 'center', isReadOnly: true},
             {binding: 'code', header: 'ID', width: 80, visible: false},
             {
               binding: 'defect_qty',
-              header: '작업시간',
+              header: '시작시간',
               width: 200,
               align: 'center',
-              format: 'n0',
-              isReadOnly: false, // 편집 가능
+            },
+            {
+              binding: 'defect_qty',
+              header: '종료시간',
+              width: 200,
+              align: 'center',
             },
           ],
-          itemsSource: new wijmo.collections.CollectionView([]), // 빈 데이터로 초기화
-          itemFormatter: (panel, row, col, cell) => {
-            const column = panel.columns[col];
-            if (panel.cellType === wijmo.grid.CellType.Cell) {
-              if (column.binding === 'defect_qty') {
-                cell.style.textAlign = 'right';
-              }
-            }
-            if (panel.cellType === wijmo.grid.CellType.ColumnHeader) {
-              // 컬럼 스타일 적용
-              if (column.binding === 'defect_qty') {
-                cell.style.color = '#5567ff';
-              }
-            }
-          }
+          itemsSource: new wijmo.collections.CollectionView([]),
         });
 
         const loadDefects = () => {
           AjaxUtil.getAsyncData('/api/clock/work_management/defects', {
-            // InspectionDate: inspectionDate,   // 근무일
-            // person_id: personId               // 사원 ID
+            InspectionDate: document.getElementById('InspectionDate'),   // 근무일
+            person_id: document.getElementById('person_id')               // 사원 ID
           }, (res) => {
             const list = (res.data || []).map(r => ({
               code: r.code,
@@ -481,7 +478,7 @@
           }, 0);
         }
 
-
+        // 팝업 저장 버튼
         $btnPopSave.off('click').on('click', function () {
           // 1) 그리드 데이터 수집
           const gridItems = _this.defectGrid.itemsSource ? _this.defectGrid.itemsSource.items : [];

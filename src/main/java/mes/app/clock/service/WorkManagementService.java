@@ -125,14 +125,25 @@ public class WorkManagementService {
   }
 
 
-  public List<Map<String, Object>> defectsList() {
+  public List<Map<String, Object>> defectsList(String searchDate, Integer personId) {
     MapSqlParameterSource params = new MapSqlParameterSource();
-    String sql= """
+    StringBuilder sql = new StringBuilder();
+    sql.append("""
        select 
        "Code" as code,
        "Value" as value
-       from sys_code where "CodeType" ='class_work'; 
-        """;
+       from sys_code where "CodeType" ='class_work'
+       where 1=1 
+        """);
+
+    // 동적 필터 추가
+    if (searchDate != null) {
+      sql.append("        and p.id = :depart_id\n");
+      params.addValue("searchDate", searchDate);
+    } else if (personId != null) {
+      sql.append("        and p.\"Name\" ilike :depart_like\n");
+      params.addValue("personId", personId);
+    }
     return sqlRunner.getRows(sql.toString(), params);
   }
 }

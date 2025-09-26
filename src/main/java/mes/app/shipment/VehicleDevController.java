@@ -176,7 +176,7 @@ public class VehicleDevController {
                         sm.setQty((double) 0);
                         sm.set_status("t");        // 취소 → 상태를 "t"(임시/ordered) 로 되돌림
                         sm.set_audit(user);        // 변경자 기록
-                        sm.setDevdate(null); // 처리일시 기록
+                        sm.setDevdate(null); // 처리일시 초기화
                         this.shipmentRepository.save(sm);
                     }
                 }

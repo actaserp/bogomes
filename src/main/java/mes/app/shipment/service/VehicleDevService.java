@@ -36,6 +36,7 @@ public class VehicleDevService {
 			    left join suju sj ON s.suju_head_id = sj."SujuHead_id"
 			    left join material m ON sj."Material_id" = m.id 
 			    where 1=1
+				AND sh."State" IN ('shipped', 'inspec')
                 """;
 
         if (StringUtils.isEmpty(srchVehiclePer)==false)  sql += " and c.\"Name\" LIKE :srchVehiclePer";
@@ -100,6 +101,7 @@ public class VehicleDevService {
 			    left join material m ON sj."Material_id" = m.id 
 			    left join mat_grp mg ON m."MaterialGroup_id" = mg.id
 			    where 1=1
+				AND sh."State" IN ('shipped', 'inspec')
                 """;
 
 		if (StringUtils.isEmpty(srchVehiclePer)==false)  sql += " and c.\"Name\" LIKE :srchVehiclePer";

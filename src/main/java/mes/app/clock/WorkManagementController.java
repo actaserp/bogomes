@@ -38,9 +38,10 @@ public class WorkManagementController {
     return result;
   }
   @GetMapping("/defects")
-  public AjaxResult defectsList () {
+  public AjaxResult defectsList (@RequestParam(value = "InspectionDate" ,required = false) String InspectionDate,
+                                 @RequestParam(value = "person_id",required = false) Integer person_id) {
 
-    List<Map<String, Object>> items = this.workManagementService.defectsList();
+    List<Map<String, Object>> items = this.workManagementService.defectsList(InspectionDate, person_id);
     AjaxResult result = new AjaxResult();
     result.data = items;
 
