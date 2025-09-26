@@ -18,4 +18,6 @@ public interface MatProcInputRepository extends JpaRepository<MatProcInput, Inte
 	List<MatProcInput> findByMaterialProcessInputRequestIdAndMaterialLotId(Integer materialProcessInputRequestId,
 			int id);
 
+	void deleteByMaterialLotId(Integer lotId);
+
 }

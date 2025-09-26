@@ -18,5 +18,4 @@ public interface MatLotRepository extends JpaRepository<MaterialLot, Integer>{
 
 	boolean existsByStoreHouseId(Integer storeHouseId);
 
-
 }

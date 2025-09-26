@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import mes.app.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -23,6 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.util.StringUtils;
@@ -37,7 +39,7 @@ import mes.domain.security.Pbkdf2Sha256;
 import mes.domain.services.AccountService;
 import mes.domain.services.SqlRunner;
 
-
+@Slf4j
 @RestController
 public class AccountController {
 	
@@ -186,6 +188,7 @@ public class AccountController {
 		return result;
 	}
 
+
 	@PostMapping("/pda/login")
 	public Map<String, Object> pdaLogin(@RequestParam String username,
 										@RequestParam String password,
@@ -222,18 +225,19 @@ public class AccountController {
 		} catch (BadCredentialsException e) {
 			result.put("code", "BAD_CREDENTIALS");
 			result.put("message", "아이디 또는 비밀번호가 올바르지 않습니다.");
+		} catch (UsernameNotFoundException e) {
+			result.put("code", "NOUSER");
+			result.put("message", "존재하지 않는 사용자입니다.");
 		} catch (DisabledException e) {
 			result.put("code", "DISABLED");
 			result.put("message", "비활성화된 계정입니다.");
 		} catch (Exception e) {
 			result.put("code", "ERROR");
-			result.put("message", "로그인 처리 중 오류 발생: " + e.getMessage());
+			result.put("message", "로그인 처리 중 알 수 없는 오류 발생");
 		}
 
 		return result;
 	}
-
-
 
 
 	@GetMapping("/account/myinfo")

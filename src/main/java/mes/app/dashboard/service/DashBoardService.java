@@ -907,7 +907,7 @@ public class DashBoardService {
               FROM shipment
               GROUP BY "SourceDataPk"
             ) shp ON shp."SourceDataPk" = s.id
-            LEFT JOIN job_res jr ON jr."SourceTableName" = 'suju' AND jr."SourceDataPk" = s.id
+            LEFT JOIN job_res jr ON jr."SourceTableName" = 'suju' AND jr."SourceDataPk" = s.id AND jr."State" <> 'canceled'
             LEFT JOIN company c ON c.id = sh."Company_id"
             LEFT JOIN shipment_summary ss ON ss."SujuHead_id" = sh.id
             LEFT JOIN suju_state_summary sss ON sss.suju_head_id = sh.id
