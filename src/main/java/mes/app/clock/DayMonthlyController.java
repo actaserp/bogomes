@@ -98,7 +98,7 @@ public class DayMonthlyController {
             String address= (String) item.get("address");
 
 
-            Optional<TB_PB201> optional = tbPb201Repository.findByIdSpjangcdAndIdWorkymAndIdWorkdayAndIdPersonid(spjangcd,workym, workday, id);
+            Optional<TB_PB201> optional = tbPb201Repository.findById(Long.valueOf(id));
             TB_PB201 tbpb201;
 
 
@@ -111,7 +111,7 @@ public class DayMonthlyController {
                 pk.setWorkym(workym);
                 pk.setWorkday(workday);
                 pk.setPersonid(id);
-                tbpb201.setId(pk);
+//                tbpb201.setId(pk);
                 tbpb201.setFixflag("0");
             }
 
@@ -283,7 +283,7 @@ public class DayMonthlyController {
             String address= (String) item.get("address");
 
 
-            Optional<TB_PB201> optional = tbPb201Repository.findByIdSpjangcdAndIdWorkymAndIdWorkdayAndIdPersonid(spjangcd,workym, workday, personid);
+            Optional<TB_PB201> optional = tbPb201Repository.findById(Long.valueOf(personid));
 
 
             if (optional.isPresent()) {
@@ -435,12 +435,12 @@ public class DayMonthlyController {
 
             TB_PB201_PK id = new TB_PB201_PK(spjangcd, workym, workday, personid);
 
-            Optional<TB_PB201> optional = tbPb201Repository.findById(id);
-            if (optional.isPresent()) {
-                TB_PB201 entity = optional.get();
-                entity.setFixflag("0"); // fixflag를 "0"으로 설정
-                tbPb201Repository.save(entity); // 변경사항 저장
-            }
+//            Optional<TB_PB201> optional = tbPb201Repository.findById(id);
+//            if (optional.isPresent()) {
+//                TB_PB201 entity = optional.get();
+//                entity.setFixflag("0"); // fixflag를 "0"으로 설정
+//                tbPb201Repository.save(entity); // 변경사항 저장
+//            }
         }
 
         result.success = true;
@@ -802,10 +802,10 @@ public class DayMonthlyController {
                 pk.setWorkday(workday);
                 pk.setPersonid(id);
 
-                if(tbPb201Repository.existsById(pk)) {
-                    tbPb201Repository.deleteById(pk);
-                    deleteCount++;
-                }
+//                if(tbPb201Repository.existsById(pk)) {
+//                    tbPb201Repository.deleteById(pk);
+//                    deleteCount++;
+//                }
             }
         }
 

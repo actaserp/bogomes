@@ -36,7 +36,7 @@
             </dt>
             <dd>
               <div class="srch-box">
-                <input id="depart" name="depart" />
+                <select id="depart" name="depart"></select>
               </div>
             </dd>
           </dl>
@@ -107,6 +107,14 @@
           </tr>
           <tr>
             <th style="text-align: center">
+              <label for="InspectionDate">업무구분</label>
+            </th>
+            <td colspan="3">
+             <select id="workType" name="workType"></select>
+            </td>
+          </tr>
+          <tr>
+            <th style="text-align: center">
               <label for="saveStartTime">시작시간</label>
             </th>
             <td>
@@ -123,7 +131,7 @@
       </form>
     </div>
     <div class="container-fluid">
-        <div id="defect-grid" style="height: 375px;"></div>
+        <div id="defect-grid" style="height: 300px;"></div>
     </div>
     <div class="popup-button">
       <button type="button" class="btn-popup y_write_auth" id="btnPopTestDailySave">저장</button>
@@ -394,16 +402,13 @@
         let $defectType = $content.find('#DefectType');
         let $AddNewForm = $content.find('#TestDailyReportAddNewForm');
         let $btnPopSave = $content.find('#btnPopTestDailySave');
-        let mainDepartVal = $('#depart').val();
 
 
         AjaxUtil.fillSelectOptions($defectType, 'defect_type', '', false);
+        AjaxUtil.fillSelectOptions($('#workType'), 'system_code', 'choose', false, 'class_work');
         AjaxUtil.fillSelectOptions($('#person_id'), 'person', 'choose', false);
         let nowDate = CommonUtil.getYYYYMMDD();
         $inspectionDate.val(nowDate);
-        if (mainDepartVal) {
-          mainDepartVal.val(mainDepartVal);
-        }
 
         if (!this.defectGrid) {
           this.defectGrid = new wijmo.grid.FlexGrid('#defect-grid', {
@@ -420,13 +425,13 @@
           });
         }
 
-        this.defectGrid.itemsSource.sourceCollection = list;
+        this.defectGrid.itemsSource.sourceCollection = [];
         this.defectGrid.itemsSource.refresh();
 
         const loadDefects = () => {
           AjaxUtil.getAsyncData('/api/clock/work_management/defects', {
-            InspectionDate: document.getElementById('InspectionDate'),   // 근무일
-            person_id: document.getElementById('person_id')               // 사원 ID
+            InspectionDate: $('#InspectionDate').val(),
+            person_id: $('#person_id').val()
           }, (res) => {
             const list = (res.data || []).map(r => ({
               code: r.code,
@@ -449,9 +454,6 @@
 
         // 초기 로드 및 변경 시 다시 로드
         loadDefects();
-
-        $inspectionDate.on('change', () => loadDefects());
-
         if (data && data.mode === 'edit') {
           const $form           = $('#TestDailyReportAddNewForm');
           const $inspectionDate = $form.find('#InspectionDate');
@@ -482,41 +484,19 @@
 
         // 팝업 저장 버튼
         $btnPopSave.off('click').on('click', function () {
-          // 1) 그리드 데이터 수집
-          const gridItems = _this.defectGrid.itemsSource ? _this.defectGrid.itemsSource.items : [];
-          // 숫자 정규화
-          const toInt = (v) => {
-            if (v == null || v === '') return 0;
-            return Number(String(v).replaceAll(',', '').trim()) || 0;
+          // 폼 데이터 수집
+          let formData = {
+            InspectionDate: $('#InspectionDate').val(),
+            person_id: $('#person_id').val(),
+            saveStartTime: $('#saveStartTime').val(),
+            saveEndTime: $('#saveEndTime').val(),
+            workType: $('#workType').val()
           };
-
-          // 2) 헤더 + 라인 payload 만들기
-          const payload = {
-            header: {
-              inspectionDate: $inspectionDate.val(),     // 'YYYY-MM-DD'
-              workCenterId: $workCenter.val(),         // 숫자 문자열이면 서버에서 파싱
-              inspectionQty: toInt($inspectionQty.val()),
-              spjangcd: _this.$spjangcd
-            },
-            lines: (gridItems || []).map(r => ({
-              defectTypeId: r.defect_type_id,
-              defectQty: toInt(r.defect_qty)
-            }))
-          };
-
-          // 유효성(선택): 검사수 >= 부적합량 합
-          const sumDefect = payload.lines.reduce((s, r) => s + r.defectQty, 0);
-          if (payload.header.inspectionQty < sumDefect) {
-            Alert.alert('검사수 확인', '총 검사수보다 부적합량 합계가 큽니다.');
-            return;
-          }
-
           Alert.confirm('', '저장하시겠습니까?', function () {
             $.ajax({
               type: 'POST',
-              url: '/api/test/test_daily_report/save',
-              data: JSON.stringify(payload),
-              contentType: 'application/json; charset=UTF-8',
+              url: '/api/clock/work_management/save',
+              data: formData,
               headers: {'X-CSRF-TOKEN': csrfToken},
               success: function (res) {
                 if (res.success) {
@@ -587,42 +567,6 @@
 
     let holidayList = [];
 
-    async function fetchHolidaysForYear(year) {
-      return new Promise((resolve, reject) => {
-        var xhr = new XMLHttpRequest();
-        var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo';
-        var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + 'R3P3syhq6qRP0cz8mbV2J5t%2B32WwaSN9sH8ZW4k59oKAU3Ze0WvcljMrN36OJqxs38%2F780hMD4QfhCiDZQNUyA%3D%3D';
-        queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(year);
-        queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('30');
-
-        xhr.open('GET', url + queryParams);
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4) {
-            if (this.status == 200) {
-              var parser = new DOMParser();
-              var xmlDoc = parser.parseFromString(this.responseText, "text/xml");
-
-              // XML에서 원하는 데이터 추출
-              var items = xmlDoc.getElementsByTagName("item");
-              let holidays = [];
-              for (var i = 0; i < items.length; i++) {
-                var locdate = items[i].getElementsByTagName("locdate")[0].textContent;
-                var dateName = items[i].getElementsByTagName("dateName")[0].textContent;
-
-                holidays.push({date: locdate, name: dateName});
-              }
-              resolve(holidays);
-            } else {
-              console.error('오류 발생. HTTP 상태 코드:', this.status);
-              reject(this.status);
-            }
-          }
-        };
-
-        xhr.send();
-      });
-    }
-
     async function initPage() {
       $('#SearchDate').val(CommonUtil.getYYYYMMDD().substring(0, 7));
 
@@ -630,13 +574,6 @@
       const [year] = yyyymm.split('-').map(Number);
 
       try {
-        const holidaysRaw = await fetchHolidaysForYear(year);
-        holidayList = holidaysRaw
-          .filter(item => item.date && item.date.length === 8)
-          .map(item => {
-            const locdate = item.date;
-            return `${locdate.substring(0, 4)}-${locdate.substring(4, 6)}-${locdate.substring(6, 8)}`;
-          });
 
         //console.log('📅 최초 로딩 holidayList:', holidayList);
       } catch (err) {
@@ -662,9 +599,7 @@
       initPage();
       $('#SearchDate').val(CommonUtil.getYYYYMMDD().substring(0, 7));
       AjaxUtil.fillSelectOptions($('#WorkCenter_id'), 'workcenter', '', false);
-
-      page = new WorkManagementPage();
-
+      AjaxUtil.fillSelectOptions($('#depart'), 'person', 'all', false);
       $('#SearchDate').on('change', async function () {
         const yyyymm = $('#SearchDate').val(); // "2025-08"
 
@@ -674,38 +609,11 @@
         }
 
         const [year] = yyyymm.split('-').map(Number);
-
-        try {
-          const holidaysRaw = await fetchHolidaysForYear(year);
-          holidayList = holidaysRaw
-            .filter(item => item.date && item.date.length === 8)
-            .map(item => {
-              const locdate = item.date;
-              return `${locdate.substring(0, 4)}-${locdate.substring(4, 6)}-${locdate.substring(6, 8)}`;
-            });
-
-          //console.log('📅 holidayList:', holidayList);
-
-          page.init();
-          page.searchMainData();
-
-        } catch (err) {
-          console.error('❌ 공휴일 로딩 실패:', err);
-          holidayList = [];
-          page.init();
-          page.searchMainData();
-        }
       });
 
       //검색
       $('#btnSearch').click(function (e) {
         page.searchMainData();
-      });
-
-      $('#keyword').on('keypress', function (e) {
-        if (event.keyCode == 13) {
-          page.searchMainData();
-        }
       });
 
       // 삭제

@@ -163,8 +163,8 @@
           <!-- 버튼 -->
           <div class="btnArea">
             <div id="inside" style="display: flex; gap: 13%; justify-content: center;">
-              <button onclick="submitCommute('inOfficeIn')" class="office_btn" style=""><i class="fa-solid fa-briefcase fa_xl" style="color: #ffffff;"></i><br>근무삭제</button>
-              <button onclick="submitCommute('inOfficeOut')" class="office_btn" style="background-color: red;"><i class="fa-solid fa-person-walking fa-xl" style="color: #ffffff;"></i><br>근무등록</button>
+              <button onclick="submitCommute('inOfficeOut')" class="office_btn" style=""><i class="fa-solid fa-briefcase fa_xl" style="color: #ffffff;"></i><br>근무삭제</button>
+              <button onclick="submitCommute('inOfficeIn')" class="office_btn" style="background-color: red;"><i class="fa-solid fa-person-walking fa-xl" style="color: #ffffff;"></i><br>근무등록</button>
             </div>
           </div>
         </dl>
@@ -214,27 +214,22 @@
   // 근무 등록(상태값에 따라 로직 변경)
   function submitCommute(office){
     console.log('office tag : ', office)
-      //출근 버튼클릭
+      //근무등록 버튼클릭
     if(office.trim() === 'inOfficeIn' || office.trim() === 'outOfficeIn') {
         let _this = this;
-        let url = '/api/mobile_main/submitCommute'
+        let url = '/api/mobile_main/save'
         let data = {
-          'weekNum': weekNum,
-          'office': office,
-          'workym': year + month,
-          'workday': date,
-          'isHoly': isHoly,
-          'workcd': document.getElementById('selectWorkcd').value,
-          'latitude': latitude,
-          'longitude': longitude,
-          'gpsInfo' : document.getElementById('gpsInfo').innerText
+          'searchDate': document.getElementById('searchDate').value,
+          'searchFromTime': document.getElementById('searchFromTime').value,
+          'searchToTime': document.getElementById('searchToTime').value,
+          'workcd': document.getElementById('selectWorkcd').value
         }
         let fnsuccess = function (result) {
           if (result != null) {
             if (result.success) {
               Alert.alert('', result.message, reloadWindow);
             } else {
-              Alert.alert('', "출근 등록에 실패하였습니다.");
+              Alert.alert('', "근무 등록에 실패하였습니다.");
             }
           } else {
             Alert.alert('', "오류가 발생하였습니다.");
@@ -242,30 +237,42 @@
         };
         AjaxUtil.postAsyncData(url, data, fnsuccess);
     }else{
-      // 퇴근버튼 클릭
-        console.log('office tag : ', office)
-        let _this = this;
-        let url = '/api/mobile_main/modifyCommute'
-        let data = {
-          'office': office,
-          'workym': year + month,
-          'workday': date,
-          'workcd': document.getElementById('selectWorkcd').value,
-          'gpsInfo' : document.getElementById('gpsInfo').innerText
-        }
-        let fnsuccess = function (result) {
-          if (result.success) {
-            Alert.alert('', result.message, function() {
-              window.location.href = 'mobile/commute_current';
-            });
-          } else {
-            Alert.alert('', "출근 등록에 실패하였습니다.");
-          }
-        };
-        AjaxUtil.postAsyncData(url, data, fnsuccess);
-      }
-  }
+      // ✅ 근무삭제 로직
+      const checked = Array.from(document.querySelectorAll('.delete-checkbox:checked'))
+              .map(cb => cb.value);
 
+      if (checked.length === 0) {
+        Alert.alert('', "삭제할 항목을 선택하세요.");
+        return;
+      }
+
+      let url = '/api/mobile_main/deleteCommute';
+      let csrfToken = $("[name=_csrf]").val();
+
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: { ids: checked },   // 🔥 배열 그대로 전달
+        traditional: true,        // 🔥 ids=1&ids=2&ids=3 형식으로 변환됨
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+        success: function(result) {
+          if (result?.success) {
+            Alert.alert('', result.message, reloadWindow);
+          } else {
+            Alert.alert('', "근무 삭제에 실패하였습니다.");
+          }
+        },
+        error: function(xhr) {
+          Alert.alert('', xhr.responseText || "서버 오류 발생");
+        }
+      });
+    }
+
+  }
+  function reloadWindow(){
+    console.log("확인 버튼 클릭됨");
+    window.location.reload(); // ✅ 페이지 새로고침
+  }
   function searchMainData() {
     let url = '/api/commute_current/read';
     let data = {
@@ -299,7 +306,9 @@
                         <td>${item.endtime || '--:--'}</td>
                         <td>${item.worknm || ''}</td>
                         <td>${item.worktime || ''}</td>
-                        <td><input type="checkbox"></td>
+                        <td>
+                          <input type="checkbox" class="delete-checkbox" value="${item.id}">
+                        </td>
                     </tr>
                 `;
         });

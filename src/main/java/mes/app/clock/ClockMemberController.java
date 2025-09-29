@@ -110,13 +110,13 @@ public class ClockMemberController {
                     pk.setPersonid(tbpb204.getPersonid());
 
                     // 이미 있으면 update, 없으면 insert
-                    Optional<TB_PB201> existed = tbPb201Repository.findById(pk);
+                    Optional<TB_PB201> existed = tbPb201Repository.findById(0L);
                     TB_PB201 entity;
                     if(existed.isPresent()) {
                         entity = existed.get();
                     } else {
                         entity = new TB_PB201();
-                        entity.setId(pk);
+//                        entity.setId(pk);
                     }
                     // 연차 근태값 세팅
                     entity.setWorkcd(tbpb204.getWorkcd()); // 연차 코드

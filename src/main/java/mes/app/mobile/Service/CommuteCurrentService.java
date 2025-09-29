@@ -28,6 +28,7 @@ public class CommuteCurrentService {
 
         String sql = """
                 SELECT
+                t.id,
                 t.workym,
                 t.workday,
                 t.personid,

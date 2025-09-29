@@ -12,8 +12,22 @@ import java.math.BigDecimal;
 @Table(name = "tb_pb201")
 public class TB_PB201 {
 
-    @EmbeddedId
-    private TB_PB201_PK id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // PostgreSQL bigserial 대응
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "spjangcd", length = 2, nullable = false)
+    private String spjangcd;
+
+    @Column(name = "workym", length = 6, nullable = false)
+    private String workym;
+
+    @Column(name = "workday", length = 2, nullable = false)
+    private String workday;
+
+    @Column(name = "personid", nullable = false)
+    private Integer personid;
 
     @Column(name = "worknum")
     private Integer worknum;

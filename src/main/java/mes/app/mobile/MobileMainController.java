@@ -23,7 +23,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -105,44 +107,44 @@ public class MobileMainController {
         tbPb201Pk.setWorkday(workday);
         tbPb201Pk.setWorkym(workym);
 
-        Optional<TB_PB201> searchtb201 = tbPb201Repository.findById(tbPb201Pk);
-
-        String formattedCurrentTime = currentTime.format(timeFormatter); // "HH:mm" 형식으로 포맷
-        String inFlag = "";
-
-        if(searchtb201.isPresent()){
-            // 기존 출근데이터가 존재(연차 or 반차로 인한 데이터) - workcd(반차 등) 그대로 유지
-            TB_PB201 origin = searchtb201.get();
-            // 기존 데이터를 복사
-            tbPb201 = origin;
-            // 사내 / 외부 출근 확인
-            if (office.equals("inOfficeIn")) {
-                inFlag = "0";
-            } else {
-                inFlag = "1";
-                tbPb201.setAddress(gpsInfo);
-            }
-            tbPb201.setJitime(0);
-        }else {
-            // 기존 출근데이터가 존재x(일반 출근 판단)
-            // 기준시간에 +1분 더해서 지각판정
-            LocalTime lateTime = sttimeParsed.plusMinutes(1);
-            String jitFlag = currentTime.isBefore(lateTime) ? "0" : "1";
-            // 사내 / 외부 출근 확인
-            if (office.equals("inOfficeIn")) {
-                inFlag = "0";
-            } else {
-                inFlag = "1";
-                tbPb201.setWorkcd(workcd);
-                tbPb201.setAddress(gpsInfo);
-            }
-            tbPb201.setJitime(Integer.parseInt(jitFlag));
-        }
-        tbPb201.setWorknum(weekNum);
-        tbPb201.setId(tbPb201Pk);
-        tbPb201.setHoliyn(isHoly);
-        tbPb201.setStarttime(formattedCurrentTime);
-        tbPb201.setInflag(inFlag);
+//        Optional<TB_PB201> searchtb201 = tbPb201Repository.findById(tbPb201Pk);
+//
+//        String formattedCurrentTime = currentTime.format(timeFormatter); // "HH:mm" 형식으로 포맷
+//        String inFlag = "";
+//
+//        if(searchtb201.isPresent()){
+//            // 기존 출근데이터가 존재(연차 or 반차로 인한 데이터) - workcd(반차 등) 그대로 유지
+//            TB_PB201 origin = searchtb201.get();
+//            // 기존 데이터를 복사
+//            tbPb201 = origin;
+//            // 사내 / 외부 출근 확인
+//            if (office.equals("inOfficeIn")) {
+//                inFlag = "0";
+//            } else {
+//                inFlag = "1";
+//                tbPb201.setAddress(gpsInfo);
+//            }
+//            tbPb201.setJitime(0);
+//        }else {
+//            // 기존 출근데이터가 존재x(일반 출근 판단)
+//            // 기준시간에 +1분 더해서 지각판정
+//            LocalTime lateTime = sttimeParsed.plusMinutes(1);
+//            String jitFlag = currentTime.isBefore(lateTime) ? "0" : "1";
+//            // 사내 / 외부 출근 확인
+//            if (office.equals("inOfficeIn")) {
+//                inFlag = "0";
+//            } else {
+//                inFlag = "1";
+//                tbPb201.setWorkcd(workcd);
+//                tbPb201.setAddress(gpsInfo);
+//            }
+//            tbPb201.setJitime(Integer.parseInt(jitFlag));
+//        }
+//        tbPb201.setWorknum(weekNum);
+//        tbPb201.setId(tbPb201Pk);
+//        tbPb201.setHoliyn(isHoly);
+//        tbPb201.setStarttime(formattedCurrentTime);
+//        tbPb201.setInflag(inFlag);
 
         result.message = "출근등록이 완료되었습니다.";
         try {
@@ -153,146 +155,146 @@ public class MobileMainController {
         }
         return result;
     }
-    // 퇴근메서드
-    @PostMapping("/modifyCommute")
-    public AjaxResult submitCommute(
-            @RequestParam(value="office") String office,
-            @RequestParam(value="workym", required=false) String workym,
-            @RequestParam(value="workday", required=false) String workday,
-            @RequestParam(value="remark", required=false) String remark,
-            @RequestParam(value="workcd", required=false) String workcd,
-            @RequestParam(value="gpsInfo", required=false) String gpsInfo,
-            HttpServletRequest request,
-            Authentication auth) {
-        AjaxResult result = new AjaxResult();
-        User user = (User)auth.getPrincipal();
-        String username = user.getUsername();
-        String spjangcd = user.getSpjangcd();
-        // 직원코드 조회 및 근무구분 조회
-        Map<String, Object> personInfo = mobileMainService.getPersonId(username);
-        String perId = personInfo.get("personid").toString();
-        String workType = String.format("%02d", Integer.parseInt(personInfo.get("PersonGroup_id").toString()));
-
-        // 퇴근시간 조회(조퇴 확인) / 근무구분에 따른 정상퇴근시간 조회
-        LocalDateTime outOfficeTime = LocalDateTime.now();
-        Map<String, Object> WorkTimeInfo = mobileMainService.getWorkTime(workType);
-        String endtime = (String) WorkTimeInfo.get("endtime");
-        // outOfficeTime 시간만 추출 정상퇴근 비교
-        LocalTime endtimeParsed = LocalTime.parse(endtime, timeFormatter);
-        LocalTime currentTime = outOfficeTime.toLocalTime();
-        String formattedCurrentTime = currentTime.format(timeFormatter); // "HH:mm" 형식으로 포맷
-
-        // 일근태 테이블 초기화
-        TB_PB201_PK tbPb201Pk = new TB_PB201_PK();
-        tbPb201Pk.setPersonid(Integer.valueOf(perId));
-        tbPb201Pk.setSpjangcd(spjangcd);
-        tbPb201Pk.setWorkday(workday);
-        tbPb201Pk.setWorkym(workym);
-
-        Optional<TB_PB201> savedTbPb201 = tbPb201Repository.findById(tbPb201Pk);
-        TB_PB201 entity = savedTbPb201.get();  // 값이 존재하면 꺼냄
-        if(entity.getEndtime() != null && !entity.getEndtime().isEmpty()){
-            result.message = "이미 퇴근처리 되었습니다.";
-            return result;
-        }
-
-        // --- 사내/외부 퇴근 및 workcd 처리 ---
-        String inFlag = "";
-        if ("inOfficeOut".equals(office)) { // 내부 퇴근
-            inFlag = "0";
-            if (entity.getWorkcd() == null || entity.getWorkcd().isEmpty()) {
-                entity.setWorkcd("01");
-            }
-        } else { // 외부 퇴근
-            inFlag = "1";
-            if (entity.getWorkcd() == null || entity.getWorkcd().isEmpty()) {
-                entity.setWorkcd(workcd); // 프론트에서 받은 workcd(외부코드 등)
-                entity.setAddress(gpsInfo);
-            }
-            // 이미 workcd 있으면 변경하지 않음
-        }
-
-        // jotime(조퇴) 판단: 반차("04")/연차("08")면 무조건 0, 그 외엔 정상퇴근시간 이전=1(조퇴), 이후=0(정상)
-        boolean isBanchaOrYeoncha = "04".equals(entity.getWorkcd()) || "08".equals(entity.getWorkcd());
-        int jotFlag = 0;
-        if (isBanchaOrYeoncha) {
-            jotFlag = 0;
-        } else {
-            jotFlag = currentTime.isAfter(endtimeParsed) ? 0 : 1;
-        }
-        entity.setJotime(jotFlag);
-
-        // workyn(정상근무여부): jittime(지각), jotime(조퇴) 중 하나라도 1이면 "0", 아니면 "1"
-        String workyn = (entity.getJitime() == 1 || jotFlag == 1) ? "0" : "1";
-        entity.setWorkyn(workyn);
-        log.info("saved 201 data : {}", entity);
-
-        // 출근시간 ~ 퇴근시간 비교하여 정상, 연장, 야간 근무시간 계산 후 바인드
-        String sttime = (String) WorkTimeInfo.get("sttime"); // 출근시간
-        //휴식(점심)시간 설정값으로 할지 몰라 하드코딩
-        String startRestTime = "12:00";
-        String endRestTime = "13:00";
-        String ovsttime = (String) WorkTimeInfo.get("ovsttime"); // 연장근무 시작시간
-        String ovedtime = (String) WorkTimeInfo.get("ovedtime"); // 연장근무 종료시간
-        String ngsttime = (String) WorkTimeInfo.get("ngsttime"); // 야간근무 시작시간
-        String ngedtime = (String) WorkTimeInfo.get("ngedtime"); // 야간근무 종료시간
-
-        // 시간 파싱
-        LocalTime startTime = LocalTime.parse(entity.getStarttime(), timeFormatter); // 사용자 출근시간
-        LocalTime endTime = currentTime; // 사용자 퇴근시간
-        LocalTime normalStart = LocalTime.parse(sttime, timeFormatter);
-        LocalTime normalEnd = LocalTime.parse(endtime, timeFormatter); // 정상근무 퇴근시간
-        LocalTime overStart = LocalTime.parse(ovsttime, timeFormatter);
-        LocalTime overEnd = LocalTime.parse(ovedtime, timeFormatter);
-        LocalTime nightStart = LocalTime.parse(ngsttime, timeFormatter);
-        LocalTime nightEnd = LocalTime.parse(ngedtime, timeFormatter);
-        // 휴식(점심)시간
-        LocalTime restStart = LocalTime.parse(startRestTime, timeFormatter);
-        LocalTime restEnd = LocalTime.parse(endRestTime, timeFormatter);
-
-        //정상근무 계산
-        BigDecimal normalTime = calculateTimeOverlap(startTime, endTime, normalStart, normalEnd, restStart, restEnd);
-
-        // 연장 근무 시간 계산
-        BigDecimal overTime = calculateTimeOverlap(startTime, endTime, overStart, overEnd, restStart, restEnd);
-
-        // 야간 근무 시간 계산 (00:00을 기준으로 넘어갈 경우 처리)
-        BigDecimal nightTime;
-        if (nightEnd.isBefore(nightStart)) {
-            // 다음날로 넘어갈 때
-            BigDecimal nightPart1 = calculateTimeOverlap(startTime, endTime, nightStart, LocalTime.MAX, restStart, restEnd);
-            BigDecimal nightPart2 = calculateTimeOverlap(startTime, endTime, LocalTime.MIN, nightEnd, restStart, restEnd);
-            nightTime = nightPart1.add(nightPart2);
-        } else {
-            nightTime = calculateTimeOverlap(startTime, endTime, nightStart, nightEnd, restStart, restEnd);
-        }
-        // 총 근무 시간
-        BigDecimal totalTime = normalTime.add(overTime).add(nightTime);
-
-        entity.setId(tbPb201Pk);
-        entity.setWorkyn(workyn);
-        entity.setEndtime(formattedCurrentTime);
-        entity.setRemark(remark);
-        entity.setInflag(inFlag);
-        if(entity.getHoliyn().equals("0")){
-            entity.setWorktime(totalTime);
-            entity.setNomaltime(normalTime);
-            entity.setOvertime(overTime);
-            entity.setNighttime(nightTime);
-        }else{
-            entity.setWorktime(totalTime);
-            entity.setHolitime(totalTime);
-        }
-        entity.setJotime(jotFlag);
-        result.message = "퇴근처리가 마무리되었습니다.";
-        try {
-            result.data = tbPb201Repository.save(entity);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-
-        }
-        return result;
-    }
+//    // 퇴근메서드
+//    @PostMapping("/modifyCommute")
+//    public AjaxResult submitCommute(
+//            @RequestParam(value="office") String office,
+//            @RequestParam(value="workym", required=false) String workym,
+//            @RequestParam(value="workday", required=false) String workday,
+//            @RequestParam(value="remark", required=false) String remark,
+//            @RequestParam(value="workcd", required=false) String workcd,
+//            @RequestParam(value="gpsInfo", required=false) String gpsInfo,
+//            HttpServletRequest request,
+//            Authentication auth) {
+//        AjaxResult result = new AjaxResult();
+//        User user = (User)auth.getPrincipal();
+//        String username = user.getUsername();
+//        String spjangcd = user.getSpjangcd();
+//        // 직원코드 조회 및 근무구분 조회
+//        Map<String, Object> personInfo = mobileMainService.getPersonId(username);
+//        String perId = personInfo.get("personid").toString();
+//        String workType = String.format("%02d", Integer.parseInt(personInfo.get("PersonGroup_id").toString()));
+//
+//        // 퇴근시간 조회(조퇴 확인) / 근무구분에 따른 정상퇴근시간 조회
+//        LocalDateTime outOfficeTime = LocalDateTime.now();
+//        Map<String, Object> WorkTimeInfo = mobileMainService.getWorkTime(workType);
+//        String endtime = (String) WorkTimeInfo.get("endtime");
+//        // outOfficeTime 시간만 추출 정상퇴근 비교
+//        LocalTime endtimeParsed = LocalTime.parse(endtime, timeFormatter);
+//        LocalTime currentTime = outOfficeTime.toLocalTime();
+//        String formattedCurrentTime = currentTime.format(timeFormatter); // "HH:mm" 형식으로 포맷
+//
+//        // 일근태 테이블 초기화
+//        TB_PB201_PK tbPb201Pk = new TB_PB201_PK();
+//        tbPb201Pk.setPersonid(Integer.valueOf(perId));
+//        tbPb201Pk.setSpjangcd(spjangcd);
+//        tbPb201Pk.setWorkday(workday);
+//        tbPb201Pk.setWorkym(workym);
+//
+//        Optional<TB_PB201> savedTbPb201 = tbPb201Repository.findById(tbPb201Pk);
+//        TB_PB201 entity = savedTbPb201.get();  // 값이 존재하면 꺼냄
+//        if(entity.getEndtime() != null && !entity.getEndtime().isEmpty()){
+//            result.message = "이미 퇴근처리 되었습니다.";
+//            return result;
+//        }
+//
+//        // --- 사내/외부 퇴근 및 workcd 처리 ---
+//        String inFlag = "";
+//        if ("inOfficeOut".equals(office)) { // 내부 퇴근
+//            inFlag = "0";
+//            if (entity.getWorkcd() == null || entity.getWorkcd().isEmpty()) {
+//                entity.setWorkcd("01");
+//            }
+//        } else { // 외부 퇴근
+//            inFlag = "1";
+//            if (entity.getWorkcd() == null || entity.getWorkcd().isEmpty()) {
+//                entity.setWorkcd(workcd); // 프론트에서 받은 workcd(외부코드 등)
+//                entity.setAddress(gpsInfo);
+//            }
+//            // 이미 workcd 있으면 변경하지 않음
+//        }
+//
+//        // jotime(조퇴) 판단: 반차("04")/연차("08")면 무조건 0, 그 외엔 정상퇴근시간 이전=1(조퇴), 이후=0(정상)
+//        boolean isBanchaOrYeoncha = "04".equals(entity.getWorkcd()) || "08".equals(entity.getWorkcd());
+//        int jotFlag = 0;
+//        if (isBanchaOrYeoncha) {
+//            jotFlag = 0;
+//        } else {
+//            jotFlag = currentTime.isAfter(endtimeParsed) ? 0 : 1;
+//        }
+//        entity.setJotime(jotFlag);
+//
+//        // workyn(정상근무여부): jittime(지각), jotime(조퇴) 중 하나라도 1이면 "0", 아니면 "1"
+//        String workyn = (entity.getJitime() == 1 || jotFlag == 1) ? "0" : "1";
+//        entity.setWorkyn(workyn);
+//        log.info("saved 201 data : {}", entity);
+//
+//        // 출근시간 ~ 퇴근시간 비교하여 정상, 연장, 야간 근무시간 계산 후 바인드
+//        String sttime = (String) WorkTimeInfo.get("sttime"); // 출근시간
+//        //휴식(점심)시간 설정값으로 할지 몰라 하드코딩
+//        String startRestTime = "12:00";
+//        String endRestTime = "13:00";
+//        String ovsttime = (String) WorkTimeInfo.get("ovsttime"); // 연장근무 시작시간
+//        String ovedtime = (String) WorkTimeInfo.get("ovedtime"); // 연장근무 종료시간
+//        String ngsttime = (String) WorkTimeInfo.get("ngsttime"); // 야간근무 시작시간
+//        String ngedtime = (String) WorkTimeInfo.get("ngedtime"); // 야간근무 종료시간
+//
+//        // 시간 파싱
+//        LocalTime startTime = LocalTime.parse(entity.getStarttime(), timeFormatter); // 사용자 출근시간
+//        LocalTime endTime = currentTime; // 사용자 퇴근시간
+//        LocalTime normalStart = LocalTime.parse(sttime, timeFormatter);
+//        LocalTime normalEnd = LocalTime.parse(endtime, timeFormatter); // 정상근무 퇴근시간
+//        LocalTime overStart = LocalTime.parse(ovsttime, timeFormatter);
+//        LocalTime overEnd = LocalTime.parse(ovedtime, timeFormatter);
+//        LocalTime nightStart = LocalTime.parse(ngsttime, timeFormatter);
+//        LocalTime nightEnd = LocalTime.parse(ngedtime, timeFormatter);
+//        // 휴식(점심)시간
+//        LocalTime restStart = LocalTime.parse(startRestTime, timeFormatter);
+//        LocalTime restEnd = LocalTime.parse(endRestTime, timeFormatter);
+//
+//        //정상근무 계산
+//        BigDecimal normalTime = calculateTimeOverlap(startTime, endTime, normalStart, normalEnd, restStart, restEnd);
+//
+//        // 연장 근무 시간 계산
+//        BigDecimal overTime = calculateTimeOverlap(startTime, endTime, overStart, overEnd, restStart, restEnd);
+//
+//        // 야간 근무 시간 계산 (00:00을 기준으로 넘어갈 경우 처리)
+//        BigDecimal nightTime;
+//        if (nightEnd.isBefore(nightStart)) {
+//            // 다음날로 넘어갈 때
+//            BigDecimal nightPart1 = calculateTimeOverlap(startTime, endTime, nightStart, LocalTime.MAX, restStart, restEnd);
+//            BigDecimal nightPart2 = calculateTimeOverlap(startTime, endTime, LocalTime.MIN, nightEnd, restStart, restEnd);
+//            nightTime = nightPart1.add(nightPart2);
+//        } else {
+//            nightTime = calculateTimeOverlap(startTime, endTime, nightStart, nightEnd, restStart, restEnd);
+//        }
+//        // 총 근무 시간
+//        BigDecimal totalTime = normalTime.add(overTime).add(nightTime);
+//
+////        entity.setId(tbPb201Pk);
+//        entity.setWorkyn(workyn);
+//        entity.setEndtime(formattedCurrentTime);
+//        entity.setRemark(remark);
+//        entity.setInflag(inFlag);
+//        if(entity.getHoliyn().equals("0")){
+//            entity.setWorktime(totalTime);
+//            entity.setNomaltime(normalTime);
+//            entity.setOvertime(overTime);
+//            entity.setNighttime(nightTime);
+//        }else{
+//            entity.setWorktime(totalTime);
+//            entity.setHolitime(totalTime);
+//        }
+//        entity.setJotime(jotFlag);
+//        result.message = "퇴근처리가 마무리되었습니다.";
+//        try {
+//            result.data = tbPb201Repository.save(entity);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//
+//        }
+//        return result;
+//    }
 
     // 좌표 -> 주소 변환 메서드
     @PostMapping("/switchAddress")
@@ -375,5 +377,75 @@ public class MobileMainController {
             return BigDecimal.valueOf(adjusted).setScale(1, RoundingMode.HALF_UP);
         }
         return BigDecimal.ZERO;
+    }
+    @PostMapping("/save")
+    public AjaxResult saveManage(
+            @RequestParam(value = "searchDate", required = false) String inspectionDate,
+            @RequestParam(value = "searchFromTime", required = false) String saveStartTime,
+            @RequestParam(value = "searchToTime", required = false) String saveEndTime,
+            @RequestParam(value = "workcd", required = false) String workCode,
+            Authentication auth) {
+
+        AjaxResult result = new AjaxResult();
+
+        User user = (User) auth.getPrincipal();
+
+        // === 기존 PK 대신 일반 컬럼으로 세팅 ===
+        TB_PB201 entity = new TB_PB201();
+        entity.setSpjangcd(user.getSpjangcd());
+        entity.setWorkym(inspectionDate.replace("-", "").substring(0, 6)); // YYYYMM
+        entity.setWorkday(inspectionDate.replace("-", "").substring(6, 8)); // DD
+        entity.setPersonid(user.getPersonid());
+
+        entity.setStarttime(saveStartTime);
+        entity.setEndtime(saveEndTime);
+        entity.setWorkcd(workCode);
+
+        // === 근무시간 계산 ===
+        if (saveStartTime != null && saveEndTime != null) {
+            try {
+                LocalTime startTime = LocalTime.parse(saveStartTime); // 예: 08:30
+                LocalTime endTime   = LocalTime.parse(saveEndTime);   // 예: 17:15
+
+                // 종료 시간이 시작보다 빠르면 +24h (야간 근무 보정)
+                if (endTime.isBefore(startTime)) {
+                    endTime = endTime.plusHours(24);
+                }
+
+                long minutes = Duration.between(startTime, endTime).toMinutes();
+
+                BigDecimal hours = BigDecimal.valueOf(minutes / 60.0)
+                        .setScale(2, RoundingMode.HALF_UP); // Java 9+ safe 방식
+
+                entity.setWorktime(hours);
+            } catch (DateTimeParseException e) {
+                result.success = false;
+                result.message = "시간 형식 오류: " + e.getMessage();
+                return result;
+            }
+        }
+
+        entity.setWorkyn("Y");
+        entity.setRemark("저장됨");
+
+        tbPb201Repository.save(entity);
+
+        result.success = true;
+        result.message = "근무등록이 완료됐습니다.";
+        return result;
+    }
+
+    @PostMapping("/deleteCommute")
+    public AjaxResult deleteCommute(@RequestParam("ids") List<Long> ids) {
+        AjaxResult result = new AjaxResult();
+        try {
+            tbPb201Repository.deleteAllById(ids);
+            result.success = true;
+            result.message = "근무 내역이 삭제되었습니다.";
+        } catch (Exception e) {
+            result.success = false;
+            result.message = "삭제 중 오류 발생: " + e.getMessage();
+        }
+        return result;
     }
 }
