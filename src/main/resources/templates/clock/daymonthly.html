@@ -88,6 +88,7 @@
      <div class="content_wrap popup" id="div_excel_upload">
     <div class="table-wrap">
       <form id="TestDailyReportAddNewForm">
+      <input type="hidden" id="201id"/>
         <table class="write-table">
           <caption>작업자 근무관리 등록</caption>
           <tbody>
@@ -184,7 +185,7 @@
           autoGenerateColumns: false,
           showMarquee: true,
           frozenColumns: 2,
-          isReadOnly: false,
+          isReadOnly: true,
           formatItem: (sender, e) => {
             if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
               const col = sender.columns[e.col];
@@ -378,6 +379,11 @@
         let csrfToken = $("[name=_csrf]").val();
         let modalContainer = null;
 
+
+        let $hiddenId = $content.find('#201id');
+
+
+
         if (data.mode === 'new') {
           modalContainer = new PopupDraggable('작업자근무관리 등록');
         } else {
@@ -403,6 +409,15 @@
         let $AddNewForm = $content.find('#TestDailyReportAddNewForm');
         let $btnPopSave = $content.find('#btnPopTestDailySave');
 
+        if (data.mode === 'edit') {
+          $hiddenId.val(data.id || ''); // ← pk 세팅
+          $inspectionDate.val(data.InspectionDate);
+          $('#person_id').val(data.person_id);
+          $('#saveStartTime').val(data.saveStartTime);
+          $('#saveEndTime').val(data.saveEndTime);
+          $('#workType').val(data.workType);
+        }
+
 
         AjaxUtil.fillSelectOptions($defectType, 'defect_type', '', false);
         AjaxUtil.fillSelectOptions($('#workType'), 'system_code', 'choose', false, 'class_work');
@@ -410,20 +425,36 @@
         let nowDate = CommonUtil.getYYYYMMDD();
         $inspectionDate.val(nowDate);
 
-        if (!this.defectGrid) {
-          this.defectGrid = new wijmo.grid.FlexGrid('#defect-grid', {
-            autoGenerateColumns: false,
-            selectionMode: wijmo.grid.SelectionMode.Cell,
-            headersVisibility: wijmo.grid.HeadersVisibility.Column,
-            columns: [
-              {binding: 'value', header: '업무구분', width: 300, align: 'center', isReadOnly: true},
-              {binding: 'code', header: 'ID', width: 80, visible: false},
-              {binding: 'start_time', header: '시작시간', width: 200, align: 'center'},
-              {binding: 'end_time', header: '종료시간', width: 200, align: 'center'}
-            ],
-            itemsSource: new wijmo.collections.CollectionView([])
-          });
-        }
+        this.defectGrid = new wijmo.grid.FlexGrid('#defect-grid', {
+          autoGenerateColumns: false,
+          selectionMode: wijmo.grid.SelectionMode.Cell,
+          headersVisibility: wijmo.grid.HeadersVisibility.Column,
+          isReadOnly: true,
+          columns: [
+            {binding: 'id', header: 'PK', visible: false},
+            {binding: 'value', header: '업무구분', width: 300, align: 'center', isReadOnly: true},
+            {binding: 'code', header: 'ID', width: 80, visible: false},
+            {binding: 'start_time', header: '시작시간', width: 200, align: 'center'},
+            {binding: 'end_time', header: '종료시간', width: 200, align: 'center'}
+          ],
+          itemsSource: new wijmo.collections.CollectionView([])
+        });
+
+        // defectGrid 더블클릭 이벤트
+        this.defectGrid.hostElement.addEventListener('dblclick', (e) => {
+          const ht = this.defectGrid.hitTest(e);
+          if (ht.cellType === wijmo.grid.CellType.Cell) {
+            const item = this.defectGrid.rows[ht.row].dataItem;
+            if (!item) return;
+
+            // 이미 열린 팝업의 input 요소에 값 바인딩
+            $('#201id').val(item.id || '');
+            $('#saveStartTime').val(item.start_time || '');
+            $('#saveEndTime').val(item.end_time || '');
+            $('#workType').val(item.code || '');
+          }
+        });
+
 
         this.defectGrid.itemsSource.sourceCollection = [];
         this.defectGrid.itemsSource.refresh();
@@ -434,10 +465,11 @@
             person_id: $('#person_id').val()
           }, (res) => {
             const list = (res.data || []).map(r => ({
+              id: r.id,
               code: r.code,
               value: r.value,
-              defect_qty: r.defect_qty || 0,
-              inspection_qty: r.inspection_qty || 0
+              start_time: r.starttime || 0,
+              end_time: r.endtime || 0
             }));
 
             _this.defectGrid.itemsSource.sourceCollection = list;
@@ -453,7 +485,9 @@
 
 
         // 초기 로드 및 변경 시 다시 로드
-        loadDefects();
+        $('#person_id').off('change').on('change', function () {
+          loadDefects();
+        });
         if (data && data.mode === 'edit') {
           const $form           = $('#TestDailyReportAddNewForm');
           const $inspectionDate = $form.find('#InspectionDate');
@@ -486,6 +520,7 @@
         $btnPopSave.off('click').on('click', function () {
           // 폼 데이터 수집
           let formData = {
+            id: $('#201id').val(),   // hidden id
             InspectionDate: $('#InspectionDate').val(),
             person_id: $('#person_id').val(),
             saveStartTime: $('#saveStartTime').val(),
@@ -537,9 +572,11 @@
 
           rows.forEach(row => {
             if (!row.work_date) return;
-            const day = new Date(row.work_date).getDate();
 
-            // 사원 + 업무 + id 기준으로 한 행
+            // 안전하게 일(day)만 추출
+            const [y, m, d] = row.work_date.split('-').map(Number);
+            const day = d;
+
             const key = `${row.person_name}__${row.work}__${row.person_id}`;
             if (!grouped[key]) {
               grouped[key] = {
@@ -550,9 +587,10 @@
             }
 
             const field = `day_${day}`;
-            const hours = Number(row.total_hours ?? 0); // 소수 시간 허용
+            const hours = Number(row.total_hours ?? 0);
             grouped[key][field] = (Number(grouped[key][field]) || 0) + hours;
           });
+
 
           _this.viewData.sourceCollection = Object.values(grouped);
 
@@ -610,6 +648,8 @@
 
         const [year] = yyyymm.split('-').map(Number);
       });
+
+
 
       //검색
       $('#btnSearch').click(function (e) {

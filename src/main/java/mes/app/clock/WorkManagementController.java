@@ -60,6 +60,7 @@ public class WorkManagementController {
 
   @PostMapping("/save")
   public AjaxResult saveManage(
+          @RequestParam(value = "id", required = false) Long id,  // hidden pk
           @RequestParam(value = "InspectionDate", required = false) String inspectionDate,
           @RequestParam(value = "person_id", required = false) Integer personId,
           @RequestParam(value = "saveStartTime", required = false) String saveStartTime,
@@ -68,35 +69,38 @@ public class WorkManagementController {
           Authentication auth) {
 
     AjaxResult result = new AjaxResult();
-
     User user = (User) auth.getPrincipal();
 
-    // === 기존 PK 대신 일반 컬럼으로 세팅 ===
-    TB_PB201 entity = new TB_PB201();
-    entity.setSpjangcd(user.getSpjangcd());
-    entity.setWorkym(inspectionDate.replace("-", "").substring(0, 6)); // YYYYMM
-    entity.setWorkday(inspectionDate.replace("-", "").substring(6, 8)); // DD
-    entity.setPersonid(personId);
+    TB_PB201 entity;
 
+    // 🔹 UPDATE: id 있으면 기존 데이터 불러오기
+    if (id != null) {
+      entity = tbPB201Repository.findById(id).orElse(new TB_PB201());
+    } else {
+      entity = new TB_PB201();
+    }
+
+    entity.setSpjangcd(user.getSpjangcd());
+    entity.setWorkym(inspectionDate.replace("-", "").substring(0, 6));
+    entity.setWorkday(inspectionDate.replace("-", "").substring(6, 8));
+    entity.setPersonid(personId);
     entity.setStarttime(saveStartTime);
     entity.setEndtime(saveEndTime);
     entity.setWorkcd(workCode);
 
-    // === 근무시간 계산 ===
+    // 근무시간 계산
     if (saveStartTime != null && saveEndTime != null) {
       try {
-        LocalTime startTime = LocalTime.parse(saveStartTime); // 예: 08:30
-        LocalTime endTime   = LocalTime.parse(saveEndTime);   // 예: 17:15
+        LocalTime startTime = LocalTime.parse(saveStartTime);
+        LocalTime endTime   = LocalTime.parse(saveEndTime);
 
-        // 종료 시간이 시작보다 빠르면 +24h (야간 근무 보정)
         if (endTime.isBefore(startTime)) {
           endTime = endTime.plusHours(24);
         }
 
         long minutes = Duration.between(startTime, endTime).toMinutes();
-
         BigDecimal hours = BigDecimal.valueOf(minutes / 60.0)
-                .setScale(2, RoundingMode.HALF_UP); // Java 9+ safe 방식
+                .setScale(2, RoundingMode.HALF_UP);
 
         entity.setWorktime(hours);
       } catch (DateTimeParseException e) {
@@ -107,13 +111,14 @@ public class WorkManagementController {
     }
 
     entity.setWorkyn("Y");
-    entity.setRemark("저장됨");
+    entity.setRemark(id == null ? "신규 저장" : "수정됨");
 
     tbPB201Repository.save(entity);
 
     result.success = true;
     return result;
   }
+
 
 
 }
