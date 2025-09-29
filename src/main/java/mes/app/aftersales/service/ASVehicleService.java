@@ -29,6 +29,7 @@ public class ASVehicleService {
         a."owner" ,
         a.outdate ,
         a.inputdate ,
+        a.regdate,
         a.regno, 
         a.endflag as endflag_code,
         case

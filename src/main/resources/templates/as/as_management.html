@@ -460,9 +460,9 @@
               <thead>
               <tr id="itemHeaderRow">
                 <th>작업내용</th>
-                <th>부품구분</th>
-                <th>수량</th>
-                <th>단가</th>
+                <th>부품구분<span class="eq">*</span></th>
+                <th>수량<span class="eq">*</span></th>
+                <th>단가<span class="eq">*</span></th>
                 <th>합계</th>
                 <th>공임</th>
                 <th>
@@ -709,6 +709,22 @@
           return;
         }
 
+        for (let i = 0; i < itemRows.length; i++) {
+          const row = itemRows[i];
+          if (!row.txtProductName || row.txtProductName.trim() === '') {
+            Alert.alert('', `부품구분을 입력하세요.`);
+            return;
+          }
+          if (!row.partqty || isNaN(row.partqty) || Number(row.partqty) <= 0) {
+            Alert.alert('', `수량을 입력하세요.`);
+            return;
+          }
+          if (!row.uamtPrice || isNaN(row.uamtPrice) || Number(row.uamtPrice) <= 0) {
+            Alert.alert('', `단가를 입력하세요.`);
+            return;
+          }
+        }
+
         if (!$ctx.find('#regno').val()) {
           Alert.alert('', '등록번호를 입력하세요.');
           return;
@@ -717,6 +733,7 @@
           Alert.alert('', '차량명칭(차종)을 입력하세요.');
           return;
         }
+
         const data = {
           id: $ctx.find('#id').val(),
           as_id: $ctx.find('#as_id').val(),

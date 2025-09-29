@@ -222,11 +222,10 @@
                   <label for="spcmngno"><span class="eq">*</span>차량구분</label>
                 </th>
                 <td>
-                  <select id="spcmngno" name="spcmngno" style="width:210px;">
+                  <select id="spcmngno" name="spcmngno" style="width:210px;" disabled>
                   </select>
                 </td>
                 <th>
-
                   <label for="vechidno"><span class="eq">*</span>차대번호</label>
                 </th>
                 <td>
@@ -258,7 +257,7 @@
                 </th>
                   <td>
                     <input type="text" id="txtProductName" name="txtProductName"
-                           placeholder="코드 또는 차종 입력 후 엔터" autocomplete="off" style="width: 100%;"/>
+                           placeholder="차량명" autocomplete="off" style="width: 100%;" readonly/>
                     <input type="hidden" id ="Material_id" name="Material_id" />
                   </td>
                 <th>
@@ -438,6 +437,11 @@
         const _this = this;
         const $ctx = $form && $form.length ? $form : getActiveForm();
 
+        if (!$ctx.find('#regno').val()) {
+          Alert.alert('', '등록번호를 입력하세요.');
+          return;
+        }
+
         const data = {
           id:          $ctx.find('#id').val(),
           spcmngno:    $ctx.find('#spcmngno').val(),
@@ -527,7 +531,7 @@
 
         // 나머지 텍스트/hidden은 .val()로 충분
         $owner.val(item.company_name ?? item.CompanyName ?? '');
-        $productInput.val(item.mat_name ?? item.mat_naem ?? ''); // 과거 오타 대비
+        $productInput.val(item.mat_name ?? '');
         $productId.val(item.material_id ?? item.Material_id ?? '');
         $vechidno.val(item.vechidno ?? '');
       });
@@ -643,6 +647,11 @@
       // 컨텐츠 래퍼
       const $wrap = $('<div class="modal-form-wrap" style="padding:8px;"></div>').append($clone);
 
+      const $shipRow = $clone.find('tr').filter(function () {
+        const $tr = $(this);
+        return $tr.find('#outDate').length && $tr.find('#endflag').length;
+      })
+
       // 신규일 때 초기화
       if (mode === 'new') {
         $clone[0].reset();
@@ -650,6 +659,14 @@
         const today = new Date();
         $clone.find('#inputDate').val(CommonUtil.formatYYYYMMDD(today));
         $clone.find('#regdate').val(CommonUtil.formatYYYYMMDD(today));
+
+        $shipRow.hide();
+        $clone.find('#endflag').prop('checked', false);
+        $clone.find('#outDate').val('').prop('disabled', true);
+      }else {
+        $shipRow.show();
+        const checked = $clone.find('#endflag').is(':checked');
+        $clone.find('#outDate').prop('disabled', !checked);
       }
 
       // 수정일 때 바인딩

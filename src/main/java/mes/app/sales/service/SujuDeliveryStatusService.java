@@ -26,22 +26,26 @@ public class SujuDeliveryStatusService {
     param.addValue("company", company);
 
     String sql = """
-        select
-        h.id, 
-        c."Name" as com_name,
-        h."JumunDate",
-        m."CustomerBarcode",
-        h."DeliveryDate",
-        h.contractnm ,
-        d."SujuQty" ,d."SujuQty2",
-        m."Name" as mat_name ,
-        GREATEST((d."SujuQty" - d."SujuQty2"), 0) AS "SujuQty3"
-        from suju_head h
-        left join suju d on h.id= d."SujuHead_id"
-        left join company c on c.id= h."Company_id"
-        left join material m on m.id = d."Material_id"
-        where 1=1
-        AND h."JumunDate" BETWEEN :start AND :end
+       select
+         h.id,
+         s.vechidno ,
+         c."Name" as com_name,
+         h."JumunDate",
+         m."CustomerBarcode",
+         s.devdate  ,\s
+         h."DeliveryDate",
+         h.contractnm ,
+         d."SujuQty",
+         s."Qty" as ship_oty,
+         m."Name" as mat_name ,
+         GREATEST((d."SujuQty" - s."Qty" ), 0) AS "SujuQty3"
+         from shipment s
+         left join  suju_head h on h.id = s.suju_head_id
+         left join suju d on h.id= d."SujuHead_id"
+         left join company c on c.id= h."Company_id"
+         left join material m on m.id = d."Material_id"
+         where 1=1
+         AND h."JumunDate" BETWEEN :start AND :end
         """;
     if (StringUtils.isEmpty(company)==false) sql+="and upper(c.\"Name\") like concat('%%',upper(:company),'%%')";
 

@@ -328,7 +328,7 @@
                             </a>
                           </td>
                           <th>대수</th>
-                          <td><input type="number" name="quantity" placeholder="대수"></td>
+                          <td><input type="number" name="quantity" placeholder="대수" min="1" value="1"></td>
                         </tr>
                         <tr>
                           <th>수정 사양</th>
@@ -1280,7 +1280,7 @@
                             ? $row.nextAll('tr:visible').first()
                             : $row.prevAll('tr:visible').first();
 
-                        const allowAutoAdd = ['txtProductName_', 'description_'];
+                        const allowAutoAdd = ['sjoption_', 'description_'];
                         const isAllowedField = allowAutoAdd.some(prefix => nameAttr.startsWith(prefix));
 
                         // ⬇️ 방향키 + 현재 행이 마지막 + 허용된 필드일 경우 → 행 자동 추가
@@ -1290,7 +1290,7 @@
                             setTimeout(() => {
                                 const $rows = $content.find('.item-table tbody tr:visible').not('.item-template-row');
                                 const $newRow = $rows.last();
-                                const $newInput = $newRow.find('input[name^="txtProductName_"]');
+                                const $newInput = $newRow.find('input[name^="sjoption_"]');
                                 if ($newInput.length) $newInput.focus().select();
                             }, 50);
                             return;

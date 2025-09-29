@@ -83,7 +83,8 @@ public class ASManagementController {
       if (fixdate != null) as011.setFixdate(fixdate);
       as011.setVechidno(vechidno);
       as011.setVechregno(vechregno);
-      as011.setMileage(Integer.valueOf(mileage));
+      Integer mileageVal = CommonUtil.tryIntNull(mileage);
+      as011.setMileage(mileageVal);
       as011.setPernm(pernm);
       as011.setPartamt(Integer.valueOf(partamt));
       as011.setWorkamt(Integer.valueOf(total_workpay));
