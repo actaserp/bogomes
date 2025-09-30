@@ -47,7 +47,7 @@ public class SecurityConfiguration {
         http.csrf().ignoringAntMatchers("/popbill/webhook");
         http.csrf().ignoringAntMatchers("/pda/**");
         
-        http.authorizeRequests().mvcMatchers("/login","/logout", "/pda/login","/useridchk/**","/user-auth/save", "/popbill/webhook", "/api/transaction/input/**").permitAll()
+        http.authorizeRequests().mvcMatchers("/login","/logout", "/pda/login","/useridchk/**","/user-auth/save", "/popbill/webhook", "/api/transaction/input/**", "/manifest.json").permitAll()
         .mvcMatchers("/authentication/**","/user-auth/**").permitAll()
         .mvcMatchers("/setup").hasAuthority("admin")		// hasRole -> hasAuthority로 수정
         .anyRequest().authenticated();

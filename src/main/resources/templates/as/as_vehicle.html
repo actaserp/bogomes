@@ -117,6 +117,18 @@
           }
       }
 
+      @media screen and (max-width: 1366px) {
+        .page-title-wrap {
+          display: none;   /* 1366px 이하 → 숨김 */
+        }
+      }
+
+      @media screen and (min-width: 1367px) {
+        .page-title-wrap {
+          display: flex;  /* 1367px 이상 → 보임 */
+        }
+      }
+
   </style>
 </head>
 
