@@ -319,8 +319,8 @@
 <!--                            </a>-->
 <!--                        </li>-->
                         <li>
-                            <a class="btn" title="입고검사" id="btnInputTest">
-                                입고검사
+                            <a class="btn" title="수입검사" id="btnInputTest">
+                                수입검사
                             </a>
                         </li>
                         <li>
@@ -1172,7 +1172,7 @@
                         {binding: 'Description', header: '비고', width: 150, align: 'left'},
                         {binding: 'inout_state', header: '입고 상태', width: 100, align: 'center'},
                         // {binding: 'state_name', header: '입고검사 결재', width: 100, align: 'center'},
-                        {binding: 'judge_code', header: '입고검사 판정', width: 100, align: 'center'},
+                        {binding: 'judge_code', header: '수입검사 판정', width: 100, align: 'center'},
                         {binding: 'lot_use', header: '로트관리유무', width: 100, align: 'center'},
                         {binding: 'inout_type', header: '구분', width: 100, align: 'center'},
                         // {binding: 'SafetyStock', header: '안전재고', width: 100, align: 'right', format: 'n0'}
@@ -2331,18 +2331,18 @@
                 let items = _this.grid.selectedItems;
                 console.log('items',items);
                 if (items.length === 0) {
-                    Alert.alert('입고검사', '선택된 입고 데이터가 없습니다. ', function () {
+                    Alert.alert('수입검사', '선택된 입고 데이터가 없습니다. ', function () {
                     });
                     return;
                 } else if (items[0].inout_state !== '미확인' && !items[0].judge_code) {
-                    Alert.alert('입고검사', '수입 검사 품목만 입고검사 할 수 있습니다. ', function () {
+                    Alert.alert('수입검사', '수입 검사 품목만 할 수 있습니다. ', function () {
                     });
                     return;
                 }
                 let item = items[0];
                 let content = tmpl('inputTestPopup', {});
                 let $content = $(content);
-                let modalContainer = new PopupDraggable('입고검사');
+                let modalContainer = new PopupDraggable('수입검사');
                 modalContainer.open({width: 1000, height: 670, $content});
 
                 this.matTestGrid = new wijmo.grid.FlexGrid('#mat-input-test-grid', {
