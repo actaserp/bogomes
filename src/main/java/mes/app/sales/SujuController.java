@@ -809,6 +809,135 @@ public class SujuController {
 		return result;
 	}
 
+	@PostMapping("/save_Comp")
+	public AjaxResult SaveComp(
+			@RequestParam(value="id", required=false) Integer id,   // ★ 신규일 땐 null 허용
+			@RequestParam("name") String name,
+			@RequestParam("cboCompanyType") String companyType,
+			@RequestParam("TelNumber") String telNumber,
+			@RequestParam("business_number") String businessNumber,
+			@RequestParam("business_type") String businessType,
+			@RequestParam("business_item") String businessItem,
+			@RequestParam("spjangcd") String spjangcd,
+			Authentication auth
+	){
+		AjaxResult result = new AjaxResult();
+		User user = (User)auth.getPrincipal();
+		try {
+			Company company;
 
+			if (id == null) {
+				company = new Company();
+				// 코드가 비어있으면 신규 코드 부여
+				String compCode = sujuService.getNextCompCode();
+				company.setCode(compCode);
+			} else {
+				company = this.companyRepository.getCompanyById(id);
+				if (company == null) {
+					result.success=false;
+					result.message="대상 회사가 존재하지 않습니다.";
+					return result;
+				}
+				// 수정 시 코드가 없으면 보정(Optional)
+				if (company.getCode() == null || company.getCode().isEmpty()) {
+					company.setCode(sujuService.getNextCompCode());
+				}
+			}
+
+			// 기본정보 세팅
+			company.setName(name);
+			company.setCompanyType(companyType);
+			company.setTelNumber(telNumber);
+			company.setBusinessNumber(businessNumber);
+			company.setBusinessType(businessType);
+			company.setBusinessItem(businessItem);
+			company.setRelyn("0");
+			company.setSpjangcd(spjangcd);
+			company.set_audit(user);
+
+			// 저장
+			Company saved = companyRepository.save(company);
+
+			// 프론트에서 바로 바인딩할 최소 데이터 제공
+			Map<String, Object> data = new HashMap<>();
+			data.put("id",   saved.getId());
+			data.put("name", saved.getName());
+
+			result.success =true;
+			result.message = "저장되었습니다.";
+			result.data= data;
+			return result;
+
+		} catch (Exception e) {
+			result.success=false;
+			result.message= "저장 실패: " + e.getMessage();
+			return result;
+		}
+	}
+
+	@PostMapping("/save_material")
+	public AjaxResult SaveMaterial(@RequestParam(value="id", required=false) Integer id,
+																 @RequestParam("MaterialGroup_id")Integer MaterialGroup_id,
+																 @RequestParam("Name")String Name,
+																 @RequestParam("Unit_id") Integer Unit_id,
+																 @RequestParam(value = "Standard", required=false) String Standard,
+																 @RequestParam("Factory_id") Integer Factory_id,
+																 @RequestParam("spjangcd") String spjangcd,
+																 Authentication auth
+	){
+		AjaxResult result = new AjaxResult();
+		User user = (User)auth.getPrincipal();
+		try{
+
+			Material material;
+
+			if (id == null) {
+				material = new Material();
+				// 코드가 비어있으면 신규 코드 부여
+				String matCode = sujuService.getNextMatCode();
+				material.setCode(matCode);
+			} else {
+				material = this.materialRepository.getMaterialById(id);
+				if (material == null) {
+					result.success = false;
+					result.message = "대상 품목이 존재하지 않습니다.";
+					return result;
+				}
+				if (material.getCode() == null || material.getCode().isEmpty()) {
+					material.setCode(sujuService.getNextMatCode());
+				}
+			}
+
+			material.setFactory_id(Factory_id);
+			material.setName(Name);
+			material.setMaterialGroupId(MaterialGroup_id);
+			material.setUnitId(Unit_id);
+			material.setStandard1(Standard);
+			material.setSpjangcd(spjangcd);
+			material.setUseyn("0");
+			material.set_audit(user);
+
+			// 저장
+			Material saved = materialRepository.save(material);
+
+			// 프론트에서 바로 바인딩할 최소 데이터 제공
+			Map<String, Object> data = new HashMap<>();
+			data.put("id",   saved.getId());
+			data.put("Code", saved.getCode());
+			data.put("name",   saved.getName());
+			data.put("standard", saved.getStandard1());
+			data.put("GroupId", saved.getMaterialGroupId());
+
+			result.success =true;
+			result.message = "저장되었습니다.";
+			result.data= data;
+			return result;
+
+		} catch (Exception e) {
+			result.success=false;
+			result.message= "저장 실패: " + e.getMessage();
+			return result;
+		}
+	}
 
 }

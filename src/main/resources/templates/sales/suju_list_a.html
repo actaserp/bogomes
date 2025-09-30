@@ -272,6 +272,47 @@
                 width: 18px;
                 height: 18px;
             }
+        #plusCompany{
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            padding: 0;
+            border: 1px solid #B3B3B3;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            line-height: 0;
+        }
+        #plusCompany > img{
+           width: 12px;
+           height: 12px;
+           display: block;
+           margin-right: 5px;
+        }
+        #btnProductSave {
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 4px;
+          padding: 0;
+          border: 1px solid #B3B3B3;
+          background-color: #fff;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          line-height: 0;
+        }
+        #btnProductSave img {
+          width: 12px;
+          height: 12px;
+          display: block;
+          margin-right: 5px;
+        }
+
         </style>
         <div class="content_wrap popup" id="div_excel_upload">
             <div class="table-wrap">
@@ -281,13 +322,13 @@
                      <input type="hidden" id="id" name="id">
                       <tbody>
                         <tr>
-                          <th>수주일</th>
+                          <th>수주일<span class="eq">*</span></th>
                           <td><input type="date" id="JumunDate" name="JumunDate"></td>
-                          <th>출고예정일</th>
+                          <th>출고예정일<span class="eq">*</span></th>
                           <td><input type="date" id="DueDate" name="DueDate"></td>
                         </tr>
                         <tr>
-                          <th>상호(차주)</th>
+                          <th>상호(차주)<span class="eq">*</span></th>
                           <td>
 
                           <input id="cboCompany" name="Company_id" type="hidden">
@@ -297,7 +338,9 @@
                                 <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                                 상호 검색
                             </a>
-
+                            <a class="btn in_btn plus" id="plusCompany" title="거래처등록">
+                                <img src="/images/icon/ico-plus.svg" alt="등록 아이콘" />
+                            </a>
                           </td>
                           <th>계약자</th>
                           <td><input type="text" name="contractnm" placeholder="계약자" ></td>
@@ -315,7 +358,7 @@
                           <td><input type="text" name="matcolor" placeholder="색상"></td>
                         </tr>
                         <tr>
-                          <th>차종</th>
+                          <th>차종<span class="eq">*</span></th>
                           <td>
                             <input type="hidden" name="suju_id" />
                             <input type="hidden" name="product_code"/>
@@ -326,8 +369,11 @@
                                 <img src="/images/icon/btn-srch-black.svg" alt="검색 아이콘" />
                                 차종 검색
                             </a>
+                            <a class="btn in_btn" title="품목 신규등록" id="btnProductSave" >
+                                <img src="/images/icon/ico-plus.svg" alt="등록 아이콘" />
+                            </a>
                           </td>
-                          <th>대수</th>
+                          <th>대수<span class="eq">*</span></th>
                           <td><input type="number" name="quantity" placeholder="대수" min="1" value="1"></td>
                         </tr>
                         <tr>
@@ -496,7 +542,8 @@
     <th:block th:replace="/common/multiform_material :: multiform_material"></th:block>
     <th:block th:replace="/common/popup_company :: popup_company"></th:block>
     <th:block th:replace="/common/popup_project :: popup_project"></th:block>
-
+    <th:block th:replace="/sales/popup_company_new_save :: popup_company_new_save"></th:block>
+    <th:block th:replace="/sales/popup_material_save :: popup_material_new_save"></th:block>
     <script type="text/javascript">
 
         let isInternalFormatting = false;
@@ -686,6 +733,78 @@
                     };
 
                     poppage.show(searchcallback);
+                });
+
+                $content.on('click', 'a[title="품목 신규등록"]', function () {
+                    // ✅ 현재 클릭한 버튼이 속한 행을 기준 컨텍스트로 사용
+                    const $row = $(this).closest('tr');
+
+                    const pop = new PopMatSaveComponent();
+                    pop.show({
+                        onSaved: (saved) => {
+                            if (typeof window.searchMatList === 'function') searchMatList();
+                            if (!saved) return;
+
+                            // ✅ prefix로 찾는 헬퍼 (보이는 텍스트/셀렉트만 타겟)
+                            const setByPrefix = (prefix, val) => {
+                                const $target = $row.find(
+                                    `input[type="text"][name^="${prefix}"]:visible,
+                                     textarea[name^="${prefix}"]:visible,
+                                     select[name^="${prefix}"]:visible`
+                                ).first();
+
+                                if ($target.length) {
+                                    $target.val(val ?? '').trigger('input').trigger('change');
+                                } else {
+                                    // 숨김 필드만 있는 경우 대비해 한 번 더 시도(텍스트 우선)
+                                    const $fallback = $row.find(`[name^="${prefix}"]`).filter(':input').first();
+                                    if ($fallback.length) {
+                                        $fallback.val(val ?? '').trigger('input').trigger('change');
+                                    } else {
+                                        console.warn(`No target found for prefix: ${prefix}`);
+                                    }
+                                }
+                            };
+
+                            setByPrefix('product_code',   saved.Code);
+                            setByPrefix('Material_id',    saved.id);
+                            setByPrefix('txtProductName', saved.name);
+
+                        },
+
+                        // 포커스 복귀
+                        focusAfterClose: this
+                    });
+                });
+                //거래처 신규등록 팝업
+                $content.on('click', '#plusCompany', function () {
+                    const popup = new PopCompSaveComponent(); // 필요 시 { saveUrl: '/api/sales/suju/save_Comp' }로 교체
+                    popup.show({
+                        onSaved: (saved) => {
+                            if (typeof window.searchCompanyList === 'function') searchCompanyList();
+                            if (saved) {
+                                $content.find('#cboCompany').val(saved.id);
+                                $content.find('#CompanyName').val(saved.name);
+
+                                setTimeout(() => {
+                                    const $delivery = $content.find('#DeliveryName');
+                                    if ($delivery.length) {
+                                        $delivery.focus();
+                                        // 커서를 맨 뒤로 이동(선택 범위 = 길이,길이)
+                                        const el = $delivery.get(0);
+                                        if (el && el.setSelectionRange) {
+                                            const v = $delivery.val() || '';
+                                            el.setSelectionRange(v.length, v.length);
+                                        }
+                                    } else {
+                                        const $fallback = $('#DeliveryName');
+                                        if ($fallback.length) $fallback.focus();
+                                    }
+                                }, 120);
+                            };
+                        },
+                        focusAfterClose: this
+                    });
                 });
 
                 // 저장버튼
