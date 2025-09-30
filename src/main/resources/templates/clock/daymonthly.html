@@ -136,6 +136,7 @@
     </div>
     <div class="popup-button">
       <button type="button" class="btn-popup y_write_auth" id="btnPopTestDailySave">저장</button>
+      <button type="button" class="btn-popup y_write_auth" id="btnDelete" style="backgroundcolor:red;">삭제</button>
       <button type="button" class="btn-popup" id="modal-close-button">닫기</button>
     </div>
   </script>
@@ -381,13 +382,15 @@
 
 
         let $hiddenId = $content.find('#201id');
-
+        let $btnDelete = $content.find('#btnDelete');
 
 
         if (data.mode === 'new') {
           modalContainer = new PopupDraggable('작업자근무관리 등록');
+          $btnDelete.hide();
         } else {
           modalContainer = new PopupDraggable('작업자근무관리 수정');
+          $btnDelete.show();
         }
 
         //모달 크기
@@ -416,6 +419,34 @@
           $('#saveStartTime').val(data.saveStartTime);
           $('#saveEndTime').val(data.saveEndTime);
           $('#workType').val(data.workType);
+
+          // ✅ 삭제 버튼 로직
+          $btnDelete.off('click').on('click', function () {
+            let id = $hiddenId.val();
+            if (!id) {
+              Alert.alert('알림', '삭제할 근무를 선택해주세요');
+              return;
+            }
+            Alert.confirm('', '삭제하시겠습니까?', function () {
+              $.ajax({
+                type: 'POST',
+                url: '/api/clock/work_management/delete',
+                data: { id },
+                headers: {'X-CSRF-TOKEN': csrfToken},
+                success: function (res) {
+                  if (res.success) {
+                    _this.searchMainData();
+                    modalContainer.close();
+                  } else {
+                    Alert.alert('실패', res.message || '삭제 실패');
+                  }
+                },
+                error: function (xhr) {
+                  Alert.alert('서버 오류', xhr.responseText || '서버 오류');
+                }
+              });
+            });
+          });
         }
 
 

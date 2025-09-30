@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -119,6 +120,49 @@ public class WorkManagementController {
     return result;
   }
 
+  @PostMapping("/delete")
+  public AjaxResult deleteManage(
+          @RequestParam(value = "id", required = false) Long id,
+          Authentication auth) {
+
+    AjaxResult result = new AjaxResult();
+    User user = (User) auth.getPrincipal();
+
+    if (id == null) {
+      result.success = false;
+      result.message = "삭제할 ID가 없습니다.";
+      return result;
+    }
+
+    Optional<TB_PB201> optionalEntity = tbPB201Repository.findById(id);
+
+    if (optionalEntity.isEmpty()) {
+      result.success = false;
+      result.message = "데이터를 찾을 수 없습니다.";
+      return result;
+    }
+
+    TB_PB201 entity = optionalEntity.get();
+
+    // 🔹 본인 사업장(spjangcd) 데이터만 삭제 가능하도록 보안 체크
+    if (!user.getSpjangcd().equals(entity.getSpjangcd())) {
+      result.success = false;
+      result.message = "권한이 없습니다.";
+      return result;
+    }
+
+    try {
+      tbPB201Repository.delete(entity);
+
+      result.success = true;
+      result.message = "삭제되었습니다.";
+    } catch (Exception e) {
+      result.success = false;
+      result.message = "삭제 실패: " + e.getMessage();
+    }
+
+    return result;
+  }
 
 
 }
