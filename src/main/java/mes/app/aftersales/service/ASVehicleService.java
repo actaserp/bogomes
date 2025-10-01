@@ -100,7 +100,7 @@ public class ASVehicleService {
       left join suju su     on sh.id = su."SujuHead_id"
       left join material m  on m.id = su."Material_id"
       left join mat_grp mg  on m."MaterialGroup_id" = mg.id
-      where 1=1
+      where 1=1 and s._status ='a'
       """;
 
 
