@@ -354,6 +354,11 @@
                                             완료 취소
                                         </button>
                                     </li>
+                                    <li>
+                                        <button class="btn" title="도면" disabled id="btnDrawing">
+                                            도면
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
 
@@ -1617,6 +1622,7 @@
                     $('#btnSave').removeAttr('disabled');
                     $('#btnTest').removeAttr('disabled');
                     $('#btnDel').removeAttr('disabled');
+                    $('#btnDrawing').removeAttr('disabled');
                     $('#btnLOTbarcode').attr('disabled', 'disabled');
                     $('#btnAddChasu').attr('disabled', 'disabled');
                     $('#btnSaveChasu').attr('disabled', 'disabled');
@@ -1632,6 +1638,7 @@
                     $('#btnSave').removeAttr('disabled');
                     $('#btnTest').removeAttr('disabled');
                     $('#btnDel').removeAttr('disabled');
+                    $('#btnDrawing').removeAttr('disabled');
                     $('#btnLOTbarcode').attr('disabled', 'disabled');
                     $('#btnAddChasu').attr('disabled', 'disabled');
                     $('#btnSaveChasu').attr('disabled', 'disabled');
@@ -1652,6 +1659,7 @@
                     $('#btnSave').removeAttr('disabled');
                     $('#btnTest').removeAttr('disabled');
                     $('#btnDel').removeAttr('disabled');
+                    $('#btnDrawing').removeAttr('disabled');
                     $('#btnWorkFinish').removeAttr('disabled');
                     $('#btnAddChasu').removeAttr('disabled');
                     $('#btnSaveChasu').removeAttr('disabled');
@@ -1668,6 +1676,7 @@
                     $('#btnLOTbarcode').attr('disabled', false);
                     $('#btnConsumedSave').attr('disabled', 'disabled');
                     $('#btnDel').attr('disabled', 'disabled');
+                    $('#btnDrawing').removeAttr('disabled');
                     $('#btnWorkFinish').attr('disabled', 'disabled');
                     $('#btnFinishCancel').removeAttr('disabled');
                     $('#btnTest').attr('disabled', 'disabled');
@@ -1686,6 +1695,7 @@
                     $('#btnDeleteChasu').attr('disabled', 'disabled');
                     $('#btnWorkStop').attr('disabled', 'disabled');
                     $('#btnWorkStop').text('일시중지');
+                    $('#btnDrawing').removeAttr('disabled');
                     $('#btnDefectSave').attr('disabled', 'disabled');
                     $('#btnFinishCancel').attr('disabled', 'disabled');
                     $('#btnTest').attr('disabled', 'disabled');
@@ -2251,6 +2261,180 @@
                 }
 
                 AjaxUtil.postAsyncData(url, data, fnSuccess);
+            }
+
+            async showDesign() {
+                const mat_pk = this.$tabBasic.find('#mat_pk').val();
+                const url = this.baseUrl + '/drawing_view?mat_pk=' + mat_pk;
+
+                // 1️⃣ PDF 가져오기 (arraybuffer)
+                const arrbuf = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.responseType = 'arraybuffer';
+                    xhr.onload = () => (xhr.status === 200 ? resolve(xhr.response) : reject(new Error('HTTP ' + xhr.status)));
+                    xhr.onerror = () => reject(new Error('XHR error'));
+                    xhr.send();
+                });
+
+                const topWin = window.top || window;
+                const topDoc = topWin.document;
+
+                // 기존 오버레이 제거
+                const old = topDoc.getElementById('pdfOverlay');
+                if (old) old.remove();
+
+                // 2️⃣ 오버레이 및 컨트롤 UI 생성
+                const overlay = topDoc.createElement('div');
+                overlay.id = 'pdfOverlay';
+                overlay.style.cssText = `
+                    position:fixed; inset:0; z-index:2147483647;
+                    background:#000; display:flex; align-items:center; justify-content:center;
+                    flex-direction:column; overflow:hidden;
+                  `;
+
+                const toolbar = topDoc.createElement('div');
+                toolbar.style.cssText = `
+                    position:fixed; top:12px; left:12px; z-index:2147483648; display:flex; gap:10px;
+                  `;
+
+                const btnBack = topDoc.createElement('button');
+                btnBack.textContent = '← 돌아가기';
+                btnBack.style.cssText = `
+                    padding:8px 12px; border-radius:6px; border:1px solid #555; color:#fff;
+                    background:rgba(255,255,255,.12); cursor:pointer; font-size:14px;
+                  `;
+
+                const btnPrev = topDoc.createElement('button');
+                btnPrev.textContent = '❮'; // 더 심플한 유니코드 화살표
+                const btnNext = topDoc.createElement('button');
+                btnNext.textContent = '❯';
+
+                [btnPrev, btnNext].forEach(btn => {
+                    btn.style.cssText = `
+                        width:48px;
+                        height:48px;
+                        line-height:48px;
+                        font-size:30px;
+                        color:white;
+                        border:none;
+                        background:none;
+                        cursor:pointer;
+                        position:fixed;
+                        top:50%;
+                        transform:translateY(-50%);
+                        z-index:2147483648;
+                        opacity:0.4;
+                        transition:opacity 0.2s ease, transform 0.2s ease;
+                        outline:none !important;
+                        box-shadow:none !important;
+                    `;
+
+                    // hover 효과
+                    btn.onmouseenter = () => {
+                        btn.style.opacity = '1';
+                        btn.style.transform = 'translateY(-50%) scale(1.1)';
+                    };
+                    btn.onmouseleave = () => {
+                        btn.style.opacity = '0.4';
+                        btn.style.transform = 'translateY(-50%) scale(1)';
+                    };
+
+                    // ✅ focus 시에도 outline 완전히 제거
+                    btn.onfocus = () => {
+                        btn.style.outline = 'none';
+                        btn.style.boxShadow = 'none';
+                    };
+                });
+
+
+                btnPrev.style.left = '24px';
+                btnNext.style.right = '24px';
+
+
+                const canvas = topDoc.createElement('canvas');
+                canvas.id = 'pdfCanvas';
+                canvas.style.cssText = `
+                    max-width:90vw; max-height:90vh; object-fit:contain;
+                    background:#111; border-radius:4px;
+                  `;
+
+                toolbar.appendChild(btnBack);
+                overlay.appendChild(toolbar);
+                overlay.appendChild(canvas);
+                overlay.appendChild(btnPrev);
+                overlay.appendChild(btnNext);
+                topDoc.body.appendChild(overlay);
+
+                // 3️⃣ pdf.js 로드
+                const loadScript = (src) => new Promise((res, rej) => {
+                    const s = topDoc.createElement('script');
+                    s.src = src;
+                    s.onload = res;
+                    s.onerror = rej;
+                    topDoc.head.appendChild(s);
+                });
+
+                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+                topWin.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                // 4️⃣ PDF 렌더링
+                const data = new Uint8Array(arrbuf);
+                const pdf = await topWin.pdfjsLib.getDocument({ data }).promise;
+                let currentPage = 1;
+
+                async function renderPage(pageNum) {
+                    const page = await pdf.getPage(pageNum);
+                    const ctx = canvas.getContext('2d');
+                    const vp = page.getViewport({ scale: 1 });
+                    const scale = Math.min(
+                        topWin.innerWidth * 0.9 / vp.width,
+                        topWin.innerHeight * 0.9 / vp.height
+                    );
+                    const scaled = page.getViewport({ scale });
+                    canvas.width = scaled.width;
+                    canvas.height = scaled.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    await page.render({ canvasContext: ctx, viewport: scaled }).promise;
+                }
+
+                // 초기 페이지 렌더링
+                await renderPage(currentPage);
+
+                // 페이지 전환 이벤트
+                btnPrev.onclick = async () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        await renderPage(currentPage);
+                    }
+                };
+                btnNext.onclick = async () => {
+                    if (currentPage < pdf.numPages) {
+                        currentPage++;
+                        await renderPage(currentPage);
+                    }
+                };
+
+                // 키보드 ← → 로도 페이지 넘김
+                topWin.addEventListener('keydown', async (e) => {
+                    if (e.key === 'ArrowLeft' && currentPage > 1) {
+                        currentPage--;
+                        await renderPage(currentPage);
+                    }
+                    if (e.key === 'ArrowRight' && currentPage < pdf.numPages) {
+                        currentPage++;
+                        await renderPage(currentPage);
+                    }
+                });
+
+                // 창 크기 바뀌면 재렌더
+                topWin.addEventListener('resize', () => renderPage(currentPage));
+
+                // 5️⃣ 돌아가기 버튼
+                btnBack.onclick = () => {
+                    overlay.remove();
+                };
             }
 
             // 생산차수 목록 조회
@@ -3339,6 +3523,11 @@
             // 작업완료취소
             $('#btnFinishCancel').click(function (e) {
                 page.workFinishCancel();
+            });
+
+            // 작업완료취소
+            $('#btnDrawing').click(function (e) {
+                page.showDesign();
             });
 
             // 차수추가

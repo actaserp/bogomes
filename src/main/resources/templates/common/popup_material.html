@@ -54,6 +54,7 @@
     </section>
 
         <div class="popup-button">
+            <button type="button" class="btn-popup" id="btnMaterialSelect"><span data-commonCd="선택">선택</span></button>
             <button type="button" class="btn-popup" id="modal-close-button"><span data-commonCd="닫기">닫기</span></button>
             <button type="button" class="btn-popup" id="btnTest"><span data-commonCd="새로고침">새로고침</span></button>
         </div>
@@ -96,6 +97,14 @@
             let result = AjaxUtil.getSyncData(url, data);
             if (result.data != null) {
                 _this.viewData.sourceCollection = result.data;
+
+                setTimeout(() => {
+                    if (_this.grid && _this.grid.rows.length > 0) {
+                        _this.grid.select(0, 0); // 첫 번째 행, 첫 번째 열 선택
+                        _this.grid.focus(); // 그리드에 포커스
+                    }
+                }, 0);
+
             }
 
             //검색버튼을 누르고 초기화한다
@@ -103,9 +112,13 @@
         }
 
         selectData(item) {
-            if (typeof this.callback !== 'undefined' && this.callback!=null) {
+            this._skipAutoFocus = false;
+
+            if (typeof this.callback === 'function') {
+                this._skipAutoFocus = true; // 콜백 안에서 포커스 줄 예정
                 this.callback(item);
             }
+
             this.close();
         }
 
@@ -123,6 +136,7 @@
                 autoGenerateColumns: false,
                 showMarquee: true,
                 isReadOnly: true,
+                keyActionEnter: wijmo.grid.KeyAction.None,
                 formatItem: (sender, e) => {
                     if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
                         e.cell.style.textAlign = 'center';
@@ -165,7 +179,7 @@
                     return false;
                 }
                 //_this.selectData(items[0]);
-                _this.selectData(items);
+                _this.selectData(items[0]);
             });
 
             this.grid.hostElement.addEventListener('dblclick', function (e) {
@@ -176,9 +190,16 @@
                 _this.selectData(items[0]); // btnMaterialSelect 클릭과 동일한 동작
             });
 
-            this.$keyword.on('keypress', function (e) {
-                if (event.keyCode === 13) {
-                    _this.searchDataBind();
+            this.grid.hostElement.addEventListener('keyup', function (e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    setTimeout(() => {
+                        const selected = _this.grid.selectedItems;
+                        if (selected.length > 0) {
+                            _this.selectData(selected[0]);
+                        } else {
+                            console.log('선택된 행 없음');
+                        }
+                    }, 0); // 다음 이벤트 루프에서 실행
                 }
             });
 

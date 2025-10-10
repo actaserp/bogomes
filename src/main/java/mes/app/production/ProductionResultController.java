@@ -1,5 +1,8 @@
 package mes.app.production;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -7,16 +10,21 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
 import mes.app.definition.service.EquipmentService;
-import mes.app.production.service.EquipmentRunChartService;
+import mes.config.Settings;
 import mes.domain.entity.*;
 import mes.domain.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,6 +119,9 @@ public class ProductionResultController {
 
     @Autowired
     EquRunRepository equRunRepository;
+
+    @Autowired
+    Settings settings;
 
     @GetMapping("/read")
     public AjaxResult getProdResult(
@@ -2094,4 +2105,31 @@ public class ProductionResultController {
 
         return result;
     }
+
+    @GetMapping("/drawing_view")
+    public ResponseEntity<byte[]> drawingView(@RequestParam("mat_pk") Integer matPk) {
+        Material m = materialRepository.getMaterialById(matPk);
+        if (m == null || m.getDrawingFile() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String basePath = settings.getProperty("drawing_upload_path");
+        File file = new File(basePath, m.getDrawingFile());
+
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            byte[] fileBytes = java.nio.file.Files.readAllBytes(file.toPath());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + m.getDrawingFile() + "\"")
+                    .body(fileBytes);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
 }
