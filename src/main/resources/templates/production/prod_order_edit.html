@@ -338,7 +338,10 @@
                                 const item = s.rows[e.row].dataItem;
 
                                 // 기존 내용 제거
-                                e.cell.innerHTML = '';
+                                e.cell.style.background = '';
+                                e.cell.style.border = '';
+                                e.cell.style.padding = '';
+                                e.cell.style.color = '';
 
                                 // input 생성
                                 let input = document.createElement('input');
@@ -431,8 +434,10 @@
                             let column = panel.columns[col];
                             let item = panel.rows[row].dataItem;
 
-                            if (column.binding === 'remain_qty' && item.remain_qty > 0) {
-                                cell.style.backgroundColor = '#ffd800'; // 잔여량이 0보다 크면 배경색 노란색
+                            if (column.binding === 'remain_qty' && Number(item.remain_qty) > 0) {
+                                cell.style.backgroundColor = '#ffd800';
+                            } else {
+                                cell.style.backgroundColor = ''; // 기본값으로 복원
                             }
                         }
                     },

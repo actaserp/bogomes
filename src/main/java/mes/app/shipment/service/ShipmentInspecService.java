@@ -44,7 +44,7 @@ public class ShipmentInspecService {
 				, su."DueDate"  as due_date -- 납기일
 				--, sh."ShipDate" as ship_date  --출하일
 				, sh."State" as state
-				, jr."ProductionDate" AS prod_data
+				, jr."ProductionDate" AS prod_date
 				, m.id as mat_pk
 				, jr.id as jr_pk
 				, jr."GoodQty" as prod_qty

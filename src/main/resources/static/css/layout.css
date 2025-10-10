@@ -2031,11 +2031,17 @@ table tr .btn table, table tr .btn-blue, table tr .btn-lightnavy {
     #btnHeaderCompress {
         display: none;
     }
+    .btnHeaderCompress {
+        display: none;
+    }
 }
 
 /* 1366px 이하일 때 버튼 표시 */
 @media (max-width: 1365px) {
     #btnHeaderCompress {
+        display: inline-flex; /* 필요 시 block/flex 로 변경 */
+    }
+    .btnHeaderCompress {
         display: inline-flex; /* 필요 시 block/flex 로 변경 */
     }
 }

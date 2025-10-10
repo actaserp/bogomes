@@ -217,6 +217,12 @@
             adjustHeights();
             // 토글 후 다시 계산
         });
+        $('.btnHeaderCompress').click(function () {
+            window.parent.$('.dashboard-layout-header').toggle();
+            window.parent.$('.page-tabs').toggle();
+            adjustHeights();
+            // 토글 후 다시 계산
+        });
     });
 
 

@@ -104,7 +104,7 @@ public class ProdOrderEditService {
 	            , s."SujuQty2" as "SujuQty2"
 	            , s."ReservationStock" as "ReservationStock"
 	            , coalesce(q.ordered_qty,0) as ordered_qty
-	            , greatest(0, s."SujuQty2"- coalesce (q.ordered_qty,0)) as remain_qty
+	            , greatest(0, s."SujuQty"- coalesce (q.ordered_qty,0)) as remain_qty
 	            , 0 as "AdditionalQty"
 	            , s.description
 	            , s."StateName", s."State"
