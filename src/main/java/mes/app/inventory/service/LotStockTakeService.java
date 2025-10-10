@@ -73,12 +73,10 @@ public class LotStockTakeService {
         , m."Code" as mat_code
         , m."Name" as mat_name
         , round(m."CurrentStock"::numeric, 2) as cur_stock
-        , u."Name" as unit_name
         from material m 
         left join a on a."Material_id" = m.id
         left join company c on c.id = a."Company_id"
         inner join mat_grp mg on mg.id = m."MaterialGroup_id"
-        inner join unit u on u.id = m."Unit_id"
         left join mat_lot ml on ml."Material_id" = m.id
         where 1=1 and m."LotUseYN"='Y'
         and "Useyn" = '0'
@@ -131,11 +129,9 @@ public class LotStockTakeService {
 		, sh."Name" as storehouse_name
 		, m."Name" as mat_name
 		, m."Code" as mat_code
-		, u."Name" as unit_name
 		from mat_lot ml 
 		inner join store_house sh on sh.id = ml."StoreHouse_id" 
 		inner join material m on m.id = ml."Material_id"
-		inner join unit u on u.id = m."Unit_id" 
 		where 1=1
         and ml."Material_id" = :material_id
         """;
@@ -162,7 +158,7 @@ public class LotStockTakeService {
 		, A."CurrentStock"
 		, A.storehouse_id
 		, A.storehouse_name 
-		, A.mat_name, A.mat_code, A.unit_name
+		, A.mat_name, A.mat_code
 		, SUBSTRING(B.last_take, 1,14) as last_take_date
 		, SUBSTRING(B.last_take, 15,10) as state 
 		from A 
@@ -193,8 +189,13 @@ public class LotStockTakeService {
         from mat_lot ml
         inner join store_house sh on sh.id = ml."StoreHouse_id" 
         where 1=1
-        and ml."LotNumber" = :lot_number
 		""";
+
+		if (lot_number != null && !lot_number.trim().isEmpty()) {
+			sql += """
+        	and ml."LotNumber" = :lot_number
+    		""";
+		}
 		
 		if (material_id!=null) {
 			sql+="""

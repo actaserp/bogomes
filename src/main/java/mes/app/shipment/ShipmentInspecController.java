@@ -1,7 +1,8 @@
-package mes.app.pda.controller;
+package mes.app.shipment;
 
 import lombok.extern.slf4j.Slf4j;
 import mes.app.pda.service.ShipmentApiService;
+import mes.app.shipment.service.ShipmentInspecService;
 import mes.app.util.UtilClass;
 import mes.domain.entity.*;
 import mes.domain.model.AjaxResult;
@@ -18,18 +19,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/pda/shipment/shipment_order")
-public class ShipmentApiController {
+@RequestMapping("/api/shipment/shipment_inspec")
+public class ShipmentInspecController {
 
     @Autowired
-    ShipmentApiService shipmentApiService;
+    ShipmentInspecService shipmentApiService;
 
     @Autowired
     MatLotRepository matLotRepository;
@@ -70,6 +71,7 @@ public class ShipmentApiController {
             @RequestParam(value="cboMatGroup", required=false) Integer mat_grp_pk,
             @RequestParam(value="cboMaterial", required=false) Integer mat_pk,
             @RequestParam(value="keyword", required=false) String keyword,
+            @RequestParam(value="spjangcd", required=false) String spjangcd,
             HttpServletRequest request) {
 
         String state = "";
@@ -104,65 +106,20 @@ public class ShipmentApiController {
         return result;
     }
 
-    @GetMapping("/ship_list")
-    public AjaxResult getShipList(
-            @RequestParam("srchStartDt") String dateFrom,
-            @RequestParam("srchEndDt") String dateTo,
-            @RequestParam("state") String state,
-            @RequestParam("keyword") String keyword){
-
-        List<Map<String, Object>> items = this.shipmentApiService.getShipList(dateFrom,dateTo,state,keyword);
-
-        AjaxResult result = new AjaxResult();
-        result.data = items;
-
-        return result;
-    }
-
-    @GetMapping("/shipment_item_list")
-    public AjaxResult getShipmentItemList(
-            @RequestParam("head_id") String headId){
-
-        List<Map<String, Object>> items = this.shipmentApiService.getShipmentItemList(headId);
-
-        AjaxResult result = new AjaxResult();
-        result.data = items;
-
-        return result;
-    }
-
-    @GetMapping("/consumed_list")
-    public AjaxResult getConsumedList(
-            @RequestParam(value = "prod_date", required = false) String prodDate,
-            @RequestParam(value = "mat_pk", required = false) Integer mat_pk,
-            @RequestParam(value = "total_qty", required = false) BigDecimal total_qty
-    ) {
-
-
-        List<Map<String, Object>> items;
-        items = this.shipmentApiService.getConsumedListPlan(mat_pk, total_qty, prodDate);
-
-        AjaxResult result = new AjaxResult();
-        result.data = items;
-        System.out.println(items);
-        return result;
-    }
-
     @GetMapping("/input_lot_list")
     public AjaxResult getInputLotList(
             @RequestParam(value = "jr_pk", required = false) Integer jrPk,
+            @RequestParam(value = "mat_code", required = false) String mat_code,
             @RequestParam(value = "ship_id", required = false) Integer shipId
     ) {
 
-        List<Map<String, Object>> items = this.shipmentApiService.getInputLotList(jrPk, shipId);
+        List<Map<String, Object>> items = this.shipmentApiService.getInputLotList(jrPk, shipId, mat_code);
 
         AjaxResult result = new AjaxResult();
         result.data = items;
 
         return result;
     }
-
-
 
     @PostMapping("/add_lot_input")
     @Transactional
@@ -243,55 +200,16 @@ public class ShipmentApiController {
         return result;
     }
 
-    @PostMapping("/delete_lot_input")
-    @Transactional
-    public AjaxResult deleteLotInput(
-            @RequestParam("lot_id") Integer lotId) {
+    @PostMapping("/del_lot_list")
+    @org.springframework.transaction.annotation.Transactional
+    public AjaxResult delLotlist(
+            @RequestParam(value = "mpi_pk", required = false) Integer mpi_pk,
+            HttpServletRequest request,
+            Authentication auth) {
 
         AjaxResult result = new AjaxResult();
 
-        try {
-            matProcInputRepository.deleteByMaterialLotId(lotId);
-            result.success = true;
-            result.message = "LOT 입력이 취소되었습니다.";
-        } catch (Exception e) {
-            result.success = false;
-            result.message = "삭제 중 오류가 발생했습니다: " + e.getMessage();
-        }
-
-        return result;
-    }
-
-    @GetMapping("/lot_scan")
-    public AjaxResult lotScan(@RequestParam("lot_number") String lotNumber) {
-        AjaxResult result = new AjaxResult();
-
-        String sql = """
-            SELECT 
-                ml.id AS lot_id,
-                ml."LotNumber" AS lot_number,
-                ml."CurrentStock" AS current_stock,
-                ml."Material_id" AS material_id,
-                m."Name" AS mat_name,
-                m."Code" AS mat_code
-            FROM mat_lot ml
-            LEFT JOIN material m ON m.id = ml."Material_id"
-            WHERE ml."LotNumber" = :lotNumber
-        """;
-
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("lotNumber", lotNumber);
-
-        Map<String, Object> row = this.sqlRunner.getRow(sql, params);
-
-        if (row == null || row.isEmpty()) {
-            result.success = false;
-            result.message = "LOT를 찾을 수 없습니다.";
-            return result;
-        }
-
-        result.success = true;
-        result.data = row;
+        this.matProcInputRepository.deleteById(mpi_pk);
         return result;
     }
 
@@ -306,6 +224,7 @@ public class ShipmentApiController {
         AjaxResult result = new AjaxResult();
         User user = (User) auth.getPrincipal();
         Timestamp now = DateUtil.getNowTimeStamp();
+        LocalDateTime ldt = now.toLocalDateTime();
 
         JobRes jr = jobResRepository.getJobResById(jrPk);
 
@@ -347,8 +266,8 @@ public class ShipmentApiController {
             mio.setMaterialId(matPk);
             mio.setStoreHouseId(shPk);
             mio.setLotNumber(lotNumber);
-            mio.setInoutDate(now.toLocalDateTime().toLocalDate());
-            mio.setInoutTime(LocalTime.now());
+            mio.setInoutDate(ldt.toLocalDate());
+            mio.setInoutTime(ldt.toLocalTime().withNano(0));
             mio.setInOut("out");
             mio.setOutputType("shipment_inspec_out");
             mio.setOutputQty(reqQty);
@@ -397,6 +316,23 @@ public class ShipmentApiController {
 
         result.success = true;
         result.message = "출고 검사를 완료되었습니다.";
+        return result;
+    }
+
+    @GetMapping("/consumed_list")
+    public AjaxResult getConsumedList(
+            @RequestParam(value = "prod_date", required = false) String prodDate,
+            @RequestParam(value = "prod_mat_id", required = false) Integer prod_mat_id,
+            @RequestParam(value = "need_pro_mat_qty", required = false) BigDecimal need_pro_mat_qty) {
+
+
+        List<Map<String, Object>> items;
+        items = this.shipmentApiService.getConsumedListPlan(prod_mat_id, need_pro_mat_qty, prodDate);
+
+
+        AjaxResult result = new AjaxResult();
+        result.data = items;
+        System.out.println(items);
         return result;
     }
 

@@ -173,7 +173,6 @@ public class MaterialMoveService {
         select m.id as mat_id
         , ml.id as mat_lot_id
         , ml."LotNumber"
-        , u."Name" as unit_name
         , ml."InputQty"
         , ml."CurrentStock"
         , sh.id as storehouse_id
@@ -181,7 +180,6 @@ public class MaterialMoveService {
         from material m 
         inner join mat_lot ml on m.id = ml."Material_id" 
         inner join store_house sh on ml."StoreHouse_id" = sh.id
-        inner join unit u on m."Unit_id" = u.id
         where m.id = :material_id
         and sh.id = :storehouse_id
         and ml."CurrentStock" > 0

@@ -286,12 +286,10 @@
     </script>
 
     <script type="text/x-tmpl" id="barcode_table_tmpl">
-        <table class="table_1" style="width: 400px;border-collapse: collapse;">
+        <table class="table_1" style="width: 6.8cm; height: 6.5cm; border-collapse: collapse;">
             <tr>
                 <td class="tac">품목코드</td>
                 <td colspan="3">{%=o.MaterialCode%}</td>
-<!--                <td class="tac">보관방법</td>-->
-<!--                <td></td>-->
             </tr>
             <tr>
                 <td class="tac">품명</td>
@@ -300,24 +298,18 @@
             <tr>
                 <td class="tac">LOT수량</td>
                 <td colspan="3">{%=o.InputQty%}</td>
-<!--                <td class="tac">포장단위</td>-->
-<!--                <td>{%=o.UnitName%}</td>-->
             </tr>
 
             <tr>
                 <td class="tac">입고일자</td>
                 <td colspan="3">{%=o.InputDateTime%}</td>
             </tr>
-<!--            <tr>-->
-<!--                <td class="tac">유효기한</td>-->
-<!--                <td colspan="3">{%=o.EffectiveDate%}</td>-->
-<!--            </tr>-->
             <tr>
                 <td colspan="4" class="barcode_td">
                 </td>
             </tr>
         </table>
-        <div style="width:auto;height;0px;page-break-before:always;line-height:5px;">&nbsp;</div>
+
 
     </script>
 
@@ -594,8 +586,8 @@
                     // use options
                     JsBarcode(svg_id, item.LotNumber, {
                         format: 'code128', // 바코드 포맷 / default: code128 / options: EAN, UPC, CODE39, ITF-14, MSI, Pharmacode, Codabar (각 옵션들에 대한 설명은 사이트 참조)
-                        width: 2, // 너비 / default: 2
-                        height: 100, // 높이 / default: 100
+                        width: 1, // 너비 / default: 2
+                        height: 80, // 높이 / default: 100
                         displayValue: true, // 텍스트 표시 여부 / default: true
                         text: item.LotNumber, // 데이터 대신 특정 텍스트 표시 / default: undefined
                         fontOptions: '', // 폰트 설정 / default: '' / options: bold, italic, bold italic
@@ -603,10 +595,10 @@
                         textAlign: 'center', // 텍스트 위치 / default: center / options: left, center, right
                         textPosition: 'bottom', // 텍스트 위치 / default: bottom / options: top, bottom
                         textMargin: 2, // 바코드와 텍스트 사이 여백 / default: 2
-                        fontSize: 20, // 폰트 크기 / default: 20
+                        fontSize: 16, // 폰트 크기 / default: 20
                         background: '#ffffff', // 바코드 배경 색 / default: #ffffff
                         lineColor: '#000000', // 바코드 라인 색 / default: #000000
-                        margin: 10, // 바코드 영역 주변 여백 / default: 10
+                        margin: 5, // 바코드 영역 주변 여백 / default: 10
                     });
                 });
 
@@ -639,16 +631,25 @@
             let param = {
                 'prod_mat_id': item.mat_pk,
                 'prod_date': item.prod_date,
-                'need_pro_mat_qty': item.order_qty,
-                'consumed_mode': 'PLAN'
+                'need_pro_mat_qty': item.order_qty
             };
 
-            let result = AjaxUtil.getSyncData('/api/production/prod_result/consumed_list', param);
+            let result = AjaxUtil.getSyncData('/api/shipment/shipment_inspec/consumed_list', param);
 
             if (result.success && result.data) {
                 // 여기서 BOM 자재별 lot 선입선출 가져오기
                 let barcodeItems = [];
+                let insufficientMaterials = [];
+
                 $.each(result.data, function (i, bomItem) {
+                    let currentStock = parseFloat(bomItem.currentStock || 0);
+                    let requiredQty = parseFloat(bomItem.bom_consumed || 0);
+
+                    if (currentStock < requiredQty) {
+                        insufficientMaterials.push(`${bomItem.mat_name} (필요: ${requiredQty}, 보유: ${currentStock})`);
+                        return; // lot 조회 건너뜀
+                    }
+
                     // 자재별 lot를 서버에서 가져옴
                     let lotParam = {
                         'mat_pk': bomItem.mat_pk,
@@ -671,6 +672,12 @@
                     }
                 });
 
+                if (insufficientMaterials.length > 0) {
+                    let msg = '다음 자재의 재고가 부족합니다.\n\n' + insufficientMaterials.join('\n');
+                    Alert.alert('재고 부족', msg);
+                    return;
+                }
+
                 if (barcodeItems.length > 0) {
                     page.showBarcode(barcodeItems);
                 } else {
@@ -678,8 +685,6 @@
                 }
             }
         });
-
-
 
         let page = null;
 
