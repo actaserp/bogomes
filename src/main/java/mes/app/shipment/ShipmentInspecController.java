@@ -292,8 +292,8 @@ public class ShipmentInspecController {
             MaterialConsume mc = new MaterialConsume();
             mc.setJobResponseId(jr.getId());
             mc.setMaterialId(matPk);
-            mc.setProcessOrder(0);
-            mc.setLotIndex(0);
+            mc.setProcessOrder(1);
+            mc.setLotIndex(1);
             mc.setStartTime(now);
             mc.setEndTime(now);
             mc.setDescription("출고 검사 소요");

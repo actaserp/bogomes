@@ -1564,18 +1564,18 @@ public class ProductionResultController {
             String lotUseYn = bomMap.get("lotUseYn").toString();
 
             // 3.변경된 물량 만큼 consume 물량 변경
-            MaterialConsume mc = this.matConsuRepository.getByJobResponseIdAndProcessOrderAndLotIndexAndMaterialId(jr.getId(), mp.getProcessOrder(), mp.getLotIndex(), consumeMatPk);
-            mc.setBomQty(chasuBomQty);
-            mc.setConsumedQty(chasuBomQty);
-            mc.set_audit(user);
-            mc = this.matConsuRepository.saveAndFlush(mc);
+//            MaterialConsume mc = this.matConsuRepository.getByJobResponseIdAndProcessOrderAndLotIndexAndMaterialId(jr.getId(), mp.getProcessOrder(), mp.getLotIndex(), consumeMatPk);
+//            mc.setBomQty(chasuBomQty);
+//            mc.setConsumedQty(chasuBomQty);
+//            mc.set_audit(user);
+//            mc = this.matConsuRepository.saveAndFlush(mc);
 
             // mat_inout 물량 조정
-            MaterialInout mi = this.matInoutRepository.findBySourceTableNameAndSourceDataPkAndInOutAndOutputTypeAndMaterialId("mat_consu", mc.getId(), "out", "consumed_out", consumeMatPk);
-            mi.set_audit(user);
-            mi.setDescription("'차수생산수량변경" + mi.getOutputQty() + " -> " + chasuBomQty);
-            mi.setOutputQty(chasuBomQty);
-            mi = this.matInoutRepository.saveAndFlush(mi);
+//            MaterialInout mi = this.matInoutRepository.findBySourceTableNameAndSourceDataPkAndInOutAndOutputTypeAndMaterialId("mat_consu", mc.getId(), "out", "consumed_out", consumeMatPk);
+//            mi.set_audit(user);
+//            mi.setDescription("'차수생산수량변경" + mi.getOutputQty() + " -> " + chasuBomQty);
+//            mi.setOutputQty(chasuBomQty);
+//            mi = this.matInoutRepository.saveAndFlush(mi);
 
             if ("Y".equals(lotUseYn)) {
                 // 수정시작
@@ -1592,12 +1592,12 @@ public class ProductionResultController {
                     totalLotQty += currQty;
                 }
 
-                if (totalLotQty < chasuBomQty) {
-                    result.message = "가용한 LOT 재고가 없습니다.(" + matName + ")\n 투입 내역에서 가용 재고를 추가해주세요. ";
-                    result.success = false;
-                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                    return result;
-                }
+//                if (totalLotQty < chasuBomQty) {
+//                    result.message = "가용한 LOT 재고가 없습니다.(" + matName + ")\n 투입 내역에서 가용 재고를 추가해주세요. ";
+//                    result.success = false;
+//                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//                    return result;
+//                }
 
                 // 작업준비에 설정된 lot 투입 품목이면
                 // 로트 사용량 추가
