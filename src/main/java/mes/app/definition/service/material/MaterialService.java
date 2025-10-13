@@ -194,7 +194,7 @@ public class MaterialService {
 		dicParam.addValue("code", CommonUtil.tryString(data.getFirst("Code")));
 		dicParam.addValue("name", CommonUtil.tryString(data.getFirst("Name")));
 		dicParam.addValue("matGroupId", CommonUtil.tryIntNull(data.getFirst("MaterialGroup_id")));
-		dicParam.addValue("unitId", CommonUtil.tryIntNull(data.getFirst("Unit_id")));
+		dicParam.addValue("unitId", 3);
 		dicParam.addValue("factoryId", CommonUtil.tryIntNull(data.getFirst("Factory_id")));
 		dicParam.addValue("workcenterId", CommonUtil.tryIntNull(data.getFirst("WorkCenter_id")));
 		dicParam.addValue("equipmentId", CommonUtil.tryIntNull(data.getFirst("Equipment_id")));
