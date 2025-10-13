@@ -402,4 +402,15 @@ public class MaterialController {
 
 		return result;
 	}
+	// 라우팅 정보 저장(material update)
+	@PostMapping("/saveRouting")
+	public AjaxResult saveRouting(@RequestParam("mat_id") Integer matId,
+								  @RequestParam(value = "routing_pk", required = false) Integer routingPk) {
+		int updateRow = this.materialService.saveRouting(matId, routingPk);
+
+		AjaxResult result = new AjaxResult();
+		result.data = updateRow;
+
+		return result;
+	}
 }

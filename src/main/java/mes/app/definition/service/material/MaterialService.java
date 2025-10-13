@@ -84,6 +84,7 @@ public class MaterialService {
                 , m."overaxis"
                 , m."bodylength"
                 , m."botlength"
+                , m."Routing_id"
                 , CASE
 					 WHEN b."Material_id" IS NOT NULL THEN 1
 					 ELSE 0
@@ -485,5 +486,15 @@ public class MaterialService {
 			total += this.sqlRunner.execute(sql, dicParam);
 		}
 		return total;
+	}
+	// 라우팅 정보 저장 (material update)
+	public int saveRouting(Integer matId, Integer routingPk) {
+		MapSqlParameterSource dicParam = new MapSqlParameterSource();
+		dicParam.addValue("mat_pk", matId);
+		dicParam.addValue("routing_pk", routingPk);
+
+		String sql = " UPDATE material SET \"Routing_id\" = :routing_pk WHERE id = :mat_pk;";
+		int result = this.sqlRunner.execute(sql, dicParam);
+		return result;
 	}
 }

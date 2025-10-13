@@ -21,19 +21,19 @@ public class RoutingProc extends AbstractAuditModel{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	int id;
-	
+
 	@Column(name = "\"ProcessOrder\"")
-	Float processOrder;
-	
+	Integer processOrder;
+
 	@Column(name = "\"StandardTime\"")
 	Float standardTime;
-	
+
 	@Column(name = "\"Description\"")
 	String description;
-	
+
 	@Column(name = "\"Process_id\"")
-	Float processId;
-	
+	Integer processId;
+
 	@Column(name = "\"Routing_id\"")
 	Integer routingId;
 }

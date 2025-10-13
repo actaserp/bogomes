@@ -129,4 +129,23 @@ public class WorkcenterService {
 		return result;
 	}
 
+	public Map<String, Object> findByRoutingAndProcess(Integer Routing_id, Integer Process_id){
+
+		MapSqlParameterSource dicParam = new MapSqlParameterSource();
+		dicParam.addValue("routing_id", Routing_id);
+		dicParam.addValue("process_id", Process_id);
+
+		String sql = """
+				select wc.id as workcenter_id, wc."Name" as workcenter_nm
+					from routing_proc rp
+					left join work_center wc on wc."Process_id" = rp."Process_id"
+					WHERE rp."Routing_id" = :routing_id
+				  AND rp."Process_id" = :process_id
+		    	""";
+
+		Map<String, Object> item = this.sqlRunner.getRow(sql, dicParam);
+
+		return item;
+	}
+
 }
