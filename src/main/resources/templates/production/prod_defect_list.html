@@ -404,10 +404,11 @@
     }
 
     async function fetchHolidaysForYear(year) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => { // ❗ reject 제거
             var xhr = new XMLHttpRequest();
-            var url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo';
-            var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + 'R3P3syhq6qRP0cz8mbV2J5t%2B32WwaSN9sH8ZW4k59oKAU3Ze0WvcljMrN36OJqxs38%2F780hMD4QfhCiDZQNUyA%3D%3D';
+            var url = 'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo';
+            var queryParams = '?' + encodeURIComponent('serviceKey') + '=' +
+                'R3P3syhq6qRP0cz8mbV2J5t%2B32WwaSN9sH8ZW4k59oKAU3Ze0WvcljMrN36OJqxs38%2F780hMD4QfhCiDZQNUyA%3D%3D';
             queryParams += '&' + encodeURIComponent('solYear') + '=' + encodeURIComponent(year);
             queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('30');
 
@@ -415,29 +416,37 @@
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4) {
                     if (this.status == 200) {
-                        var parser = new DOMParser();
-                        var xmlDoc = parser.parseFromString(this.responseText, "text/xml");
-
-                        // XML에서 원하는 데이터 추출
-                        var items = xmlDoc.getElementsByTagName("item");
-                        let holidays = [];
-                        for (var i = 0; i < items.length; i++) {
-                            var locdate = items[i].getElementsByTagName("locdate")[0].textContent;
-                            var dateName = items[i].getElementsByTagName("dateName")[0].textContent;
-
-                            holidays.push({date: locdate, name: dateName});
+                        try {
+                            var parser = new DOMParser();
+                            var xmlDoc = parser.parseFromString(this.responseText, "text/xml");
+                            var items = xmlDoc.getElementsByTagName("item");
+                            let holidays = [];
+                            for (var i = 0; i < items.length; i++) {
+                                var locdate = items[i].getElementsByTagName("locdate")[0].textContent;
+                                var dateName = items[i].getElementsByTagName("dateName")[0].textContent;
+                                holidays.push({ date: locdate, name: dateName });
+                            }
+                            resolve(holidays);
+                        } catch (e) {
+                            console.error('XML 파싱 오류:', e);
+                            resolve([]); // ✅ 파싱 실패 시에도 빈 배열 반환
                         }
-                        resolve(holidays);
                     } else {
-                        console.error('오류 발생. HTTP 상태 코드:', this.status);
-                        reject(this.status);
+                        console.warn('공휴일 데이터 가져오기 실패. 상태코드:', this.status);
+                        resolve([]); // ✅ 실패 시 빈 배열 반환
                     }
                 }
+            };
+
+            xhr.onerror = function () {
+                console.warn('공공데이터 요청 오류 (네트워크 문제 등)');
+                resolve([]); // ✅ 네트워크 오류 시에도 빈 배열 반환
             };
 
             xhr.send();
         });
     }
+
 
     function toDateKey(y, m, d) {
         // y: 2025, m: 1~12, d: 1~31
