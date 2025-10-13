@@ -64,7 +64,7 @@ public class CommuteCurrentController {
         for (Map<String, Object> dataDetail : data) {
             // 일자 포멧
             String workym = (String) dataDetail.get("workym");
-            String formatted = workym.substring(0, 4) + "." + workym.substring(4, 6);
+            String formatted = workym.substring(4, 6);
             dataDetail.put("workym", formatted);
         }
         result.data = data;
