@@ -32,7 +32,7 @@ public class SujuDeliveryStatusService {
          c."Name" as com_name,
          h."JumunDate",
          m."CustomerBarcode",
-         s.devdate  ,\s
+         s.devdate  ,
          h."DeliveryDate",
          h.contractnm ,
          d."SujuQty",
@@ -45,9 +45,14 @@ public class SujuDeliveryStatusService {
          left join company c on c.id= h."Company_id"
          left join material m on m.id = d."Material_id"
          where 1=1
-         AND h."JumunDate" BETWEEN :start AND :end
+         AND h."DeliveryDate" BETWEEN :start AND :end
         """;
-    if (StringUtils.isEmpty(company)==false) sql+="and upper(c.\"Name\") like concat('%%',upper(:company),'%%')";
+    if (StringUtils.isEmpty(company)==false)
+      sql+="and upper(c.\"Name\") like concat('%%',upper(:company),'%%')";
+
+    sql+= """
+        order by h."DeliveryDate"
+        """;
 
 //    log.info("수주별납품현황 SQL: {}", sql);
 //    log.info("수주별납품현황 데이터: {}", param.getValues());
