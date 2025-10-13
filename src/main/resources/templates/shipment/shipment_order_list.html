@@ -157,7 +157,7 @@
                             <dl>
                                 <dt>
                                     <label>
-                                        출하일
+                                        출고일
                                     </label>
                                 </dt>
                                 <dd>
@@ -217,7 +217,7 @@
                             <dl>
                                 <dt>
                                     <label>
-                                        미출하<span class="eq"></span>
+                                        미출고<span class="eq"></span>
                                     </label>
                                 </dt>
                                 <dd>
@@ -241,12 +241,12 @@
                 </form>
                 <div class="container-fluid" id="divList">
                     <div class="title_box">
-                        <span class="right_align rpt" data-labelCd="출하지시 목록">출하지시 목록</span>
-                        <button type="button" class="btn-default y_write_auth" id="btnSaveShipDate" data-labelCd="출하일 변경">
-                            출하일 변경
+                        <span class="right_align rpt" data-labelCd="출고지시 목록">출고지시 목록</span>
+                        <button type="button" class="btn-default y_write_auth" id="btnSaveShipDate" data-labelCd="출고일 변경">
+                            출고일 변경
                         </button>
-                        <button type="button" class="btn-danger y_write_auth" id="btnCancelOrder" data-labelCd="출하지시 취소">
-                            출하지시 취소
+                        <button type="button" class="btn-danger y_write_auth" id="btnCancelOrder" data-labelCd="출고지시 취소">
+                            출고지시 취소
                         </button>
                     </div>
                     <div class="container-fluid">
@@ -260,7 +260,7 @@
                     <div class="title_box">
                         <button type="button" class="btn" id="btnbarcode" data-labelCd="소요 자재 바코드 출력">소요 자재 바코드 출력
                         </button>
-                        <span class="right_align rpt" data-labelCd="출하 품목">출하 품목</span>
+                        <span class="right_align rpt" data-labelCd="출고 품목">출고 품목</span>
                     </div>
 
                     <div class="container-fluid">
@@ -350,7 +350,7 @@
                         {binding: 'order_date', header: '지시일', width: '*', align: 'center', isReadOnly: true},
                         {
                             binding: 'ship_date',
-                            header: '출하일',
+                            header: '출고일',
                             width: '*',
                             align: 'center',
                             isReadOnly: false, // 수정 가능
@@ -412,7 +412,7 @@
                     }
                 });
                 new FlexGridContextMenu(this.grid1);
-                this.grid1.downloadFileName = '출하지시 목록';
+                this.grid1.downloadFileName = '출고 지시 목록';
 
                 this.grid2 = new wijmo.grid.FlexGrid('#theGrid2', {
                     selectionMode: wijmo.grid.SelectionMode.Row,
@@ -426,7 +426,7 @@
                         {binding: 'mat_name', header: '제품명', width: '*', align: 'left'},
                         {binding: 'unit_name', header: '단위', width: '*', align: 'center'},
                         {binding: 'order_qty', header: '지시량', width: '*', align: 'right'},
-                        {binding: 'ship_qty', header: '출하량', width: '*', align: 'right'},  //, editor: { type: 'money' }
+                        {binding: 'ship_qty', header: '출고량', width: '*', align: 'right'},  //, editor: { type: 'money' }
                         {binding: 'description', header: '비고', width: '*', align: 'left'},
                     ],
                     itemsSource: this.viewData2,
@@ -437,7 +437,7 @@
                     }
                 });
                 new FlexGridContextMenu(this.grid2);
-                this.grid2.downloadFileName = '출하품목';
+                this.grid2.downloadFileName = '출고 품목';
 
             }
 
@@ -513,20 +513,20 @@
 
 
                 if (errflag) {
-                    Alert.alert('', '출고 상태인 출하지시는 취소할 수 없습니다.');
+                    Alert.alert('', '출고 상태인 출고 지시는 취소할 수 없습니다.');
                     return;
                 }
 
                 let fnSuccess = (res) => {
                     if (res.success == true) {
-                        Alert.alert('', '출하 지시 취소 완료');
+                        Alert.alert('', '출고 지시 취소 완료');
 
                         this.searchMain();
                         this.grid2.itemsSource = new wijmo.collections.CollectionView([]);
 
 
                     } else {
-                        Alert.alert('', '출하 지시 취소 완료');
+                        Alert.alert('', '출고 지시 취소 완료');
                     }
                 }
 
@@ -537,7 +537,7 @@
 
             saveShipDate() {
                 if (page.ship_state == 'shipped') {
-                    Alert.alert('', '출고상태의 출하일은 변경할 수 없습니다.');
+                    Alert.alert('', '출고상태의 출고일은 변경할 수 없습니다.');
                     return;
                 }
 
@@ -549,10 +549,10 @@
                 let fnSuccess = function (res) {
                     if (res.success == true) {
 
-                        Alert.alert('', '출하일을 수정했습니다.');
+                        Alert.alert('', '출고일을 수정했습니다.');
                         page.searchDetail();
                     } else {
-                        Alert.alert('', '출하일 수정 실패.');
+                        Alert.alert('', '출고일 수정 실패.');
                         return;
                     }
                 }
@@ -623,7 +623,7 @@
         $('#btnbarcode').click(function (e) {
             let cv = page.grid2.collectionView;
             if (!cv || cv.sourceCollection.length === 0) {
-                Alert.alert('', '출하 지시 품목이 없습니다.');
+                Alert.alert('', '출고 지시 품목이 없습니다.');
                 return;
             }
             let item = cv.sourceCollection[0];  // 👈 원래 API 데이터 그대로
@@ -706,11 +706,11 @@
 
             $('#btnSaveShipDate').click(function (e) {
                 if ((page.grid1.selectedItems.length == 0)) {
-                    Alert.alert('', '출하 지시를 선택해 주세요.');
+                    Alert.alert('', '출고 지시를 선택해 주세요.');
                     return;
                 }
 
-                Alert.confirm('', "출하일을 변경하시겠습니까?",
+                Alert.confirm('', "출고일을 변경하시겠습니까?",
                     function () {
                         page.saveShipDate();
                     },
@@ -722,7 +722,7 @@
             $("#btnCancelOrder").click(function (e) {
 
                 if ((page.grid1.selectedItems.length == 0)) {
-                    Alert.alert('', '출하 지시를 선택해 주세요.');
+                    Alert.alert('', '출고 지시를 선택해 주세요.');
                     return;
                 }
                 page.cancelOrder();

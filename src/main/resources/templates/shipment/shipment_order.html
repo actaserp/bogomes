@@ -150,7 +150,7 @@
                         <dl>
                             <dt>
                                 <label>
-                                    출하일<span class="eq"></span>
+                                    출고일<span class="eq"></span>
                                 </label>
                             </dt>
                             <dd>
@@ -184,8 +184,8 @@
                             <li>
                                 <a class="btn btn-edit"
                                    style="border: 1px solid dodgerblue; color: dodgerblue"
-                                   title="출하지시 저장" id="btnSaveShipOrder">
-                                    출하지시 저장
+                                   title="출고 지시 저장" id="btnSaveShipOrder">
+                                    출고 지시 저장
                                 </a>
                             </li>
                         </ul>
@@ -491,7 +491,7 @@
                         {binding: 'suju_qty', header: '수주량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'cur_stock', header: '현재고', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'order_qty', header: '기지시량', width: 80, align: 'right', isReadOnly: true},
-                        { binding: 'shipment_state', header: '출하상태', width: 80, align: 'center', isReadOnly: true },
+                        { binding: 'shipment_state', header: '출고상태', width: 80, align: 'center', isReadOnly: true },
                         {binding: 'shipment_qty', header: '출고량', width: 80, align: 'right', isReadOnly: true},
                         {binding: 'CompanyName', header: '판매처', width: 100, align: 'left', isReadOnly: true},
                         {binding: 'JumunDate', header: '수주일', width: 100, align: 'center', isReadOnly: true},
@@ -537,7 +537,7 @@
                         let searchId = selectedItem.suju_pk;
                         document.getElementById('searchId').value = searchId;
 
-                        // 출하 상세조회
+                        // 출고 상세조회
                         searchDetailSuju(searchId);
                     }
                 });
@@ -577,7 +577,7 @@
                         let selectedItem = this.grid_product.rows[row].dataItem;
                         let searchId = selectedItem.mat_id;
                         document.getElementById('searchId').value = searchId;
-                        // 출하 상세조회
+                        // 출고 상세조회
                         searchDetailSuju(searchId);
                     }
                 });
@@ -620,7 +620,7 @@
                 }
 
                 if ($('#shipdate').val() == '') {
-                    Alert.alert('', '출하일을 지정하세요.');
+                    Alert.alert('', '출고일을 지정하세요.');
                     return false;
                 }
 
@@ -631,11 +631,11 @@
                 let data = FormUtil.extractForm($form);
                 data['Company_id'] = $('#company_id').val();
                 data['ShipDate'] = $('#shipdate').val();
-                if ($('#cboSource').val() === 'product') { // 품목출하
+                if ($('#cboSource').val() === 'product') { // 품목출고
                     data['TableName'] = 'product';
                     data['mat_id'] = $('#searchId').val();
                     data['vechidno'] = $('#vechidno').val();
-                } else {                                    // 수주 출하
+                } else {                                    // 수주 출고
                     data['TableName'] = 'suju'
                     data['suju_pk'] = $('#searchId').val();
                     data['vechidno'] = $('#vechidno').val();
@@ -648,7 +648,7 @@
                 let fnSuccess = function (res) {
                     if (res.success) {
 
-                        Notify.success('출하 지시 완료.');
+                        Notify.success('출고 지시 완료.');
 
                         $('#description').val('');
 
@@ -656,10 +656,10 @@
 
                         $('#company_id option:eq(0)').prop('selected', true);
 
-                        Alert.alert('', "출하지시가 완료되었습니다.");
+                        Alert.alert('', "출고 지시가 완료되었습니다.");
                         page.searchMain();
                     } else {
-                        const message = res.message ?? '출하지시실패';
+                        const message = res.message ?? '출고 지시 실패';
                         Alert.alert('', message);
                     }
                 }
@@ -773,7 +773,7 @@
             $('#btnSaveShipOrder').click(function (e) {
                 if (page.beforeSave()) {
                     let $form = $('#matBasicForm');
-                    Alert.confirm('', "출하 지시하시겠습니까?",
+                    Alert.confirm('', "출고 지시하시겠습니까?",
                         function () {
                             page.saveShipOrder($form);
                         },
