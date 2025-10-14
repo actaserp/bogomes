@@ -915,6 +915,8 @@ public class SujuController {
 			material.setStandard1(Standard);
 			material.setSpjangcd(spjangcd);
 			material.setUseyn("0");
+			material.setWorkCenterId(39);	//ALine 을 기본으로 저장
+			material.setRoutingId(10);	// 생산공정을 기본으로 저장
 			material.set_audit(user);
 
 			// 저장
