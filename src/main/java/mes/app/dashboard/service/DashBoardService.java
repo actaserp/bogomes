@@ -947,7 +947,7 @@ public class DashBoardService {
 		if (state != null && !state.isEmpty()) {
 			if ("출하".equals(state)) {
 				// 출하 선택 시, 부분출하도 포함
-				sql.append(" AND t.final_state IN ('출하','부분출하') ");
+				sql.append(" AND t.final_state IN ('출고지시','부분출하') ");
 			} else {
 				sql.append(" AND t.final_state = :state ");
 				dicParam.addValue("state", state);
