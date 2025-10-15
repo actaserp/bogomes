@@ -1,14 +1,21 @@
 package mes.app.definition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +39,7 @@ import mes.domain.model.AjaxResult;
 import mes.domain.repository.MaterialRepository;
 import mes.domain.repository.TestMastMatRepository;
 import mes.domain.services.CommonUtil;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/definition/material")
@@ -412,5 +420,62 @@ public class MaterialController {
 		result.data = updateRow;
 
 		return result;
+	}
+
+	// 설계도 저장
+	@PostMapping("/uploadDrawing")
+	public AjaxResult uploadDrawing(@RequestParam("drawingFile") MultipartFile file) {
+		AjaxResult result = new AjaxResult();
+		try {
+			if (file.isEmpty()) {
+				result.success = false;
+				result.message = "파일이 비어 있습니다.";
+				return result;
+			}
+
+			String uuid = UUID.randomUUID().toString();
+			String ext = FilenameUtils.getExtension(file.getOriginalFilename());
+			if (!"pdf".equalsIgnoreCase(ext)) {
+				result.success = false;
+				result.message = "PDF 파일만 업로드 가능합니다.";
+				return result;
+			}
+
+			String newFileName = uuid + ".pdf";
+			File dir = new File("C:\\temp\\bogo\\drawing");
+			if (!dir.exists()) dir.mkdirs();
+
+			File dest = new File(dir, newFileName);
+			file.transferTo(dest);
+
+			result.success = true;
+			result.data = newFileName;
+		} catch (Exception e) {
+			result.success = false;
+			result.message = "파일 업로드 실패: " + e.getMessage();
+		}
+		return result;
+	}
+
+	// 설계도 미리보기 메서드
+	@GetMapping("/previewDrawing")
+	public ResponseEntity<Resource> previewDrawing(@RequestParam("fileName") String fileName) {
+		try {
+			File file = new File("C:\\temp\\bogo\\drawing\\" + fileName);
+			if (!file.exists()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+
+			Resource resource = new FileSystemResource(file);
+			String encodedName = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8)
+					.replaceAll("\\+", "%20");
+
+			return ResponseEntity.ok()
+					.contentType(MediaType.APPLICATION_PDF)
+					.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=UTF-8''" + encodedName)
+					.body(resource);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }

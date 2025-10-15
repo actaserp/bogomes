@@ -173,6 +173,7 @@ public class MaterialService {
 			, m."Class2"
 			, m."Class3"
 			, m."Thickness"
+			, m."drawing_file"
             from material m
             inner join mat_grp mg on m."MaterialGroup_id" = mg.id
             left join unit u on u.id = m."Unit_id"
@@ -266,6 +267,7 @@ public class MaterialService {
 		dicParam.addValue("botlength", CommonUtil.tryIntNull(data.getFirst("botlength")));
 		dicParam.addValue("wheel", CommonUtil.tryString(data.getFirst("wheel")));
 		dicParam.addValue("cone", CommonUtil.tryString(data.getFirst("cone")));
+		dicParam.addValue("drawing_file", CommonUtil.tryString(data.getFirst("drawing_file")));
 
 		
 		String sql = "";
@@ -329,6 +331,7 @@ public class MaterialService {
 						 ,"botlength"
 						 ,"wheel"
 						 ,"cone"
+						 ,"drawing_file"
 						 )
 						VALUES
 						(now()
@@ -387,6 +390,7 @@ public class MaterialService {
 						 , :botlength
 						 , :wheel
 						 , :cone
+						 , :drawing_file
 						)
 					""";
 		}else {
@@ -447,6 +451,7 @@ public class MaterialService {
 					, "botlength" = :botlength
 					, "wheel" = :wheel
 					, "cone" = :cone
+					, "drawing_file" = :drawing_file
 					WHERE id = :id
 					AND spjangcd = :spjangcd
 					""";

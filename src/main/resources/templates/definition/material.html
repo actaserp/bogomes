@@ -178,6 +178,12 @@
                         <div class="button-wrap button-list" style="margin: 5px 0 5px 0">
                             <ul>
                                 <li>
+                                    <button type="button" class="btn-excellt" id="btnDraw" name="btnDraw"
+                                            style="width: 100px; height: 36px;">
+                                        설계도첨부
+                                    </button>
+                                </li>
+                                <li>
                                     <button type="button" class="btn-excellt btn-default" id="btnNew" name="btnNew"
                                             style="width: 115px; height: 36px;">
                                         <i class="fas fa-plus"></i>신규등록
@@ -213,6 +219,8 @@
                                             <col class="wp17">
                                         </colgroup>
                                         <input type="hidden" id="id" name="id" readonly>
+                                        <!--설계도 첨부 파일 바인드 input-->
+                                        <input type="file" id="drawingFile" accept="application/pdf" style="display:none;" />
                                         <tbody>
                                         <tr>
                                             <th>
@@ -236,9 +244,16 @@
                                             <th>
                                                 <label for="Name"><span class="eq">*</span>차명</label>
                                             </th>
-                                            <td colspan="5">
+                                            <td colspan="2">
                                                 <input type="text" style="width: 100%;" id="Name"
                                                        name="Name" required>
+                                            </td>
+                                            <th>
+                                                <label for="Name">설계도 </label>
+                                            </th>
+                                            <td colspan="2" id="drawingFileCell">
+                                                <input type="text" style="width: 100%;" id="drawing_file"
+                                                       name="drawing_file" readonly>
                                             </td>
                                         </tr>
                                         <tr>
@@ -1054,6 +1069,17 @@
                     let col = s.columns[e.col];
                     let item = s.rows[e.row]?.dataItem; // 행에선 row가 없을 수도 있음
 
+                    // 셀 스타일 항상 초기화
+                    if (e.panel.cellType === wijmo.grid.CellType.Cell) {
+                        e.cell.style.backgroundColor = '';
+                        e.cell.style.fontWeight = '';
+                    }
+
+                    // 헤더 가운데 정렬
+                    if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
+                        e.cell.style.textAlign = 'center';
+                    }
+
                     // 1. 헤더 체크박스 (전체선택)
                     if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader && col.binding === 'selected') {
                         e.cell.innerHTML = `<input type="checkbox" id="allCheck"/>`;
@@ -1468,6 +1494,35 @@
                 if (result.success != null) {
                     let detailData = result.data;
                     FormUtil.BindDataForm(detailData, $('#matBasicForm'));
+                    const $cell = $('#drawingFileCell');
+                    // drawing_file 값이 존재할 경우 파일 미리보기 버튼 추가
+                    if (detailData.drawing_file && detailData.drawing_file.trim() !== '') {
+                        const fileName = detailData.drawing_file;
+                        // 📄 미리보기용 텍스트로 교체
+                        $cell.html(`
+                            <span
+                                id="previewDrawing"
+                                style="cursor:pointer; color:#007BFF; text-decoration:underline;"
+                                data-filename="${fileName}">
+                                📄 설계도 미리보기
+                            </span>
+                        `);
+
+                        // 클릭 이벤트 등록
+                        $('#previewDrawing').on('click', function() {
+                            const file = $(this).data('filename');
+                            if (file) {
+                                window.open('/api/definition/material/previewDrawing?fileName=' + encodeURIComponent(file), '_blank');
+                            }
+                        });
+                    } else {
+                        // ❌ drawing_file이 없을 경우 원래 input 필드로 복원
+                        $cell.html(`
+                            <input type="text" style="width: 100%;" id="drawing_file"
+                                   name="drawing_file" readonly>
+                        `);
+                    }
+
                     FormUtil.BindDataForm(detailData, $('#matProductionForm'));
                     let group_pk = $('#WorkCenter_id').val();
                     if (group_pk) {
@@ -1555,34 +1610,64 @@
                     selectedId = selectedItem.id;
                 }
 
-                let fnSuccess = function (res) {
+                // 업로드 파일 확인
+                let file = $('#drawingFile')[0].files[0];
+                if (file) {
+                    let formData = new FormData();
+                    formData.append('drawingFile', file);
+
+                    let csrfToken = $('[name=_csrf]').val();
+                    formData.append('_csrf', csrfToken);
+
+                    // formData.append('spjangcd', sessionStorage.getItem('spjangcd'));
+
+                    // 먼저 파일 업로드
+                    $.ajax({
+                        url: '/api/definition/material/uploadDrawing',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            if (res.success) {
+                                // 업로드 성공 → 파일명 세팅 후 본 저장
+                                console.log("result data save pdf file : ", res.data);
+                                data.drawing_file = res.data;
+                                _this._saveMaterial(data, selectedId);
+                            } else {
+                                Alert.alert('', '파일 업로드 실패: ' + res.message);
+                            }
+                        },
+                        error: function (err) {
+                            Alert.alert('', '파일 업로드 중 오류 발생');
+                        }
+                    });
+                } else {
+                    // 파일 없을 때는 그냥 저장
+                    _this._saveMaterial(data, selectedId);
+                }
+
+            }
+
+            // 품목정보 저장
+            _saveMaterial(data, selectedId) {
+                let _this = this;
+                let url = this.url + '/save';
+                AjaxUtil.postAsyncData(url, data, function (res) {
                     if (!res.success) {
                         Alert.alert('', res.message);
                     } else {
                         Alert.alert('', "저장되었습니다.");
                         _this.searchDataBind();
                         setTimeout(() => {
-                            let targetIndex = -1;
-                            for (let i = 0; i < _this.grid.rows.length; i++) { // ← 반드시 _this!
-                                if (_this.grid.rows[i].dataItem.id === selectedId) {
-                                    targetIndex = i;
-                                    break;
-                                }
-                            }
+                            let targetIndex = _this.grid.rows.findIndex(r => r.dataItem.id === selectedId);
                             if (targetIndex >= 0) {
                                 _this.grid.select(targetIndex, 0);
                                 _this.grid.scrollIntoView(targetIndex, 0);
-                            } else if (_this.grid.rows.length > 0) {
-                                _this.grid.select(0, 0);
-                                _this.grid.scrollIntoView(0, 0);
                             }
                         }, 0);
                     }
-                };
-
-                // 데이터 저장 요청
-                AjaxUtil.postAsyncData(url, data, fnSuccess);
-
+                });
             }
 
 
@@ -2540,6 +2625,36 @@
 
 
             page.searchDataBind();
+        });
+
+        // 설계도첨부 버튼 클릭 시, 파일 선택창 실행
+        $('#btnDraw').on('click', function() {
+            $('#drawingFile').click(); // ✅ 이 한 줄이 핵심
+        });
+
+        // 설계도 첨부 파일 선택 완료후 화면에 표시
+        $('#drawingFile').on('change', function() {
+            const file = this.files[0];
+            // 파일이 선택되지 않은 경우
+            if (!file) return;
+
+            // 파일 확장자 검사
+            const fileName = file.name.toLowerCase();
+            const isPdf = fileName.endsWith('.pdf');
+
+            if (!isPdf) {
+                // 경고 메시지 표시
+                Alert.alert('', 'PDF 파일만 첨부 가능합니다.');
+
+                // 파일 선택 초기화 (바인딩 해제)
+                $(this).val(''); // input[type=file] 초기화
+                document.getElementById('drawing_file').value = ''; // 표시된 파일명 초기화
+                return;
+            }
+
+            // PDF인 경우 표시
+            Alert.alert('', '선택된 파일: ' + file.name);
+            document.getElementById('drawing_file').value = file.name;
         });
     </script>
 
