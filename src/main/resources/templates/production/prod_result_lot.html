@@ -1868,7 +1868,7 @@
 
                 // PLAN/ACTUAL 판정
                 let found = null;
-                if (orderNum && meta.pro_mat_id && processId) {
+                if (orderNum && processId) {
                     found = AjaxUtil.getSyncData(this.baseUrl + '/find-by-order-process', {
                         order_num: orderNum, process_id: processId, pro_mat_id: meta.pro_mat_id
                     })?.data || null;
@@ -1897,7 +1897,9 @@
                         state:     (v) => (v == null || String(v).trim() === '' ? 'ordered' : v),
                     };
                     $('#job_state').val(def.job_state(child.job_state));
+                    console.log(' child.job_state', child.job_state);
                     $('#state').val(def.state(child.state));
+                    console.log('child.state', child.state);
                     if (child.shift_code) $('#shift_code').val(child.shift_code);
                     if (child.start_time) $('#start_time').val(child.start_time);
                     if (child.end_time)   $('#end_time').val(child.end_time);
@@ -1913,6 +1915,9 @@
                     // ---- PLAN
                     $('#tabBasic #id').val('');                 // 새 자식 생성 준비
                     $('#tabBasic #consumed_mode').val('PLAN');
+                    $('#tabBasic #start_time').val('');
+                    $('#tabBasic #end_time').val('');
+
 
                     // ★ parent는 현재 작지의 base 유지
                     $('#tabBasic #parent_jr_pk').val(baseId || '');
@@ -2068,10 +2073,10 @@
                         return;
                     }
                     // (선택) PLAN 모드라면 산출품/지시수량 체크
-                    if (!data.prod_mat_id || !data.need_pro_mat_qty) {
-                        Alert.alert('', '해당 공정의 등록된 BOM이 없습니다.');
-                        return;
-                    }
+                    // if (!data.prod_mat_id || !data.need_pro_mat_qty) {
+                    //     Alert.alert('', '해당 공정의 등록된 BOM이 없습니다.');
+                    //     return;
+                    // }
                 } else {
                     data.id = $('#id').val();
                     if (!data.id) {
@@ -2100,7 +2105,7 @@
                         // 메인 그리드/상세 갱신: 부모 컨텍스트 유지
                         _this.searchMainData();
                         if (parentId) {
-                            _this.showBasicInfo(parentId); // 부모 상세로 다시 로딩 → onProcessChange에서 현재 공정 자식 탐색
+                            _this.showBasicInfo(); // 부모 상세로 다시 로딩 → onProcessChange에서 현재 공정 자식 탐색
                         }
 
                         // 그리드 선택 복구
@@ -2196,10 +2201,10 @@
                 }
                 let defect_qty = $('#defect_qty').val();
                 defect_qty = isNaN(defect_qty) ? 0 : parseFloat(defect_qty);
-                if (chasu_def_qty !== defect_qty) {
-                    Alert.alert('작업완료 오류', '총부적합량과 차수별 부적합량을 확인해주세요.');
-                    return;
-                }
+                // if (chasu_def_qty !== defect_qty) {
+                //     Alert.alert('작업완료 오류', '총부적합량과 차수별 부적합량을 확인해주세요.');
+                //     return;
+                // }
 
                 let defect_detail_qty = 0;
                 for (let i = 0; i < defect_grid.length; i++) {
@@ -2207,10 +2212,10 @@
                         defect_detail_qty += parseFloat(defect_grid[i].defect_qty);
                     }
                 }
-                if (defect_detail_qty !== defect_qty) {
-                    Alert.alert('작업완료 오류', '부적합량과 부적합 정보의 부적합량을 확인해주세요.');
-                    return;
-                }
+                // if (defect_detail_qty !== defect_qty) {
+                //     Alert.alert('작업완료 오류', '부적합량과 부적합 정보의 부적합량을 확인해주세요.');
+                //     return;
+                // }
 
                 // 4) 지시량 대비 입력량 확인
                 const orderQty = parseFloat($('#order_qty').val());

@@ -8,6 +8,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import mes.domain.entity.*;
+import mes.domain.repository.*;
+import mes.domain.services.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,15 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import mes.app.production.service.ProdOrderEditService;
-import mes.domain.entity.JobRes;
-import mes.domain.entity.Material;
-import mes.domain.entity.Suju;
-import mes.domain.entity.User;
 import mes.domain.model.AjaxResult;
-import mes.domain.repository.JobResRepository;
-import mes.domain.repository.MaterialRepository;
-import mes.domain.repository.RoutingProcRepository;
-import mes.domain.repository.SujuRepository;
 
 @RestController
 @RequestMapping("/api/production/prod_order_edit")
@@ -45,6 +40,9 @@ public class ProdOrderEditController {
 	
 	@Autowired
 	SujuRepository sujuRepository;
+
+	@Autowired
+	WorkcenterRepository workcenterRepository;
 	
 	// 수주 목록 조회
 	@GetMapping("/suju_list")
@@ -126,87 +124,75 @@ public class ProdOrderEditController {
 	@Transactional
 	public AjaxResult makeProdOrder(
 			@RequestParam(value="suju_id", required=false) Integer sujuId,
-			@RequestParam(value="prod_date", required=false) String prodDate,
-			@RequestParam(value="Material_id", required=false) Integer materialId,
-			@RequestParam(value="workshift", required=false) String workShift,
-			@RequestParam(value="workcenter_id", required=false) Integer workcenterId,
-			@RequestParam(value="equ_id", required=false) Integer equipmentId,
-			@RequestParam(value="AdditionalQty", required=false) Float additionalQty,
+			@RequestParam(value="prod_date", required=false) String productionDate,
+			@RequestParam(value="Material_id", required=false) Integer cboMaterial,
+			@RequestParam(value="workshift", required=false) String cboShiftCode,
+			@RequestParam(value="workcenter_id", required=false) Integer cboWorcenter,
+			@RequestParam(value="equ_id", required=false) Integer cboEquipment,
+			@RequestParam(value="AdditionalQty", required=false) Float txtOrderQty,
 			@RequestParam("spjangcd") String spjangcd,
 			HttpServletRequest request,
 			Authentication auth) {
-		
+
 		AjaxResult result = new AjaxResult();
-		
 		User user = (User)auth.getPrincipal();
-		
-		Material m = this.materialRepository.getMaterialById(materialId);
-		
+
+		Integer matPk = cboMaterial;
+		Material m = materialRepository.getMaterialById(matPk);
 		Integer routingPk = m.getRoutingId();
 		Integer locPk = m.getStoreHouseId();
-		Integer routingId = null;
-		Integer processCount = null;
-		
-		if (routingPk != null) {
-			processCount = this.routingProcRepository.countByRoutingId(routingPk);
-			routingId = routingPk;
-		} else {
-			routingId = null;
-		}
-		
-		Timestamp prod_date = Timestamp.valueOf(prodDate + " 00:00:00");
-		
-		// 작업지시 번호는 trigger에서 자동으로 생성된다
-		JobRes jr = new JobRes();
-		
-		jr.setSourceDataPk(sujuId);
-		jr.setSourceTableName("suju");
-		jr.setState("ordered");
-		jr.setMaterialId(materialId);
-		jr.setOrderQty(additionalQty);
-		jr.setProductionDate(prod_date);
-		jr.setProductionPlanDate(prod_date);
-		jr.setWorkCenter_id(workcenterId);
-		
-		if (equipmentId != null) {
-			jr.setEquipment_id(equipmentId);
-		} else {
-			jr.setEquipment_id(m.getEquipment());
-		}
-		
-		jr.setFirstWorkCenter_id(workcenterId);
-		
-		jr.setRouting_id(routingId);
-		jr.setProcessCount(processCount);
-		jr.setStoreHouse_id(locPk);
-		jr.set_audit(user);
-		jr.setWorkIndex(1);
-		jr.setSpjangcd(spjangcd);
 
-		if (workShift != null) {
-			jr.setShiftCode(workShift);
+		Timestamp prodDate = CommonUtil.tryTimestamp(productionDate);
+
+		// 신규 or 수정 검증
+		JobRes header = new JobRes();
+
+		final boolean hasRouting = (routingPk != null);
+
+		// ===== 헤더 저장 =====
+		header.set_audit(user);
+		header.setProductionDate(prodDate);
+		header.setProductionPlanDate(prodDate);
+		header.setMaterialId(matPk);
+		header.setOrderQty((float) txtOrderQty);
+		header.setStoreHouse_id(locPk);
+		header.setLotCount(1);
+		header.setState("ordered");
+		header.setSourceDataPk(sujuId);
+		header.setSourceTableName("suju");
+		header.setSpjangcd(spjangcd);
+
+		if (routingPk == null) {
+			result.success = false;
+			result.message = "등록된 라우팅 정보가 없습니다.";
+			return result;
 		}
-		
-		jr = this.jobResRepository.save(jr);
-		
-		List<Map<String, Object>> list = this.prodOrderEditService.makeProdOrder(sujuId);
-		
-		for (int i = 0; i < list.size(); i++) {
-			Integer pk = Integer.parseInt(list.get(i).get("suju_id").toString());
-			if(Float.parseFloat(list.get(i).get("remain_qty").toString()) == (float)0) {
-				Suju s = this.sujuRepository.getSujuById(pk);
-				s.setState("ordered");
-				s.set_audit(user);
-				s = this.sujuRepository.save(s);
-			}
+
+		// 라우팅 있음 → 공정 목록
+		List<RoutingProc> steps = routingProcRepository.findByRoutingIdOrderByProcessOrder(routingPk);
+		if (steps == null || steps.isEmpty()) {
+			result.success = false;
+			result.message = "라우팅 공정이 없습니다.";
+			return result;
 		}
-		
-		Map<String,Object> item = new HashMap<String,Object>();
-		item.put("jobres_id", jr.getId());
-		item.put("info", list);
+
+		// 첫번째 공정 = 헤더
+		RoutingProc first = steps.get(0);
+		Integer firstProcId = first.getProcessId();
+		Workcenter firstWc = workcenterRepository.findByProcessId(firstProcId);
+		Integer firstWcId = (firstWc != null ? firstWc.getId() : null);
+
+		header.setRouting_id(routingPk);
+		header.setProcessCount(steps.size()); // 전체 공정 수
+		header.setWorkCenter_id(firstWcId);
+		header.setFirstWorkCenter_id(firstWcId);
+		header.setEquipment_id(cboEquipment);   // 설비/교대는 라우팅 있을 땐 화면값 미사용
+		header.setShiftCode(cboShiftCode);
+
+		header = jobResRepository.save(header); // 트리거가 헤더 번호 생성
 		
 		result.success = true;
-		result.data = item;
+		result.data = header;
 		
 		return result;
 	}

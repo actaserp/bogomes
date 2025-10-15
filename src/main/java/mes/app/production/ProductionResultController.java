@@ -221,7 +221,7 @@ public class ProductionResultController {
     public AjaxResult findJobByOrderAndProcess(
             @RequestParam String order_num,
             @RequestParam Integer process_id,
-            @RequestParam Integer pro_mat_id
+            @RequestParam(value = "pro_mat_id", required = false) Integer pro_mat_id
     ){
         Integer jrPk = productionResultService.findJobByOrderAndProcess(order_num, process_id, pro_mat_id);
         AjaxResult r = new AjaxResult();
@@ -375,31 +375,36 @@ public class ProductionResultController {
         Timestamp prod_ts  = CommonUtil.tryTimestamp(prodDate);
 
         // 설비 중복 가동 체크
-        long runningCount = this.equRunRepository.countByEquipmentIdAndRunState(equipmentId, "run");
-        if (runningCount > 0) {
-            result.success = false;
-            result.message = "해당 설비는 이미 작업 중입니다.";
-            return result;
-        }
+//        long runningCount = this.equRunRepository.countByEquipmentIdAndRunState(equipmentId, "run");
+//        if (runningCount > 0) {
+//            result.success = false;
+//            result.message = "해당 설비는 이미 작업 중입니다.";
+//            return result;
+//        }
 
         JobRes target; // 실제로 start 상태로 저장할 대상(자식 또는 기존)
         if ("PLAN".equalsIgnoreCase(consumedMode)) {
             // PLAN: 새 자식 job_res 생성
-            if (jrPk == null || prodMatId == null || needProMatQty == null) {
+//            if (jrPk == null || prodMatId == null || needProMatQty == null) {
+            if (jrPk == null) {
                 result.success = false;
-                result.message = "PLAN 모드에는 부모작지/공정산출품/지시수량이 필요합니다.";
+                result.message = "해당 공정을 시작할 수 없습니다.";
                 return result;
             }
 
             JobRes parent = this.jobResRepository.getJobResById(jrPk);
             if (parent == null) {
                 result.success = false;
-                result.message = "부모 작업지가 없습니다.";
+                result.message = "작업지가 없습니다.";
                 return result;
             }
 
             Material m = materialRepository.getMaterialById(prodMatId);
-            Integer locPk = m.getStoreHouseId();
+            Integer locPk = null;
+
+            if (m != null && m.getStoreHouseId() != null) {
+                locPk = m.getStoreHouseId();
+            }
 
             // (중복 방지) 동일 WO + 동일 공정 + 동일 산출품 자식이 이미 있으면 재사용
             Integer dupId = this.jobResRepository.findIdByOrderProcessAndMaterial(orderNum, processId, prodMatId);
@@ -411,8 +416,17 @@ public class ProductionResultController {
                 target = new JobRes();
                 target.setWorkOrderNumber(orderNum != null ? orderNum : parent.getWorkOrderNumber());
                 target.setParentId(parent.getId());
-                target.setMaterialId(prodMatId);
-                target.setOrderQty(needProMatQty.floatValue());
+                if (prodMatId != null) {
+                    target.setMaterialId(prodMatId);
+                } else {
+                    target.setMaterialId(matPk);
+                }
+
+                if (needProMatQty != null) {
+                    target.setOrderQty(needProMatQty.floatValue());
+                } else {
+                    target.setOrderQty(1f);
+                }
                 target.setWorkCenter_id(workcenterId);
                 target.setEquipment_id(equipmentId);
                 target.setProductionDate(prod_ts);
@@ -666,11 +680,11 @@ public class ProductionResultController {
 //        }
         List<MaterialProduce> mp = this.matProduceRepository.findByJobResponseId(jrPk);
 
-        if (mp.isEmpty()) {
-            result.success = false;
-            result.message = "저장된 차수내역이 없습니다. \n 차수내역을 저장해주세요.";
-            return result;
-        }
+//        if (mp.isEmpty()) {
+//            result.success = false;
+//            result.message = "저장된 차수내역이 없습니다. \n 차수내역을 저장해주세요.";
+//            return result;
+//        }
 
         // 7) JR 업데이트 (start_time 은 건드리지 않음!)
         Timestamp prod_date = CommonUtil.tryTimestamp(prodDate);

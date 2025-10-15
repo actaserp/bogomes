@@ -332,38 +332,6 @@
                         if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
                             e.cell.style.textAlign = 'center';
                         }
-                        if (e.panel.cellType === wijmo.grid.CellType.Cell) {
-                            let col = s.columns[e.col];
-                            if (col.binding === 'prod_date') {
-                                const item = s.rows[e.row].dataItem;
-
-                                // 기존 내용 제거
-                                e.cell.style.background = '';
-                                e.cell.style.border = '';
-                                e.cell.style.padding = '';
-                                e.cell.style.color = '';
-
-                                // input 생성
-                                let input = document.createElement('input');
-                                input.type = 'date';
-                                input.style.width = '85%';
-                                input.style.minWidth = '130px';
-                                input.style.height = '100%';
-                                input.style.border = 'none';
-                                input.style.padding = '0 16px 0 0';
-                                input.style.font = 'inherit';
-                                input.style.zIndex = '0';
-
-                                input.value = item.prod_date ? item.prod_date.substring(0, 10) : '';
-
-                                // 값 변경 시 dataItem에 반영
-                                input.addEventListener('change', function () {
-                                    item.prod_date = input.value;
-                                });
-
-                                e.cell.appendChild(input);
-                            }
-                        }
                         if (
                             e.panel.cellType === wijmo.grid.CellType.ColumnHeader &&
                             (
@@ -407,12 +375,13 @@
                         {binding: 'AdditionalQty', header: '지시량', width: 60, align: 'right', isReadOnly: false}, // 수정 가능
                         {
                             binding: 'workcenter_id', header: '워크센터', width: 100, align: 'center',
-                            dataMap: workcenterMap, isReadOnly: false // 수정 가능
+                            dataMap: workcenterMap, isReadOnly: false, visible: false // 수정 가능
                         },
                         {
                             binding: 'prod_date',
                             header: '생산일',
-                            width: 130,
+                            width: 120,
+                            align: 'center',
                             isReadOnly: true
                         },
                         {

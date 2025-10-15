@@ -552,7 +552,7 @@ public class ProductionResultService {
 				JOIN work_center wc ON wc.id = jr."WorkCenter_id"
 				WHERE jr."WorkOrderNumber" = :order_num
 				  AND wc."Process_id" = :process_id
-				  AND jr."Material_id" = :pro_mat_id
+				  -- AND jr."Material_id" = :pro_mat_id
 				ORDER BY jr.id DESC
 				LIMIT 1;
 				""";

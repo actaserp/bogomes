@@ -2032,7 +2032,7 @@ table tr .btn table, table tr .btn-blue, table tr .btn-lightnavy {
         display: none;
     }
     .btnHeaderCompress {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -2042,6 +2042,6 @@ table tr .btn table, table tr .btn-blue, table tr .btn-lightnavy {
         display: inline-flex; /* 필요 시 block/flex 로 변경 */
     }
     .btnHeaderCompress {
-        display: inline-flex; /* 필요 시 block/flex 로 변경 */
+        display: inline-flex !important; /* 필요 시 block/flex 로 변경 */
     }
 }
