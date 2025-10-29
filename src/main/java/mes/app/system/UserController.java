@@ -198,7 +198,11 @@ public class UserController {
         user.setFirst_name(Name);
         user.setEmail(email);
 		user.setTel(tel);
-		user.setPersonid(Integer.valueOf(personid));
+		if (personid != null && !personid.trim().isEmpty()) {
+			user.setPersonid(Integer.valueOf(personid));
+		} else {
+			user.setPersonid(null);
+		}
         user.setDate_joined(today);
         user.setActive(is_active);
         

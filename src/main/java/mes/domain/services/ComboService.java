@@ -495,7 +495,8 @@ public class ComboService {
 		String sql = """
 			select mi."MenuCode" as value, 
 			format('%s(%s)',mi."MenuName", mf."FolderName") as text 
-			from menu_item mi inner join menu_folder mf on mf.id = mi."MenuFolder_id"  
+			from menu_item mi inner join menu_folder mf on mf.id = mi."MenuFolder_id"
+			WHERE mf."FrontFolder_id"  != 99  
 			""";
 		MapSqlParameterSource dicParam = new MapSqlParameterSource();
 		dicParam.addValue("cond1", cond1);

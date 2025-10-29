@@ -166,6 +166,7 @@ public class SystemService {
                             from menu_folder a   
                             where a."Parent_id" is null
                              and a."FrontFolder_id" is not null
+                             and a."FrontFolder_id"  != 99
                 """;
 		if (folderId != null) {
 			sql += " and a.id = :folder_id";
