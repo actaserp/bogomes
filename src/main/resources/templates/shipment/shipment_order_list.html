@@ -2,6 +2,12 @@
 
 <head>
 <style id="print_css">
+
+    @page {
+        size: 7.5cm 5cm;
+        margin: 0;
+    }
+
     @media print {
         .pagebreak {
             page-break-before: always;
@@ -25,8 +31,11 @@
     }
 
     .table_1 {
-        width: 100%;
-        border-collapse: collapse;
+        page-break-inside: avoid;     /* ✅ 인쇄 시 라벨이 중간에 잘리지 않도록 */
+    }
+
+    .table_1 td {
+        vertical-align: middle;
     }
 
     .table_1 td.b2lr {
@@ -286,31 +295,35 @@
     </script>
 
     <script type="text/x-tmpl" id="barcode_table_tmpl">
-        <table class="table_1" style="width: 6.8cm; height: 6.5cm; border-collapse: collapse;">
-            <tr>
-                <td class="tac">품목코드</td>
-                <td colspan="3">{%=o.MaterialCode%}</td>
-            </tr>
-            <tr>
-                <td class="tac">품명</td>
-                <td colspan="3">{%=o.MaterialName%}</td>
-            </tr>
-            <tr>
-                <td class="tac">LOT수량</td>
-                <td colspan="3">{%=o.InputQty%}</td>
-            </tr>
 
-            <tr>
-                <td class="tac">입고일자</td>
-                <td colspan="3">{%=o.InputDateTime%}</td>
-            </tr>
-            <tr>
-                <td colspan="4" class="barcode_td">
-                </td>
-            </tr>
-        </table>
+        <div class="barcode-wrapper">
+            <table class="table_1" style="width: 6.5cm; height: 4.5cm; border-collapse: collapse;">
+                <tr class="label-gap">
+                  <td colspan="4" style="height: 0; border: none; padding: 0;"></td>
+                </tr>
+                <tr>
+                    <td class="tac">품목코드</td>
+                    <td colspan="3">{%=o.MaterialCode%}</td>
+                </tr>
+                <tr>
+                    <td class="tac">품명</td>
+                    <td colspan="3">{%=o.MaterialName%}</td>
+                </tr>
+                <tr>
+                    <td class="tac">LOT수량</td>
+                    <td colspan="3">{%=o.InputQty%}</td>
+                </tr>
 
-
+                <tr>
+                    <td class="tac">입고일자</td>
+                    <td colspan="3">{%=o.InputDateTime%}</td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="barcode_td">
+                    </td>
+                </tr>
+            </table>
+        </div>
     </script>
 
 </th:block>
@@ -575,9 +588,36 @@
 
                     let tmp_table = tmpl('barcode_table_tmpl', item);
                     let $tmp_table = $(tmp_table);
+
+                    if (idx > 0) {
+                        $tmp_table.find('.label-gap').css('height', '0.15cm');
+                    }
+
                     $tmp_table.find('.barcode_td').append(svg);
 
                     $barcodeDiv.append($tmp_table);
+                });
+
+                $content.find('.material-name').each(function() {
+                    const $cell = $(this);
+                    const maxWidth = $cell.width(); // 셀의 최대폭
+                    const text = $cell.text();
+                    let fontSize = 12; // 기본 폰트 크기(px)
+
+                    // 글자 길이에 따라 폰트 크기를 점진적으로 줄임
+                    const test = $('<span>').text(text).css({
+                        'font-size': fontSize + 'px',
+                        'visibility': 'hidden',
+                        'white-space': 'nowrap'
+                    }).appendTo('body');
+
+                    while (test.width() > maxWidth && fontSize > 6) {
+                        fontSize -= 0.5;
+                        test.css('font-size', fontSize + 'px');
+                    }
+
+                    $cell.css('font-size', fontSize + 'px');
+                    test.remove();
                 });
 
                 $.each(barcodeItems, function (idx, item) {
@@ -585,20 +625,19 @@
 
                     // use options
                     JsBarcode(svg_id, item.LotNumber, {
-                        format: 'code128', // 바코드 포맷 / default: code128 / options: EAN, UPC, CODE39, ITF-14, MSI, Pharmacode, Codabar (각 옵션들에 대한 설명은 사이트 참조)
-                        width: 1, // 너비 / default: 2
-                        height: 80, // 높이 / default: 100
-                        displayValue: true, // 텍스트 표시 여부 / default: true
-                        text: item.LotNumber, // 데이터 대신 특정 텍스트 표시 / default: undefined
-                        fontOptions: '', // 폰트 설정 / default: '' / options: bold, italic, bold italic
-                        font: 'monospace', // 폰트 / default: monospace / options: fantasy, etc... 사이트 참조
-                        textAlign: 'center', // 텍스트 위치 / default: center / options: left, center, right
-                        textPosition: 'bottom', // 텍스트 위치 / default: bottom / options: top, bottom
-                        textMargin: 2, // 바코드와 텍스트 사이 여백 / default: 2
-                        fontSize: 16, // 폰트 크기 / default: 20
-                        background: '#ffffff', // 바코드 배경 색 / default: #ffffff
-                        lineColor: '#000000', // 바코드 라인 색 / default: #000000
-                        margin: 5, // 바코드 영역 주변 여백 / default: 10
+                        format: 'code128',
+                        width: 1,
+                        height: 50,        // 바코드 세로 길이 ↓
+                        displayValue: true,
+                        text: item.LotNumber,
+                        font: 'monospace',
+                        textAlign: 'center',
+                        textPosition: 'bottom',
+                        textMargin: 1,
+                        fontSize: 12,      // 글자 크기 ↓
+                        background: '#ffffff',
+                        lineColor: '#000000',
+                        margin: 2,         // 외곽 여백 ↓
                     });
                 });
 
@@ -613,6 +652,7 @@
                     popupWindow.document.write(css);
                     popupWindow.document.write(html);
                     popupWindow.print();
+                    setTimeout(() => popupWindow.close(), 300);
                 });
             }
 
