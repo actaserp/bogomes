@@ -305,6 +305,7 @@ public class ProductionResultService {
 			   , B."ScrapQty"                                 AS scrap_qty
 			   , TO_CHAR(B."ProductionDate" + M."ValidDays", 'yyyy-mm-dd') AS "ValidDays"
 			   , M."Routing_id"                               AS routing_id
+			   , su."JumunNumber"							  AS jumun_number	
 			  FROM S
 			  JOIN job_res       C  ON C.id = S.child_id              -- child = 대표행
 			  JOIN job_res       B  ON B.id = S.base_id               -- base = 부모

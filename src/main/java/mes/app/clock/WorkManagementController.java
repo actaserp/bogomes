@@ -48,6 +48,8 @@ public class WorkManagementController {
 
     return result;
   }
+
+
   @GetMapping("/defects")
   public AjaxResult defectsList (@RequestParam(value = "InspectionDate" ,required = false) String InspectionDate,
                                  @RequestParam(value = "person_id",required = false) Integer person_id) {

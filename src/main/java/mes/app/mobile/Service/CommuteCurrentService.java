@@ -19,7 +19,7 @@ public class CommuteCurrentService {
         MapSqlParameterSource dicParam = new MapSqlParameterSource();
         dicParam.addValue("username", username);
 
-        if(workDate != null) {
+        if(workDate != null && !workDate.isEmpty()) {
             String dayOnly = workDate.substring(8, 10);  // dd 부분만 추출
             String workYm  = workDate.substring(0, 7).replace("-", ""); // yyyyMM
             dicParam.addValue("workdate", dayOnly);
@@ -59,6 +59,8 @@ public class CommuteCurrentService {
                 t.remark,
                 t.fixflag,
                 a.first_name,
+                t."JumunNumber" as jumun_number,
+                t."JobResNumber" as job_res_num,
                 TRIM(BOTH ', ' FROM (
                   CASE WHEN t.jitime = 1 THEN '지각, ' ELSE '' END ||
                   CASE WHEN t.jotime = 1 THEN '조퇴, ' ELSE '' END ||

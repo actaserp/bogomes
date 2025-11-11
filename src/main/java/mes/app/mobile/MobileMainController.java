@@ -2,17 +2,23 @@ package mes.app.mobile;
 
 import lombok.extern.slf4j.Slf4j;
 import mes.app.mobile.Service.MobileMainService;
+import mes.app.production.service.ProdOrderEditService;
+import mes.app.production.service.ProductionResultService;
 import mes.app.transaction.service.MonthlyPurchaseListService;
+import mes.domain.entity.SystemCode;
 import mes.domain.entity.User;
 import mes.domain.entity.commute.TB_PB201;
 import mes.domain.entity.commute.TB_PB201_PK;
 import mes.domain.model.AjaxResult;
+import mes.domain.repository.SysCodeRepository;
 import mes.domain.repository.commute.TB_PB201Repository;
 import mes.domain.services.SqlRunner;
+import org.apache.coyote.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,16 +35,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/mobile_main")
 public class MobileMainController {
 
     @Autowired
+    private ProductionResultService productionResultService;
+
+    @Autowired
     MobileMainService mobileMainService;
 
     @Autowired
     private TB_PB201Repository tbPb201Repository;
+
+    @Autowired
+    SysCodeRepository sysCodeRepository;
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -384,6 +398,8 @@ public class MobileMainController {
             @RequestParam(value = "searchFromTime", required = false) String saveStartTime,
             @RequestParam(value = "searchToTime", required = false) String saveEndTime,
             @RequestParam(value = "workcd", required = false) String workCode,
+            @RequestParam String job_res_id,
+            @RequestParam String jumun_number,
             Authentication auth) {
 
         AjaxResult result = new AjaxResult();
@@ -392,6 +408,9 @@ public class MobileMainController {
 
         // === 기존 PK 대신 일반 컬럼으로 세팅 ===
         TB_PB201 entity = new TB_PB201();
+
+        entity.setJobresNum(job_res_id);
+        entity.setJumunNum(jumun_number);
         entity.setSpjangcd(user.getSpjangcd());
         entity.setWorkym(inspectionDate.replace("-", "").substring(0, 6)); // YYYYMM
         entity.setWorkday(inspectionDate.replace("-", "").substring(6, 8)); // DD
@@ -448,4 +467,91 @@ public class MobileMainController {
         }
         return result;
     }
+
+
+    @GetMapping("/work_order")
+    public AjaxResult workOrderBySuJu(@RequestParam String dateFrom,
+                                      @RequestParam String dateTo,
+                                      @RequestParam String isIncludeComp,
+                                      @RequestParam String spjangcd){
+        AjaxResult result = new AjaxResult();
+
+        if(dateFrom.isEmpty() || dateTo.isEmpty()){
+            return result;
+        }
+
+        //생산 실적 입력(LOT)에서 가져온거임
+        List<Map<String, Object>> items = this.productionResultService.getProdResult(dateFrom, dateTo, isIncludeComp, spjangcd, "");
+
+        result.data = items;
+
+        return result;
+    }
+
+    @GetMapping("/search_work")
+    public AjaxResult workSearch(@RequestParam String code){
+        AjaxResult result = new AjaxResult();
+
+
+        SystemCode systemCode = sysCodeRepository.findByCodeTypeAndCode("class_work",code);
+
+        result.data = systemCode;
+        return result;
+    }
+
+    @PostMapping("/work_save")
+    public AjaxResult workTypeSave(
+            @RequestParam("name") String value,
+            @RequestParam("code") String code,
+            @RequestParam("code_type") String code_type,
+            @RequestParam("description") String description,
+            @RequestParam String spjangcd,
+            Authentication auth
+    ){
+        User user = (User) auth.getPrincipal();
+
+        SystemCode s = null;
+        String message = "";
+
+        Optional<SystemCode> byCode = this.sysCodeRepository.findByCode(code);
+
+        if(byCode.isPresent()){
+            s = byCode.get();
+            message = "수정하였습니다.";
+        }else{
+            s = new SystemCode();
+            message = "등록하였습니다.";
+        }
+
+        s.setCodeType(code_type);
+        s.setValue(value);
+        s.setCode(code);
+        s.setDescription(description);
+        s.set_audit(user);
+        s.setSpjangcd(spjangcd);
+
+        s = this.sysCodeRepository.save(s);
+
+        AjaxResult result = new AjaxResult();
+        result.data = s;
+        result.message = message;
+
+        return result;
+
+    }
+
+    @PostMapping("/work_delete")
+    @Transactional
+    public AjaxResult workDelete(@RequestParam String code,
+                                 @RequestParam String spjangcd
+    ){
+        AjaxResult result = new AjaxResult();
+
+        sysCodeRepository.deleteByCodeTypeAndCodeAndSpjangcd("class_work", code, spjangcd);
+
+        result.message = "삭제 완료하였습니다.";
+
+        return result;
+    }
+
 }

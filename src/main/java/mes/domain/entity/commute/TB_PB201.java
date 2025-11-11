@@ -109,4 +109,10 @@ public class TB_PB201 {
 
     @Column(name = "address")
     private String address;
+
+    @Column(name = "\"JobResNumber\"")
+    String jobresNum;
+
+    @Column(name = "\"JumunNumber\"")
+    String jumunNum;
 }

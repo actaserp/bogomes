@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <style>
+  .contents-wrap {
+    padding-bottom: 140px;  /* ✅ 버튼 높이(120px) + 여유 20px */
+  }
   .btnArea{
     position: fixed;
     bottom: 0px;
@@ -44,6 +47,181 @@
   .typeInput{
     margin-bottom: 5px;
   }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  /* === 모달창 크기 및 스크롤 추가 === */
+  .modal-content {
+    position: relative;
+    background: #fff;
+    margin: 7% auto;               /* 화면 중앙 정렬 */
+    padding: 20px;
+    border-radius: 10px;
+    width: 70%;                    /* 전체 화면의 70% */
+    max-width: 900px;
+    height: 80vh;                  /* 전체 높이의 60% */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+
+    /* ✅ 스크롤 추가 */
+    overflow-y: auto;              /* 세로 스크롤 */
+    overflow-x: auto;              /* 가로 스크롤 */
+    scrollbar-width: thin;         /* 파이어폭스용 얇은 스크롤 */
+  }
+
+  /* ✅ 크롬/엣지용 스크롤 디자인 */
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .modal-content::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.3);
+    border-radius: 4px;
+  }
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(80, 80, 80, 0.6);
+  }
+  .modal-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  #theGrid {
+    width: 100%;
+    overflow-x: auto;       /* ✅ 가로 스크롤 */
+    overflow-y: auto;       /* 세로도 가능하게 */
+    -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+  }
+
+  #theGrid table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;       /* ✅ 최소 너비 지정 (컬럼 수 많을 때 자동 스크롤) */
+  }
+
+  #theGrid th, #theGrid td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    white-space: nowrap;    /* ✅ 한 줄 유지 (줄바꿈 방지) */
+  }
+
+  #theGrid th {
+    background-color: #EDEFF5;
+    font-weight: bold;
+  }
+
+  #theGrid2 {
+    flex-grow: 1;
+    min-height: 28vh;              /* 그리드 기본 높이 유지 */
+    border: 1px solid #ccc;
+  }
+
+  /* === 모바일 최적화 === */
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 90%;
+      height: 80vh;
+      margin: 10% auto;
+    }
+  }
+
+  /* 전체 행을 가로 정렬 */
+  .time-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;          /* 좁은 화면에서는 자동 줄바꿈 */
+    margin: 10px 0;
+  }
+
+  /* 각각의 시간 입력 영역 */
+  .time-group {
+    display: flex;
+    flex-direction: column;   /* 제목과 input은 세로 정렬 */
+    flex: 1 1 45%;            /* 반응형으로 2개가 한 줄에 나란히 */
+    min-width: 180px;
+  }
+
+  /* 제목 스타일 */
+  .time-group h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  /* input 스타일 */
+  .time-group input[type="time"] {
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 5px;
+    box-sizing: border-box;
+  }
+
+  /* 모바일 반응형 */
+  @media (max-width: 600px) {
+    .time-group {
+      flex: 1 1 100%; /* 모바일에서는 한 줄씩 */
+    }
+  }
+
+
+  .wj-flexgrid {
+    flex: 1 1 auto;
+    min-height: 0; /* 중요! */
+    background: #f8f8f8!important;
+  }
+
+  .wj-flexgrid .wj-header {
+    background-color: #EDEFF5!important;
+    color: black !important;
+    font-weight: 700;
+
+    font-size: 15px;
+    line-height: 150%;
+  }
+
+  .wj-flexgrid .wj-cell {
+    padding: 9px;
+    font-size: 14px;
+  }
+
+  .wj-cells .wj-cell.wj-state-multi-selected {
+    background-color: #E5F9F9!important;
+    color: black !important;
+  }
+
+  .selected-row .wj-cell {
+    background-color: #E5F9F9 !important;
+    color: black !important;
+  }
+
+  .wj-flexgrid .wj-cell input.wj-column-selector {
+    width: 16px;
+    height: 16px;
+  }
+
+  .wj-flexgrid .wj-cell input.wj-column-selector:before {
+    width: 16px;
+    height: 16px;
+  }
+
 </style>
 <head>
   <meta charset="UTF-8">
@@ -72,6 +250,39 @@
   <script src="/js/Mobile.js"></script>
   <script src="https://kit.fontawesome.com/84dc79ac13.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.min.js"></script>
+  <!-- Wijmo 배포라이선스키 적용 (배포 시 필요) -->
+  <script>
+    // wijmo 전역 객체 사용
+    wijmo.setLicenseKey('actascld.co.kr,679493286538488#B0NsIOiwmbBJye0ICRiwiI34TQIVnWLNFMFFzLxMkMrIVTvZzd4ZFW7U6LKd4Tip5LIdHdmpmbThlShVzMr3WaSNUaxMzR7siVvp4LrhTMytUbWVUMjFGSaJjQ8k5bCFTN73GMZRVT4h4RO3CNp3WVwJmdth7VTd7MVxmQ74USPtWNxo5KLdmdrIkSZ3UYId4ND3mVWNjRDBlSLFTUiZFbhBDWrh4Swo5dtBFcxIHOQ36dRpHRL56VJRUa4tWWyVTdyMTZplFUYt6bpJUbkJkW6JUZS9WdvA5R5RHeFp4TNF4ZCBzQ5B7c7MzcxMzQQxGTwhFZstSRsNkczFkdh3WRZ9WVqRDaMpWTxlmeVVjaiZVSFhWeFV4M48GO5NHbkVFe8olUzd6Q8ZVQqF6TBZHT0JFNrg4cDhkcPplRad6UjhkVZN7UupkcKVGNQhlWBRne6t6KRJWbvc7SwlkV8h6dRhTNLNWVvMmI0IyUiwiIDZUQCZURwMjI0ICSiwSM9MTMwUTMwATM0IicfJye35XX3JSSwIjUiojIDJCLi86bpNnblRHeFBCI4VWZoNFelxmRg2Wbql6ViojIOJyes4nI5kkTRJiOiMkIsIibvl6cuVGd8VEIgIXZ7VWaWRncvBXZSBybtpWaXJiOi8kI1xSfis4N8gkI0IyQiwiIu3Waz9WZ4hXRgAydvJVa4xWdNBybtpWaXJiOi8kI1xSfiQjR6QkI0IyQiwiIu3Waz9WZ4hXRgACUBx4TgAybtpWaXJiOi8kI1xSfiMzQwIkI0IyQiwiIlJ7bDBybtpWaXJiOi8kI1xSfiUFO7EkI0IyQiwiIu3Waz9WZ4hXRgACdyFGaDxWYpNmbh9WaGBybtpWaXJiOi8kI1tlOiQmcQJCLiAzM6UTNwAyNyITM4IDMyIiOiQncDJCLiI7au26YuQGbjNXY4NWYiojIz5GRiwiIkqI1AOY1ReJ1iojIh94QiwiI8gDN8MTN6gjMzkDN9cjNiojIklkIs4XXbpjInxmZiwiIyYHMyAjMiojIyVmdiwSZzxWYmpjIhNYZ');
+    // console.log('Wijmo 라이선스 키가 설정되었습니다.');
+  </script>
+
+  <!-- Wijmo 컨트롤 (옵션, 필요한 컨트롤 만 추가) -->
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.chart.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.chart.animation.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.chart.hierarchical.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.input.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.gauge.min.js"></script>
+
+  <!-- 그리드 그룹 -->
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.grouppanel.min.js"></script>
+  <!-- 그리드 excel -->
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.filter.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.sheet.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.xlsx.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.xlsx.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.pdf.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.pdf.min.js"></script>
+  <script src="https://cdn.grapecity.com/wijmo/5.20202.732/controls/wijmo.grid.selector.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.grapecity.com/wijmo/5.20202.732/styles/wijmo.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js"></script>
+  <script src="/js/flex-grid-context-menu.js"></script>
+  <script src="/js/wijmo-flex-grid.js"></script>
 </head>
 
 <body>
@@ -122,20 +333,23 @@
                 </div>
               </dd>
             </dl>
+            <dl class="time-row">
+              <div class="time-group">
+                <h3>시작시간</h3>
+                <input type="time" id="searchFromTime" style="font-size: x-large;">
+              </div>
+              <div class="time-group">
+                <h3>종료시간</h3>
+                <input type="time" id="searchToTime" style="font-size: x-large;">
+              </div>
+            </dl>
             <dl>
-              <h3>시작시간</h3>
-              <dd>
-                <div class="typeInput" style="display: flex; gap: 10px">
-                  <div style="width: 100%;">
-                    <input type="time" id="searchFromTime" style="font-size: x-large;">
-                  </div>
-                </div>
-              </dd>
-              <h3>종료시간</h3>
+              <h3>작업지시 선택</h3>
               <dd>
                 <div style="display: flex; gap: 10px">
-                  <div class="typeInput" style="width: 100%;">
-                    <input type="time" id="searchToTime" style="font-size: x-large;">
+                  <div class="typeInput" style="width: 100%">
+                    <input type="text" id="work_order" name="work_order" readonly>
+                    <input type="hidden" id="jumun_num" name="jumun_num" readonly>
                   </div>
                 </div>
               </dd>
@@ -145,9 +359,10 @@
               <dd>
                 <div style="display: flex; gap: 10px">
                   <div class="typeInput" style="width: 100%">
-                    <select id="selectWorkcd" style="font-size: x-large;">
+                    <select id="selectWorkcd" style="font-size: x-large; width: 78%">
                       <option value="">전체</option>
                     </select>
+                    <button style="width: 20%">+</button>
                   </div>
                 </div>
               </dd>
@@ -169,6 +384,83 @@
           </div>
         </dl>
       </div><!--// contents-wrap end-->
+
+      <!-- 모달창 -->
+      <div id="modalWorkOrder" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>작업지시 선택</h3>
+          <dl style="margin: 10px 0px 5px 0px">
+            <dt>
+              생산일<span class="eq">*</span>
+            </dt>
+            <dd>
+              <ul class="date-box">
+                <li>
+                  <input type="date" id="date_from" name="date_from" onchange="search_work_order()">
+                  <label for="date_from" class="hide">시작일</label>
+                </li>
+                <li>
+                  <input type="date" id="date_to" name="date_to" onchange="search_work_order()">
+                  <label for="date_to" class="hide">종료일</label>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <dl>
+            <dt>
+            </dt>
+            <dd>
+              <div class="srch-box">
+                <input type="checkbox" id="chxCompYn" name="chxCompYn" checked/>
+                완료 포함
+              </div>
+            </dd>
+          </dl>
+
+          <div class="container-fluid" id="divList" style="padding: 10px 0px 10px 0px">
+            <div class="container-fluid" id="div_suju" style="">
+              <div id="theGrid2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="modalWorkType" class="modal">
+        <div class="modal-content" style="height: 310px">
+          <span class="close">&times;</span>
+          <h3 style="margin-bottom: 10px">근무구분 추가 및 삭제</h3>
+
+          <dl>
+            <dt>근무코드</dt>
+            <dd>
+              <input type="text" id="newWorkCode" style="width:100%; font-size:1.1em;">
+              <input type="hidden" id="work_type_id">
+
+            </dd>
+          </dl>
+
+          <dl>
+            <dt>코드명</dt>
+            <dd><input type="text" id="newWorkName" style="width:100%; font-size:1.1em;"></dd>
+          </dl>
+
+          <dl>
+            <dt>설명</dt>
+            <dd><input type="text" id="description" style="width:100%; font-size:1.1em;"></dd>
+          </dl>
+
+
+          <div style="display: flex; justify-content: space-between; gap: 4%; margin-top: 20px; text-align: center;">
+            <button id="btnSaveWorkType" class="office_btn" style="width:48%; height:40px;">저장</button>
+            <button id="btnDeleteWorkType" class="office_btn" style="width:48%; height:40px; background-color: gray;">삭제</button>
+          </div>
+        </div>
+      </div>
+
+
     </div> <!--//layout-contents end -->
   </div> <!-- //mobile-layout-contents end-->
 </div> <!-- //page-wrapper end-->
@@ -194,6 +486,9 @@
   let longitude = null;
   const today = new Date();
 
+  let viewData = new wijmo.collections.CollectionView([]);
+  let grid2 = null;
+
 
   $(document).ready(function (e) {
     const today = new Date();
@@ -208,8 +503,233 @@
     document.getElementById('searchDate').value = formattedDate;
 
     AjaxUtil.fillSelectOptions($('#selectWorkcd'), 'system_code', 'choose', false, 'class_work', '');
+
+
+    let date_from = CommonUtil.getYYYYMMDD();
+    let date_to = CommonUtil.getYYYYMMDD();
+
+    $('#date_from').val(date_from);
+    $('#date_to').val(date_to);
+
     searchMainData();
+
+
+    grid2 = new wijmo.grid.FlexGrid('#theGrid2', {
+      autoGenerateColumns: false,
+      showMarquee: true,
+      headersVisibility: wijmo.grid.HeadersVisibility.Column,
+      allowSorting: 'MultiColumn',
+      selectionMode: wijmo.grid.SelectionMode.Row,
+      isReadOnly: false,
+      columns: [
+        {binding: 'order_num', header: '작지번호', width: 130, align: 'center', isReadOnly: true},
+        {binding: 'jumun_number', header: '수주번호', width: 130, align: 'center', isReadOnly: true},
+        {binding: 'prod_date', header: '생산일', width: 100, align: 'center', isReadOnly: true},
+        {binding: 'mat_code', header: '품목코드', width: 90, align: 'center', isReadOnly: true},
+        {binding: 'mat_name', header: '품목', width: 260, align: 'left', isReadOnly: true},
+        {binding: 'order_qty', header: '지시량', width: 80, align: 'right', isReadOnly: true},
+        {binding: 'job_state', header: '상태', width: 100, align: 'center'},
+        {binding: 'mat_type', header: '품목구분', width: 100, align: 'center'},
+        {binding: 'unit', header: '단위', width: 80, align: 'center'},
+        {binding: 'workcenter', header: '워크센터', width: 100, align: 'center'},
+      ],
+      itemsSource: viewData,
+    });
+
+    let lastTapTime = 0;
+
+    grid2.hostElement.addEventListener('click', function (e) {
+      const currentTime = new Date().getTime();
+      const tapInterval = currentTime - lastTapTime;
+
+      if (tapInterval < 300 && tapInterval > 0) {  // 300ms 이내 두 번 클릭
+        const ht = grid2.hitTest(e);
+        if (ht.panel === grid2.cells) {
+          const item = grid2.rows[ht.row]?.dataItem;
+          /*if (item) {
+            alert('더블탭한 행의 품목: ' + item.mat_name);
+          }
+          */
+          let jumun_num = item.jumun_number;
+          let job_res_num = item.order_num;
+          $('#work_order').val(job_res_num);
+          $('#jumun_num').val(jumun_num);
+          $('#modalWorkOrder').fadeOut(200); //모달 닫기
+        }
+      }
+
+      lastTapTime = currentTime;
+    });// ✅ this를 grid2로 고정
+
+    // ======= 초기 높이 세팅 =======
+    resizeGridHeight();
+
+    $('#btnSaveWorkType').on('click', function(){
+
+      let code = $('#newWorkCode').val();
+      let name = $('#newWorkName').val();
+
+      let message = '';
+
+      if(!name || name.trim() === ''){
+        Alert.alert('', '코드명이 없습니다.', function(){
+        })
+        return;
+      }
+      if(!code || code.trim() === ''){
+        Alert.alert('', '코드값이 없습니다.', function(){
+
+        })
+        return;
+      }
+
+
+      if (code && code.trim() !== '') {
+        message = '수정하시겠습니까?';
+      } else {
+        message = '저장하시겠습니까?';
+      }
+
+      Alert.confirm('', message, function (){
+
+        let url = '/api/mobile_main/work_save'
+        let data = {
+          'code_type' : 'class_work',
+          'name' : name,
+          'code' : code,
+          'description' : $('#description').val(),
+        }
+
+        let fnsuccess = function (result) {
+          if (result != null) {
+            if (result.success) {
+              Alert.alert('', result.message, reloadWindow);
+            } else {
+              Alert.alert('', "근무구분 등록에 실패하였습니다.");
+            }
+          } else {
+            Alert.alert('', "오류가 발생하였습니다.");
+          }
+        };
+        AjaxUtil.postAsyncData(url, data, fnsuccess);
+      })
+    });
+
+    $('#btnDeleteWorkType').on('click', function(){
+      let code = $('#newWorkCode').val();
+
+      if(!code || code.trim() === ''){
+        Alert.alert('', '코드값이 없습니다.', function(){
+
+        })
+        return;
+      }
+
+      Alert.confirm('', '삭제하시겠습니까?', function(){
+        let url = '/api/mobile_main/work_delete'
+        let data = {
+          'code' : code
+        }
+
+        let fnsuccess = function (result) {
+          if (result != null) {
+            if (result.success) {
+              Alert.alert('', result.message, reloadWindow);
+            } else {
+              Alert.alert('', "근무구분 삭제에 실패하였습니다.");
+            }
+          } else {
+            Alert.alert('', "오류가 발생하였습니다.");
+          }
+        };
+        AjaxUtil.postAsyncData(url, data, fnsuccess);
+
+      })
+    })
+
+    // ======= 입력창 클릭 시 모달 열기 =======
+    $('#work_order').on('click', function() {
+      $('#modalWorkOrder').fadeIn(200);
+      resizeGridHeight(); // 열릴 때 다시 높이 계산
+      search_work_order(); // 데이터 조회
+    });
+
+    // ======= 닫기 버튼 =======
+    $('.close').on('click', function() {
+      $('#modalWorkOrder').fadeOut(200);
+    });
+
+    // ======= 배경 클릭 시 닫기 =======
+    $(window).on('click', function(e) {
+      if ($(e.target).is('#modalWorkOrder')) {
+        $('#modalWorkOrder').fadeOut(200);
+      }
+    });
+
+    // ======= 윈도우 리사이즈 시 반응형 =======
+    window.addEventListener('resize', resizeGridHeight);
   });
+
+
+  // ======= 근무구분 추가 모달 열기 =======
+  $('button:contains("+")').on('click', function() {
+
+    let value = $('#selectWorkcd').val();                // ✅ 선택된 값 (value)
+    let text = $('#selectWorkcd option:selected').text(); // ✅ 선택된 텍스트
+
+    searhAndBinding(value);
+    $('#modalWorkType').fadeIn(200);
+  });
+
+  // 닫기 버튼
+  $('#modalWorkType .close').on('click', function() {
+    $('#modalWorkType').fadeOut(200);
+  });
+
+  function searhAndBinding(code){
+    let param = {
+      'code' : code
+    }
+
+    let result = AjaxUtil.getSyncData('/api/mobile_main/search_work', param);
+    if (result.data != null) {
+       console.log('data', result.data);
+       $('#newWorkCode').val(result.data.code);
+       $('#newWorkName').val(result.data.value);
+       $('#description').val(result.data.description);
+    } else {
+      $('#newWorkCode').val('');
+      $('#newWorkName').val('');
+      $('#description').val('');
+
+    }
+  }
+
+  // ======= 그리드 높이 조정 (화면 1/3 비율) =======
+  function resizeGridHeight() {
+    if (!grid2) return; // 아직 초기화 안됐을 때 방지
+    const gridHeight = window.innerHeight / 2;
+    grid2.hostElement.style.height = gridHeight + 'px';
+    grid2.refresh();
+  }
+
+
+  // ======= 작업지시 조회 =======
+  function search_work_order() {
+
+    let param = {
+      'dateFrom' : $('#date_from').val(),
+      'dateTo' : $('#date_to').val(),
+      'isIncludeComp': $('#chxCompYn').is(':checked')
+    }
+
+    let result = AjaxUtil.getSyncData('/api/mobile_main/work_order', param);
+    if (result && result.data) {
+      viewData.sourceCollection = result.data;
+    } else {
+      viewData.sourceCollection = [];
+    }
+  }
 
   // 근무 등록(상태값에 따라 로직 변경)
   function submitCommute(office){
@@ -218,12 +738,28 @@
     if(office.trim() === 'inOfficeIn' || office.trim() === 'outOfficeIn') {
         let _this = this;
         let url = '/api/mobile_main/save'
+
+        let work_order = document.getElementById('work_order').value;
+        let jumun_num  = document.getElementById('jumun_num').value;
+
+        if(!work_order || work_order.trim() === ''){
+          Alert.alert('', '작업지시를 선택하세요.');
+          return;
+        }
+        if(!work_order || work_order.trim() === ''){
+          Alert.alert('', '작업지시를 선택하세요.');
+          return;
+        }
+
         let data = {
           'searchDate': document.getElementById('searchDate').value,
           'searchFromTime': document.getElementById('searchFromTime').value,
           'searchToTime': document.getElementById('searchToTime').value,
-          'workcd': document.getElementById('selectWorkcd').value
+          'workcd': document.getElementById('selectWorkcd').value,
+          'job_res_id' : work_order,
+          'jumun_number' : jumun_num
         }
+
         let fnsuccess = function (result) {
           if (result != null) {
             if (result.success) {
@@ -291,6 +827,8 @@
         let tableHtml = `
           <table>
               <tr>
+                <th>작지번호</th>
+                <th>수주번호</th>
                 <th>시작시간</th>
                 <th>종료시간</th>
                 <th>근무구분</th>
@@ -302,6 +840,8 @@
         items.forEach(item => {
           tableHtml += `
                     <tr>
+                        <td>${item.job_res_num || '--:--'}</td>
+                        <td>${item.jumun_number || '--:--'}</td>
                         <td>${item.starttime || '--:--'}</td>
                         <td>${item.endtime || '--:--'}</td>
                         <td>${item.worknm || ''}</td>
@@ -320,6 +860,9 @@
         // ✅ 기존 내용 제거하고 새롭게 바인딩
         const tableBody = document.querySelector('#theGrid');
         tableBody.innerHTML = tableHtml;
+
+        // ✅ 높이 보정
+        tableBody.style.minHeight = '200px';
       } else {
         const tableBody = document.querySelector('#theGrid');
         tableBody.innerHTML = `

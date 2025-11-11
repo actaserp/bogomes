@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import mes.domain.entity.SystemCode;
 
+import java.util.Optional;
+
 @Repository
 public interface SysCodeRepository extends JpaRepository<SystemCode, Integer>{
 
@@ -16,4 +18,8 @@ public interface SysCodeRepository extends JpaRepository<SystemCode, Integer>{
 
 	SystemCode findByCodeType(String type);
 
+    Optional<SystemCode> findByCode(String code);
+
+
+	void deleteByCodeTypeAndCodeAndSpjangcd(String classWork, String code, String spjangcd);
 }
