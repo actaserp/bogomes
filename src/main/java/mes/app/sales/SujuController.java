@@ -214,6 +214,7 @@ public class SujuController {
 		suju.setPrice(Integer.parseInt(payload.get("price").toString()));
 		suju.setDcPrice(Integer.parseInt(payload.get("dcPrice").toString()));
 		suju.setOptPrice(Integer.parseInt(payload.get("optPrice").toString()));
+		suju.setBalance(Integer.parseInt(payload.get("Balance").toString()));
 		suju.setSujuQty2(0);
 		suju.setConfirm("0");
 
@@ -243,8 +244,8 @@ public class SujuController {
 
 			int seq = 1;
 			for (Map<String, Object> row : optionRows) {
-				String sjoption = stringOrNull(row.get("sjoption")); // ← 프론트 키와 일치
-				Integer optamt  = intOrNull(row.get("optamt"));      // ← 프론트 키와 일치
+				String sjoption = stringOrNull(row.get("sjoption"));
+				Integer optamt  = intOrNull(row.get("optamt"));
 
 				// 모두 빈 값이면 skip
 				if ((sjoption == null || sjoption.isBlank()) && (optamt == null || optamt == 0)) continue;

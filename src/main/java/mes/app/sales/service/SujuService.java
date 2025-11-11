@@ -160,6 +160,7 @@ public class SujuService {
 				 s."UnitPrice" ,
 				 s.optprice as "TotalOptPrice" ,
 				 s.dcprice as "dcPrice" ,
+				 s."Balance" AS "Balance",
 				 fn_code_name('suju_type', sh."SujuType") AS "SujuTypeName"
 				 FROM suju_head sh
 				 LEFT JOIN company c ON c.id = sh."Company_id"

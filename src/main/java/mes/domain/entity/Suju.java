@@ -113,4 +113,8 @@ public class Suju extends AbstractAuditModel {
 
 	@Column(name="dcPrice")
 	double dcPrice;	//DC가격
+
+	@Column(name="\"Balance\"")
+	double Balance;	//잔액
+
 }
