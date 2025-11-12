@@ -38,6 +38,7 @@ public class UnitPriceService {
             , mcu."ChangeDate"
             , mcu."ChangerName"
             , mcu."Material_id"
+            , mcu."Type" as type_cd
             , row_number() over (partition by mcu."Company_id" order by mcu."ApplyStartDate" desc) as g_idx
             , now() between mcu."ApplyStartDate" and mcu."ApplyEndDate" as current_check
             , now() < mcu."ApplyStartDate" as future_check
@@ -54,6 +55,13 @@ public class UnitPriceService {
             , A."ChangeDate"::date 
             , A."Material_id"
             , A."ChangerName" 
+            ,CASE
+																WHEN A.type_cd = '01' THEN '매입'
+																WHEN A.type_cd = '02' THEN '매출'
+																WHEN A.type_cd = '03' THEN '단가정보'
+																WHEN A.type_cd = '04' THEN '가공비'
+																ELSE '미정'
+														END AS type
             from A 
             inner join company c on c.id = A."Company_id"
             where ( A.current_check = true or A.future_check = true or A.g_idx = 1)

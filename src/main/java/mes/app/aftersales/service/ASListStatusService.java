@@ -31,7 +31,7 @@ public class ASListStatusService {
         a.inputdate ,
         a.regno,
         mg."Name" as spcmngno,
-        m."Name" as "ItemCode",
+        a.itemcode  as "ItemCode",
         a.endflag as endflag_code,
         a.regdate  ,
         case
@@ -40,7 +40,6 @@ public class ASListStatusService {
         end as endflag
         from tb_as010 a 
         left join mat_grp mg on mg.id =  a.spcmngno::int
-        left join material m on a.itemcode::int = m.id
         where a.regdate between cast(:start as date) and cast(:end as date)
         """;
 

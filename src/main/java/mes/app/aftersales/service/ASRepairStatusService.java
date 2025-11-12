@@ -28,7 +28,7 @@ public class ASRepairStatusService {
            a.regdate ,
            a.vechregno ,
            b.vechidno,
-           m."Name" as itemcode ,
+           b.itemcode ,
            a.fixdate ,
            a.pernm ,
            a.partamt,
@@ -50,7 +50,6 @@ public class ASRepairStatusService {
         from tb_as011 a		-- head
         left join tb_as010 b on b.id = a.asid
         left join tb_as012 c on c.repid = a.id 	-- detail
-        left join material m on m.id = b.itemcode::int
         where 1=1
         and  a.regdate between :start and :end
         """;
