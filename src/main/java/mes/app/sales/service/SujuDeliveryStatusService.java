@@ -26,32 +26,47 @@ public class SujuDeliveryStatusService {
     param.addValue("company", company);
 
     String sql = """
-       select
-         h.id,
-         s.vechidno ,
-         c."Name" as com_name,
-         h."JumunDate",
-         m."CustomerBarcode",
-         s.devdate  ,
-         h."DeliveryDate",
-         h.contractnm ,
-         d."SujuQty",
-         s."Qty" as ship_oty,
-         m."Name" as mat_name ,
-         GREATEST((d."SujuQty" - s."Qty" ), 0) AS "SujuQty3"
-         from shipment s
-         left join  suju_head h on h.id = s.suju_head_id
-         left join suju d on h.id= d."SujuHead_id"
-         left join company c on c.id= h."Company_id"
-         left join material m on m.id = d."Material_id"
-         where 1=1
-         AND h."DeliveryDate" BETWEEN :start AND :end
+            SELECT
+                  h.id,
+                  c."Name" AS com_name,
+                  d."JumunDate",
+                  h."DeliveryDate",
+                  h.contractnm,
+                  d.id AS suju_id,
+                  m."CustomerBarcode",
+                  m."Name" AS mat_name,
+                  d."SujuQty",
+                  COALESCE(s.ship_oty, 0) AS ship_oty,
+                  GREATEST((d."SujuQty" - COALESCE(s.ship_oty, 0)), 0) AS "SujuQty3",
+                  s.devdate,
+                  s.vechidno,
+                  CASE
+                    WHEN s.devdate IS NOT NULL AND h."JumunDate" IS NOT NULL THEN
+                      DATE_PART('day', s.devdate::timestamp - d."JumunDate"::timestamp)
+                    ELSE NULL
+                  END AS "deliveryDays"
+                FROM suju d
+                LEFT JOIN suju_head h ON h.id = d."SujuHead_id"
+                LEFT JOIN (
+                  SELECT
+                    "SourceDataPk",                     -- 🔁 suju.id에 해당
+                    SUM("Qty") AS ship_oty,             -- 출고 수량 합계
+                    MAX(devdate) AS devdate,            -- 가장 최근 출고일
+                    MAX(vechidno) AS vechidno           -- 대표 차대번호
+                  FROM shipment
+                  GROUP BY "SourceDataPk"
+                ) s ON s."SourceDataPk" = d.id          -- ✅ 핵심 조인 변경
+                LEFT JOIN company c ON c.id = h."Company_id"
+                LEFT JOIN material m ON m.id = d."Material_id"
+                WHERE 1=1
+                  AND h."DeliveryDate" BETWEEN :start AND :end
+                   
         """;
     if (StringUtils.isEmpty(company)==false)
       sql+="and upper(c.\"Name\") like concat('%%',upper(:company),'%%')";
 
     sql+= """
-        order by h."DeliveryDate"
+        order by h."DeliveryDate", d.id;
         """;
 
 //    log.info("수주별납품현황 SQL: {}", sql);

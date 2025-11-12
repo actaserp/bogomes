@@ -275,13 +275,9 @@
                                 </div>
                             </dd>
                         </dl>
-
+                    </div>
+                    <div class="search-wrap">
                         <dl>
-                            <dt>
-                                <label for="chxCompYn">
-
-                                </label>
-                            </dt>
                             <dd>
                                 <div class="srch-box">
                                     <input type="checkbox" id="chxCompYn" name="chxCompYn" checked/>
@@ -291,7 +287,7 @@
                         </dl>
 
                         <dl>
-                            <dt>&nbsp;</dt>
+
                             <dd>
                                 <li>
                                     <a class="btn btn-search" title="검색" id="btnMainSearch">
@@ -1030,35 +1026,41 @@
                             }
                         }
                     },
-                    selectionChanged: function (e) {
-                        let selectedRow = _this.grid.selection.row;
+                });
+                this.grid.hostElement.addEventListener('click', function (e) {
+                    const ht = _this.grid.hitTest(e);
+                    if (ht.cellType !== wijmo.grid.CellType.Cell) return;
 
-                        let dataSource = _this.grid.itemsSource instanceof wijmo.collections.CollectionView
-                            ? _this.grid.itemsSource.sourceCollection
-                            : _this.grid.itemsSource;
+                    const selectedRow = ht.row;
+                    const dataSource = _this.grid.itemsSource instanceof wijmo.collections.CollectionView
+                        ? _this.grid.itemsSource.sourceCollection
+                        : _this.grid.itemsSource;
 
-                        if (!dataSource || !Array.isArray(dataSource) || dataSource.length === 0) {
-                            return;
-                        }
+                    if (!dataSource || !Array.isArray(dataSource) || dataSource.length === 0) return;
 
-                        if (selectedRow >= 0) { // 선택된 행이 있을 때만 저장
-                            _this.selectedIndex = selectedRow;
-                        }
-                        let item = _this.grid.rows[selectedRow]?.dataItem; // 선택된 데이터 가져오기
-                        if (item) {
-                            _this._currentJrPk = item.id;
+                    const item = _this.grid.rows[selectedRow]?.dataItem;
+                    if (!item || _this._currentJrPk === item.id) return;
 
-                            _this.jobres = item;
-                            _this.showBasicInfo(item.id);
-                            _this.showDefectList('total');
+                    _this.selectedIndex = selectedRow;
+                    console.log('selectedIndex 저장됨:', _this.selectedIndex);
 
-                            const jr_pk = $('#tabBasic').find('#id').val();
-                            _this.showChasuList(jr_pk);
-                            // _this.showConsumedList(item.id);
-                        }
+                    _this._currentJrPk = item.id;
+                    _this.jobres = item;
 
+                    AjaxUtil.showLoading();
 
-                    }
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            try {
+                                _this.showBasicInfo(item.id, { skipProcessChange: false });
+                                _this.showDefectList('total');
+                            } catch (err) {
+                                console.error('click error:', err);
+                            } finally {
+                                setTimeout(() => AjaxUtil.hideLoading(), 200);
+                            }
+                        });
+                    });
                 });
                 new FlexGridContextMenu(this.grid);
                 this.grid.downloadFileName = '생산 내역';
@@ -2109,17 +2111,22 @@
                         //     _this.showBasicInfo(parentId); // 부모 상세로 다시 로딩 → onProcessChange에서 현재 공정 자식 탐색
                         // }
                         _this.showBasicInfo();
+                        console.log('previousIndex:', previousIndex, 'rowCount:', _this.grid.rows.length);
+
                         // 그리드 선택 복구
                         setTimeout(() => {
+                            console.log('grid.select:');
                             _this.grid.select(previousIndex, 0);
                         }, 100);
 
                         // 현재 공정 화면 목록은 자식 id 기준으로 즉시 갱신
                         if (childId) {
+                            console.log('childId');
                             _this.showConsumedList(childId);
                             _this.showInputLotList(childId);
                             _this.showChasuList(childId);
                         } else {
+                            console.log('else');
                             _this.showConsumedList(null);
                             _this.showInputLotList(null);
                             _this.showChasuList(null);

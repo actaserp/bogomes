@@ -218,7 +218,7 @@
 
                             <tr>
                                 <th>
-                                    <label for="jik_id"><span class="eq">*</span>직위</label>
+                                    <label for="jik_id">직위</label>
                                 </th>
                                 <td>
                                     <select id="jik_id" name="jik_id" style="width: 100%;"></select>
@@ -575,10 +575,6 @@ console.log(selectedItem);
             }else if (!data.Depart_id) {
                 Alert.alert('', '부서를 선택해주세요.');
                 $('#personForm #Depart_id').focus();
-                return false;
-            }else if (!data.jik_id) {
-                Alert.alert('', '직위를 선택해주세요.');
-                $('#personForm #jik_id').focus();
                 return false;
             }
 
