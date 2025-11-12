@@ -23,17 +23,16 @@ public class ASManagementService {
            a.asid as as_id,
            a.regdate ,
            a.vechregno ,
-           m."Name" as itemcode ,
            a.fixdate ,
            a.pernm ,
            a.partamt,
            a.workamt ,
            a.amount ,
            a.vamt ,
-           a.totamt 
+           a.totamt ,
+           b.itemcode
            from tb_as011 a
            left join tb_as010 b on b.id = a.asid
-           left join material m on m.id = b.itemcode::int
            where 1=1
         """;
     if(regno != null && !regno.isEmpty()) {
@@ -53,7 +52,6 @@ public class ASManagementService {
              a.asid as as_id,
              a.regdate ,
              a.vechregno ,
-             m."Name" as itemcode ,
              a.fixdate ,
              a.mileage  ,
              a.pernm ,
@@ -61,10 +59,10 @@ public class ASManagementService {
              a.workamt ,
              a.amount ,
              a.vamt ,
-             a.totamt as h_totamt
+             a.totamt as h_totamt,
+             b.itemcode
           from tb_as011 a
           left join tb_as010 b on a.asid = b.id
-          left join material m on b.itemcode::int = m.id
           where a.id = :id
         """;
 

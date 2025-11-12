@@ -21,25 +21,24 @@ public class ASVehicleService {
     dicParam.addValue("spcmngno", spcmngno);
     dicParam.addValue("vechidno", vechidno);
     String sql = """
-        select
-        a.id,
-        mg."Name" as spcmngno,
-        m."Name" as "ItemCode",
-        a.vechidno,
-        a."owner" ,
-        a.outdate ,
-        a.inputdate ,
-        a.regdate,
-        a.regno, 
-        a.endflag as endflag_code,
-        case
-        	when endflag = '0' then '출고'
-        	else '미출고'
-        end as endflag
-        from tb_as010 a
-        left join mat_grp mg on mg.id =  a.spcmngno::int
-        left join material m on a.itemcode::int = m.id
-        where 1 = 1
+      select
+          a.id,
+          mg."Name" as spcmngno,
+          a.itemcode as "ItemCode",
+          a.vechidno,
+          a."owner" ,
+          a.outdate ,
+          a.inputdate ,
+          a.regdate,
+          a.regno,
+          a.endflag as endflag_code,
+          case
+           when endflag = '0' then '출고'
+           else '미출고'
+          end as endflag
+          from tb_as010 a
+          left join mat_grp mg on mg.id =  a.spcmngno::int
+          where 1 = 1
         """;
     if(spcmngno != null && !spcmngno.equals(Integer.valueOf(0))) {
       sql += """
@@ -63,8 +62,7 @@ public class ASVehicleService {
         select
            a.id,
            a.spcmngno ,
-           a.itemcode as "Material_id",
-           m."Name" as "ItemCode",
+           a.itemcode as "ItemCode",
            a.vechidno,
            a.pernm, 
            a."owner" ,
@@ -76,7 +74,7 @@ public class ASVehicleService {
            a.regno
            from tb_as010 a
            left join mat_grp mg on mg.id =  a.spcmngno::int
-           left join material m on a.itemcode::int = m.id
+          
            where a.id = :id
         """;
     return this.sqlRunner.getRow(sql, param);

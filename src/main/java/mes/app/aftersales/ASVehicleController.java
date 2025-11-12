@@ -76,6 +76,7 @@ public class ASVehicleController {
       String spcmngno   = (String) payload.get("spcmngno");
       String vechidno   = (String) payload.get("vechidno");
       String itemCode   = (String) payload.get("Material_id");
+      String product_name   = (String) payload.get("product_name");
       String owner      = (String) payload.get("OWNER");
       String pernm      = (String) payload.get("PERNM");
       String inputDate  = (String) payload.get("inputDate");
@@ -99,7 +100,7 @@ public class ASVehicleController {
       // 3. 데이터 매핑
       as010.setSpcmngno(spcmngno);
       as010.setVechidno(vechidno);
-      as010.setItemcode(itemCode);
+      as010.setItemcode(product_name); //품목 명으로 저장 시킴
       as010.setOwner(owner);
       as010.setPernm(pernm);
       as010.setInputdate(CommonUtil.trySqlDate(inputDate));

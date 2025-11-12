@@ -244,7 +244,7 @@
                   <label for="spcmngno"><span class="eq">*</span>차량구분</label>
                 </th>
                 <td>
-                  <select id="spcmngno" name="spcmngno" style="width:210px;" disabled>
+                  <select id="spcmngno" name="spcmngno" style="width:210px;" ><!--disabled-->
                   </select>
                 </td>
                 <th>
@@ -279,7 +279,7 @@
                 </th>
                   <td>
                     <input type="text" id="txtProductName" name="txtProductName"
-                           placeholder="차량명" autocomplete="off" style="width: 100%;" readonly/>
+                           placeholder="차량명" autocomplete="off" style="width: 100%;"/>
                     <input type="hidden" id ="Material_id" name="Material_id" />
                   </td>
                 <th>
@@ -469,6 +469,7 @@
           spcmngno:    $ctx.find('#spcmngno').val(),
           vechidno:    $ctx.find('#vechidno').val(),
           Material_id: $ctx.find('#Material_id').val(),
+          product_name :$ctx.find('#txtProductName').val(),
           OWNER:       $ctx.find('#OWNER').val(),
           PERNM:       $ctx.find('#PERNM').val(),
           inputDate:   $ctx.find('#inputDate').val(),

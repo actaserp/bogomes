@@ -1087,17 +1087,15 @@ public class PopupController {
 		AjaxResult result = new AjaxResult();
 
 		String sql = """
-    select
-			a.id as asid,
-			a.itemcode as "Material_id",
-			m."Name" as itemcode,
-			a."owner" ,
-			a.vechidno ,
-			a.regno,
-				a.regdate 
-			from tb_as010 a
-			left join material m on a.itemcode::int = m.id
-			where a.endflag ='1'
+				select
+						a.id as asid,
+						a.itemcode as "itemcode",
+						a."owner" ,
+						a.vechidno ,
+						a.regno,
+						a.regdate
+						from tb_as010 a
+						where a.endflag ='1'
 			""";
 
 		if (owner != null && !owner.isEmpty()) {
