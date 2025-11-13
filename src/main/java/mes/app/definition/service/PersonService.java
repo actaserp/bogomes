@@ -68,7 +68,7 @@ public class PersonService {
 		if (searchDepart != null) sql +=" and p.\"Depart_id\" = :searchDepart ";
 		if (StringUtils.isEmpty(searchShift)==false) sql +=" and p.\"ShiftCode\" = :searchShift ";
         
-        sql += " order by p.id ";
+        sql += " order by p.\"Code\" ";
         
         List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
         

@@ -40,7 +40,7 @@ public class DepartService {
 					""";
 		}
 		
-        sql += " order by d.\"Name\" ";
+        sql += " order by d.\"Code\" ";
         
 		List<Map<String,Object>> items = this.sqlRunner.getRows(sql, paramMap);
 		

@@ -790,8 +790,8 @@
                 this.grid3.downloadFileName = '전체레벨';
 
 
-                AjaxUtil.fillSelectOptions($('#cboMaterialType'), 'system_code', 'all', false, 'mat_type');
-                AjaxUtil.fillSelectOptions($('#cboMaterialGroup'), 'material_group', 'all', false);
+                AjaxUtil.fillSelectOptions($('#cboMaterialType'), 'system_code', 'all', false, 'mat_type', 'product');
+                AjaxUtil.fillSelectOptions($('#cboMaterialGroup'), 'material_group', 'all', false, 'product');
                 AjaxUtil.fillSelectOptions($('#cboBOMType'), 'system_code', 'all', false, 'bom_type');
 
                 $('#cboMaterialType').on('change', function (e) {
@@ -874,10 +874,8 @@
                 let $popMaterialGroup = $content.find('#popMaterialGroup');
                 let $keyword = $content.find('#keyword');
 
-                $popMaterialType.append('<option value="product">제품</option>');
-                $popMaterialType.append('<option value="semi">반제품</option>');
-
-                AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', 'product');
+                AjaxUtil.fillSelectOptions($popMaterialType, 'system_code', 'all', '', 'mat_type', 'product');
+                AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', 'jajae');
 
                 $popMaterialType.change(function () {
                     AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', $popMaterialType.val());
@@ -1028,14 +1026,17 @@
                 let $keyword = $content.find('#keyword');
                 let $btnMatSearch = $content.find('#btnMatSearch');
 
-                $popMaterialType.append('<option value="">전체</option>');
-                $popMaterialType.append('<option value="semi">반제품</option>');
-                $popMaterialType.append('<option value="raw_mat">원재료</option>');
-                $popMaterialType.append('<option value="sub_mat">부자재</option>');
+                // $popMaterialType.append('<option value="">전체</option>');
+                // $popMaterialType.append('<option value="semi">반제품</option>');
+                // $popMaterialType.append('<option value="raw_mat">원재료</option>');
+                // $popMaterialType.append('<option value="sub_mat">부자재</option>');
+                AjaxUtil.fillSelectOptions($popMaterialType, 'system_code', '', false, 'mat_type', 'somo,other,jajae');
                 AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', $popMaterialType.val());
                 $popMaterialType.change(function (e) {
                     AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', $popMaterialType.val());
                 });
+
+
 
 // 검색 버튼 클릭 이벤트
                 $content.find('#btnMatSearch').click(function () {

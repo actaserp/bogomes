@@ -238,7 +238,7 @@
                                             </td>
 
                                             <th>
-                                                <label for="Code"><span class="eq">*</span>제원<br>관리번호</label>
+                                                <label for="Code"><span class="eq">*</span>품목코드</label>
                                             </th>
                                             <td colspan="2">
                                                 <input type="text" id="Code" name="Code"
@@ -268,7 +268,7 @@
                                             </th>
                                             <td colspan="2">
                                                 <input type="text" id="Class2" name="Class2"
-                                                        style="width: 100%;">
+                                                       style="width: 100%;">
                                             </td>
                                             <th style="font-size: 14px;">
                                                 <label for="Class3">형식</label>
@@ -423,8 +423,8 @@
                                                 <label for="Usage">상세사양</label>
                                             </th>
                                             <td colspan="5">
-<!--                                                <input type="text" id="Usage" name="Usage"-->
-<!--                                                       style="width: 100%;">-->
+                                                <!--                                                <input type="text" id="Usage" name="Usage"-->
+                                                <!--                                                       style="width: 100%;">-->
                                                 <textarea id="Usage" name="Usage"></textarea>
                                             </td>
                                         </tr>
@@ -924,10 +924,10 @@
                                 <div id="routing-grid" style=""></div>
                             </div>
                         </section>
+                    </div>
                 </div>
+            </section>
         </div>
-        </section>
-    </div>
     </div>
 
 
@@ -1003,10 +1003,10 @@
                             dataType: 'Boolean'
                         },
                         {binding: 'mat_type_name', header: '품목구분', width: 80, align: 'center'},
-                        {binding: 'mat_grp_name', header: '차량구분', width: 100, align: 'left'},
+                        {binding: 'mat_grp_name', header: '차량구분', width: 200, align: 'left'},
 
                         {binding: 'mat_name', header: '차명', width: 220, align: 'left'},
-                        {binding: 'mat_code', header: '제원번호', width: 100, align: 'left'},
+                        {binding: 'mat_code', header: '품목코드', width: 100, align: 'left'},
                         {binding: 'weight', header: '차량중량(kg)', width: 100, align: 'center'},
                         {binding: 'bodylength', header: '차체길이(mm)', width: 150, align: 'right'},
                         {binding: 'botlength', header: '하대길이(mm)', width: 150, align: 'right'},
@@ -1332,8 +1332,8 @@
 
 
                 // filter dropdown load
-                AjaxUtil.fillSelectOptions($('#cboMaterialType'), 'system_code', 'all', false, 'mat_type');
-                AjaxUtil.fillSelectOptions($('#cboMaterialGroup'), 'material_group', 'all', false);
+                AjaxUtil.fillSelectOptions($('#cboMaterialType'), 'system_code', '', false, 'mat_type', 'product');
+                AjaxUtil.fillSelectOptions($('#cboMaterialGroup'), 'material_group', 'all', false, 'product');
 
                 $('#cboMaterialType').on('change', function (e) {
                     let mat_type = $('#cboMaterialType').val();
@@ -1378,7 +1378,7 @@
 
             // 탭 내부 dropdown load
             initForm() {
-                AjaxUtil.fillSelectOptions($('#MaterialGroup_id'), 'material_group', '', false); // 품목그룹
+                AjaxUtil.fillSelectOptions($('#MaterialGroup_id'), 'material_group', '', false, 'product'); // 품목그룹
                 AjaxUtil.fillSelectOptions($('#StoreHouse_id'), 'store_house', '', false); // 창고
                 AjaxUtil.fillSelectOptions($('#WorkCenter_id'), 'workcenter', '', false); // 워크센터
 
@@ -2314,7 +2314,7 @@
                     return;
                 }
                 if (!data.Code) {
-                    Alert.alert('', '제원 관리번호를 입력해 주세요');
+                    Alert.alert('', '품목코드를 입력해 주세요');
                     $('#matBasicForm #Code').focus();  // 해당 input으로 포커스 이동
                     return;
                 }
