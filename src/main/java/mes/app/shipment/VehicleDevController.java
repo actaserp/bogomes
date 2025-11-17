@@ -94,6 +94,8 @@ public class VehicleDevController {
     public AjaxResult shipmentStatusComplete(
             @RequestParam(value = "searchId", required = false) Integer searchId,
             @RequestParam(value = "vechidno", required = false) String vechidno,
+            @RequestParam(value = "spcno", required = false) String spcno,
+            @RequestParam(value = "CustomerBarcode", required = false) String CustomerBarcode,
             HttpServletRequest request,
             Authentication auth) {
 
@@ -137,6 +139,8 @@ public class VehicleDevController {
                         sm.set_status("a");
                         sm.set_audit(user);
                         sm.setVechidno(vechidno);
+                        sm.setSpcno(spcno);
+                        sm.setSpcmngno(CustomerBarcode);
                         sm.setDevdate(new Date());
                         Double orderQty = sm.getOrderQty();
                         sm.setQty(orderQty);

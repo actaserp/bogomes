@@ -126,6 +126,14 @@ public class ShipmentOrderController {
 				? sujuData.getFirst("matName").toString()
 				: "";
 
+		String spcno = sujuData.getFirst("spcno") != null
+				? sujuData.getFirst("spcno").toString()
+				: "";
+
+		String spcmngno = sujuData.getFirst("spcmngno") != null
+				? sujuData.getFirst("spcmngno").toString()
+				: "";
+
 		// ✅ 수주일 경우 relationSujuList 조회
 		List<Suju> relationSujuList = new ArrayList<>();
 		if ("suju".equalsIgnoreCase(TableName) && sujuPk != null) {
@@ -160,6 +168,8 @@ public class ShipmentOrderController {
 		sm.setShipmentHeadId(smh.getId());
 		sm.setMaterialId(matId);
 		sm.setOrderQty((double) orderQty);
+		sm.setSpcno(spcno);
+		sm.setSpcmngno(spcmngno);
 		sm.setQty(0d);
 		sm.setDescription(Description);
 		sm.setSourceDataPk(sujuPk);

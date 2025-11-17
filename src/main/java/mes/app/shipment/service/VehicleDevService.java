@@ -24,10 +24,11 @@ public class VehicleDevService {
 			    select sh.*,
 			    c."Name" as "CompanyNm",
 			    m."Name" as "matName",
-			    m."CustomerBarcode",
+			    s."spcmngno",
 			    fn_code_name('shipment_state', sh."State") as "headState",
 			    s.devdate,
 			    s.vechidno,
+			    s."spcno",
 			    sj.id as "suju_pk",
 			    m."CustomerBarcode"
 			    from shipment_head sh 
@@ -59,7 +60,8 @@ public class VehicleDevService {
 			    c."Name" as "CompanyNm",
 			    m."Name" as "matName",
 			    m.id as "matId",
-			    m."CustomerBarcode",
+			    s."spcmngno",
+			    s."spcno",
 			    fn_code_name('shipment_state', sh."State") as "headState",
 			    s.devdate,
 			    s.vechidno,

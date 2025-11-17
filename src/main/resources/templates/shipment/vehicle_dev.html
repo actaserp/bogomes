@@ -130,10 +130,10 @@
                                             </td>
 
                                             <th>
-                                                <label for="CustomerBarcode"><span class="eq">*</span>제원<br>관리번호</label>
+                                                <label for="spcmngno"><span class="eq">*</span>제원<br>관리번호</label>
                                             </th>
                                             <td colspan="2">
-                                                <input type="text" id="CustomerBarcode" name="CustomerBarcode"
+                                                <input type="text" id="spcmngno" name="spcmngno"
                                                        style="width: 100%;" required>
                                             </td>
                                         </tr>
@@ -461,7 +461,7 @@
                     selectionMode: wijmo.grid.SelectionMode.Row, // 행 단위 선택
                     isReadOnly: false,
                     columns: [
-                        {binding: 'CustomerBarcode', header: '제원관리번호', width: 150, align: 'center', isReadOnly: true},
+                        {binding: 'spcmngno', header: '제원관리번호', width: 150, align: 'center', isReadOnly: true},
                         {binding: 'vechidno', header: '차대번호', width: 130, align: 'center', isReadOnly: true},
                         {binding: 'CompanyNm', header: '차주', width: 120, align: 'center', isReadOnly: true},
                         {binding: 'devdate', header: '출고일자', width: 110, align: 'center', isReadOnly: true},
@@ -504,7 +504,7 @@
                     columns: [
                         {binding: 'ship_pk', header: 'pk', width: '*', align: 'left', visible: false},
                         {binding: 'spcno', header: '제원', width: 80, align: 'left'},
-                        {binding: 'CustomerBarcode', header: '제원관리번호', width: 180, align: 'center', isReadOnly: true},
+                        {binding: 'spcmngno', header: '제원관리번호', width: 180, align: 'center', isReadOnly: true},
                         {binding: 'vechidno', header: '차대번호', width: 200, align: 'left', isReadOnly: true},
                         {binding: 'gubunnm', header: '차량구분', width: 100, align: 'center', isReadOnly: true},
                         {binding: 'wheel', header: '륜', width: 80, align: 'center', isReadOnly: true},
@@ -612,14 +612,19 @@
                     return;
                 }
                 Alert.confirm('출고처리', "출고 처리하시겠습니까?", function () {
-                    shipmentStateComplete(data.vechidno, data.id);
+                    shipmentStateComplete(data.vechidno, data.id, data.spcno, data.CustomerBarcode);
                 });
             });
 
             //출고처리
-            function shipmentStateComplete(vechidno, searchid) {
+            function shipmentStateComplete(vechidno, searchid, spcno, CustomerBarcode) {
                 let _this = this;
-                let data = {vechidno: vechidno, searchId : searchid};
+                let data = {
+                    vechidno: vechidno
+                    , searchId : searchid
+                    , spcno : spcno
+                    , CustomerBarcode : CustomerBarcode
+                };
                 let url = gUrl + '/shipment_status_complete';
                 let fnSuccess = function (result) {
                     if (result.success) {

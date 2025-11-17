@@ -475,12 +475,12 @@
                             <td>
                                  <input class="form-control2 tar" type="number" id="Amount" name="Amount" value="{%=o.Amount%}" />
                             </td>
-                            <th style="text-align: center">
-                                <label for="_order">순서</label>
-                            </th>
-                            <td>
-                                <input class="form-control2" type="number" id="_order" name="_order" value="{%=o._order%}" />
-                            </td>
+<!--                            <th style="text-align: center">-->
+<!--                                <label for="_order">순서</label>-->
+<!--                            </th>-->
+<!--                            <td>-->
+<!--                                <input class="form-control2" type="number" id="_order" name="_order" value="{%=o._order%}" />-->
+<!--                            </td>-->
                         </tr>
 
                         <tr>
@@ -870,8 +870,8 @@
                 let $popMaterialGroup = $content.find('#popMaterialGroup');
                 let $keyword = $content.find('#keyword');
 
-                AjaxUtil.fillSelectOptions($popMaterialType, 'system_code', 'all', '', 'mat_type', 'product');
-                AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', 'jajae');
+                AjaxUtil.fillSelectOptions($popMaterialType, 'system_code', '', '', 'mat_type', 'product');
+                AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', 'product');
 
                 $popMaterialType.change(function () {
                     AjaxUtil.fillSelectOptions($popMaterialGroup, 'material_group', 'all', '', $popMaterialType.val());

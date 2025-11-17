@@ -478,10 +478,10 @@ public class BomController {
 
 		if (prod != null) return prod.getId();
 
-		// 기타(아크로) 전용 materialGroupId 예시 (47로 지정, 필요시 수정)
+		// 기타(아크로) 전용 materialGroupId 예시
 		Material newProd = new Material();
 		newProd.setName(productName);
-		newProd.setMaterialGroupId(52); // <-- 대양전기 그룹ID로
+		newProd.setMaterialGroupId(2); // <-- 제품 기본그룹
 		newProd.setCode(getNextMaterialCode());
 		newProd.set_created(Timestamp.valueOf(LocalDateTime.now()));
 		newProd.setFactory_id(1);
