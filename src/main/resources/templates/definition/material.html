@@ -954,10 +954,25 @@
     </div>
     </script>
 
+    <script type="text/x-tmpl" id="uploadTmpl">
+        <div class="content_wrap popup">
+            <div class="table-wrap">
+                <input type="hidden" id="id" name="id" value="{%=o.id%}">
+                <div class="grid_box" id='image_upload'></div>
+            </div>
+
+            <div class="popup-button">
+<!--              <button type="button" class="btn-popup y_write_auth" id="btn_modal_save" ><span data-labelCd="저장">저장</span></button>-->
+              <button type="button" class="btn-popup" id="modal-close-button"><span data-labelCd="닫기">닫기</span></button>
+            </div>
+        </div>
+    </script>
+
 </th:block>
 
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+    <th:block th:replace="/common/ax5_uploader :: ax5_uploader"></th:block>
 
     <script type="text/javascript">
         class MaterialPage {
@@ -2633,6 +2648,68 @@
 
             page.searchDataBind();
         });
+
+        $('#btnPic').on('click', function() {
+            let id = $('#matBasicForm').find('#id').val();
+
+            if (!id || id.trim() === '') {
+                Alert.alert('', '업로드할 품목을 선택해주세요.');
+                return;
+            }
+
+            let data = {
+                'id': '',
+            };
+            showUploadEdit(data);
+            setUploader(id);
+        });
+
+        function showUploadEdit(data) {
+            let _this = this;
+            let content = tmpl('uploadTmpl', data);
+            let $content = $(content);
+            let modalContainer;
+            if (!data.id) {	//if (!data.id) {
+                modalContainer = new PopupDraggable('사진 첨부');
+            } else {
+                modalContainer = new PopupDraggable('사진 첨부');
+            }
+            modalContainer.open({width: 600, height: 400, $content});
+
+        }
+
+        function setUploader(id) {
+            let _this = this;
+            // 파일 업로드에 관련된 권한처리는 나중에 적용
+            $('#addFile').prop('disabled', false);
+
+            let accept_files = 'jpg,jpeg,gif,mbp,png,pdf';
+            let accept = '.' + accept_files.split(',').join(',.');
+
+            let uploader = new ax5FileUploadClass('image_upload', id,
+                {
+                    table_name: 'MATERIAL',
+                    attach_name: 'basic',
+                    accept_files: accept_files,
+                    multiple: true,
+                    max_count: 5,
+                    file_size: 500,
+                    upload_callback: function (param) {
+                        // uploader.showLastImage('imgPhoto');
+                        return;
+                    },
+                    delete_callback: function (param) {
+                        //  $('#imgPhoto').attr('src', '');
+                        return;
+                    },
+                    file_click_callback: function (file_id) {
+                        // uploader.showImage('imgPhoto', file_id);
+                        return;
+                    },
+                    can_write: userinfo.can_write(),
+                });
+            _this.uploader = uploader;
+        }
 
         // 설계도첨부 버튼 클릭 시, 파일 선택창 실행
         $('#btnDraw').on('click', function() {

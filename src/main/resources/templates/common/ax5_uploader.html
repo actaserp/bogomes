@@ -281,6 +281,21 @@
                             method: 'GET',
                             success: function (res) {
                                 _this.UPLOAD.setUploadedFiles(res);
+
+                                setTimeout(function () {
+                                    let list = _this.UPLOAD.uploadedFiles;
+
+                                    list.forEach(function (file, index) {
+                                        let url = _this.imageUri(file.fileId);
+                                        let previewDiv = $(`[data-ax5uploader-uploaded-item="${index}"] .uploaded-item-preview`);
+                                        previewDiv.css('display', 'block');
+                                        previewDiv.html(
+                                            `<img src="${url}" style="width:160px;height:160px;object-fit:contain;border:1px solid #ccc;background:#fff;">`
+                                        );
+                                    });
+                                }, 50);
+
+
                                 let file_id = _this.file_id_list[_this.file_id_list.length - 1];
                                 _this.upload_callback(file_id);
                             }
@@ -406,6 +421,25 @@
             
             if (_this.UPLOAD && result != null) {
                 _this.UPLOAD.setUploadedFiles(result.data);
+
+                setTimeout(function () {
+                    let list = _this.UPLOAD.uploadedFiles;
+
+                    list.forEach(function (file, index) {
+                        // 이미지 URL
+                        let url = _this.imageUri(file.fileId);
+
+                        // uploaded-item-preview 영역에 이미지 넣기
+                        let previewDiv = $(`[data-ax5uploader-uploaded-item="${index}"] .uploaded-item-preview`);
+                        previewDiv.css('display', 'block');
+                        previewDiv.html(
+                            `<img src="${url}" style="width:160px;height:160px;object-fit:contain;border:1px solid #ccc;background:#fff;">`
+                        );
+
+                    });
+                }, 50);
+
+
                 _this.getFileIds();
 
                 //let file_ids = '';
