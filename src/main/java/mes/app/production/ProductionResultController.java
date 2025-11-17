@@ -1753,10 +1753,20 @@ public class ProductionResultController {
             return result;
         }
 
+        boolean isChild = jr.getParentId() != null;
+
+        if (!isChild) { // 부모 삭제
+            // 자식 존재 여부 검사
+            List<JobRes> childList = jobResRepository.findByParentId(jobresId);
+            if (!childList.isEmpty()) {
+                result.success = false;
+                result.message = "완료된 공정이 존재하여 작업지시를 취소할 수 없습니다.";
+                return result;
+            }
+        }
+
         User user = (User) auth.getPrincipal();
         Timestamp now = DateUtil.getNowTimeStamp();
-
-        boolean isChild = jr.getParentId() != null; // ← 프로젝트 필드명에 맞게 변경
 
         if (isChild) {
             if (equipmentId == null) {

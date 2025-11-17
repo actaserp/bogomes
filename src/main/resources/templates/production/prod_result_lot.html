@@ -1039,7 +1039,22 @@
                     if (!dataSource || !Array.isArray(dataSource) || dataSource.length === 0) return;
 
                     const item = _this.grid.rows[selectedRow]?.dataItem;
-                    if (!item || _this._currentJrPk === item.id) return;
+
+                    // 동일 row 클릭 방지 조건
+                    if (!item) return;
+
+                    let tabBasicId = $('#tabBasic #id').val();
+                    const tabDisabled = $('#tabBasic #id').prop('disabled');
+
+                    // ★ disabled이면 id 없는 것으로 간주
+                    if (tabDisabled) {
+                        tabBasicId = '';
+                    }
+
+                    // ★ 같은 row여도 tabBasic의 id가 없으면 클릭 허용
+                    if (_this._currentJrPk === item.id && tabBasicId) {
+                        return;
+                    }
 
                     _this.selectedIndex = selectedRow;
                     console.log('selectedIndex 저장됨:', _this.selectedIndex);
@@ -2001,7 +2016,12 @@
 
                 let data = FormUtil.extractForm($('#basicForm'));
 
-                data.id = $('#id').val();
+                // id 없으면 parent_jr_pk 사용
+                let targetId = $('#id').val();
+                if (!targetId) {
+                    targetId = $('#parent_jr_pk').val();
+                }
+                data.id = targetId;
 
                 const fnSuccess = function (res) {
                     if (res.success) {
@@ -2013,7 +2033,6 @@
                     }
                 };
 
-                // 완료 상태/수량 존재 시 막기 (자식/부모 공통 가드)
                 if (data.state === 'finished') {
                     Alert.alert('', '완료된 작업은 취소할 수 없습니다.');
                     return;
@@ -2023,8 +2042,9 @@
                     return;
                 }
 
-                AjaxUtil.postAsyncData(url, data, fnSuccess)
+                AjaxUtil.postAsyncData(url, data, fnSuccess);
             }
+
 
             // 작업시작
             workStart() {
@@ -2110,14 +2130,13 @@
                         // if (parentId) {
                         //     _this.showBasicInfo(parentId); // 부모 상세로 다시 로딩 → onProcessChange에서 현재 공정 자식 탐색
                         // }
-                        _this.showBasicInfo();
-                        console.log('previousIndex:', previousIndex, 'rowCount:', _this.grid.rows.length);
+                        const newChildId = (res.data && res.data.jr_pk) || childId;
+                        $('#tabBasic #id').val(newChildId);
+                        // 화면 상태 갱신
+                        $('#tabBasic #state').val('working');
 
-                        // 그리드 선택 복구
-                        setTimeout(() => {
-                            console.log('grid.select:');
-                            _this.grid.select(previousIndex, 0);
-                        }, 100);
+                        _this.showBasicInfo(res.data.jr_pk);
+
 
                         // 현재 공정 화면 목록은 자식 id 기준으로 즉시 갱신
                         if (childId) {
@@ -2242,7 +2261,6 @@
 
                         _this.searchMainData();
                         _this.showBasicInfo(res.data.jr_pk);
-                        setTimeout(() => _this.grid.select(previousIndex, 0), 100);
                     }
                 };
 

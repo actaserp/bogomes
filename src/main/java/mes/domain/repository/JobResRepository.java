@@ -45,4 +45,6 @@ public interface JobResRepository extends JpaRepository<JobRes, Integer> {
 		WHERE rp.routingId = :routingId AND rp.processId = :processId
 	""")
 	Integer findProcessOrder(Integer routingId, Integer processId);
+
+	List<JobRes> findByParentId(Integer parentId);
 }
