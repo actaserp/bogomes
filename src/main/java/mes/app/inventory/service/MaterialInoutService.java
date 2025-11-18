@@ -584,6 +584,7 @@ public class MaterialInoutService {
           , b."State"
           , to_char(b."_created", 'yyyy-mm-dd') as create_date
           , case b."PlanTableName" when 'prod_week_term' then '주간계획' when 'bundle_head' then '임의계획' else b."PlanTableName" end as plan_state
+          , m."StoreHouse_id"
           from balju b
           inner join material m on m.id = b."Material_id"
           inner join mat_grp mg on mg.id = m."MaterialGroup_id"
