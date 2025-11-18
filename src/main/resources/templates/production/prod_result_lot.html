@@ -1039,25 +1039,7 @@
                     if (!dataSource || !Array.isArray(dataSource) || dataSource.length === 0) return;
 
                     const item = _this.grid.rows[selectedRow]?.dataItem;
-
-                    // 동일 row 클릭 방지 조건
-                    if (!item) return;
-
-                    let tabBasicId = $('#tabBasic #id').val();
-                    const tabDisabled = $('#tabBasic #id').prop('disabled');
-
-                    // ★ disabled이면 id 없는 것으로 간주
-                    if (tabDisabled) {
-                        tabBasicId = '';
-                    }
-
-                    // ★ 같은 row여도 tabBasic의 id가 없으면 클릭 허용
-                    if (_this._currentJrPk === item.id && tabBasicId) {
-                        return;
-                    }
-
-                    _this.selectedIndex = selectedRow;
-                    console.log('selectedIndex 저장됨:', _this.selectedIndex);
+                    if (!item || _this._currentJrPk === item.id) return;
 
                     _this._currentJrPk = item.id;
                     _this.jobres = item;
@@ -1093,7 +1075,7 @@
                             if (selectedRows.length > 0) {
                                 const item = selectedRows[0].dataItem;
                                 // 클래스 메서드 호출
-                                // this.showDefectList('chasu');
+                                this.showDefectList('chasu');
                                 this.setButtonState();
                             }
                         }
@@ -1728,6 +1710,8 @@
             searchMainData() {
                 let _this = this;
 
+                const prevJobId = _this.jobres?.id || null;
+
                 let param = {
                     'date_from': $('#date_from').val(),
                     'date_to': $('#date_to').val(),
@@ -1742,28 +1726,32 @@
                     let view = _this.grid.itemsSource;
                     view.sourceCollection.splice(0, view.sourceCollection.length, ...result.data);
                     view.refresh(); // 필터, 정렬, 페이징 적용
-                }
-                // if (result.data != null) {
-                //     _this.grid.itemsSource = result.data;
-                // }
 
-
-                $('#basicForm')[0].reset();
-
-
-                $('#basicForm').find('input, select, textarea').each(function () {
-                    if (!$(this).is(':disabled')) {
-                        $(this).attr('disabled', 'disabled');
+                    if (prevJobId) {
+                        const foundIndex = result.data.findIndex(d => d.id === prevJobId);
+                        if (foundIndex >= 0) {
+                            _this.grid.select(foundIndex, 0);
+                            _this._currentJrPk = prevJobId;
+                            _this.jobres = result.data[foundIndex];
+                        } else {
+                            // 기존 선택된 작업이 사라졌다면 초기화
+                            _this.jobres = null;
+                            _this._currentJrPk = null;
+                            $('#basicForm')[0].reset();
+                            $('#basicForm').find('input, select, textarea').each(function () {
+                                if (!$(this).is(':disabled')) {
+                                    $(this).attr('disabled', 'disabled');
+                                }
+                            });
+                            this.setButtonState();
+                            $('#svgBarcode').empty();
+                        }
                     }
-                });
-
-                this.setButtonState();
-
-                $('#svgBarcode').empty();
+                }
             }
 
             // 생산정보 조회
-            showBasicInfo(jr_pk) {
+            showBasicInfo(jr_pk, { skipProcessChange = false } = {}) {
                 const res = AjaxUtil.getSyncData(this.baseUrl + '/detail', { jr_pk });
                 this._suppressProcessChange = true;
 
@@ -1801,13 +1789,14 @@
                 AjaxUtil.fillSelectOptions($('#equipment_id'), 'equipment_code', 'choose', equipment_id, workcenter_id);
 
                 $('#ordqty').text((result.order_qty ?? 0).toLocaleString());
-                $('#chasuLotSize').val(result.lot_size);
+
+                $('#chasuLotSize').val(result.order_qty ?? '');
 
                 this._hasRouting = (routing_id != null && String(routing_id).trim() !== '');
 
-                if (this._hasRouting) {
+                if (this._hasRouting && !skipProcessChange) {
                     AjaxUtil.fillSelectOptions($('#process_id'), 'routing_mat', '', process_id, routing_id);
-                    $('#tabBasic #prod_mat_id, #tabBasic #need_pro_mat_qty, #tabBasic #parent_jr_pk, #tabBasic #consumed_mode').prop('disabled', false);
+                    $('#tabBasic #prod_mat_id, #tabBasic #prod_mat_nm, #tabBasic #need_pro_mat_qty, #tabBasic #parent_jr_pk, #tabBasic #consumed_mode, #tabBasic #wcfactory_id').prop('disabled', false);
 
                     if (!this._procCascadeBound) {
                         this.initProcessCascade();
@@ -1849,6 +1838,7 @@
                 if (!this._hasRouting) return;
 
                 const processId = $('#tabBasic #process_id').val();
+                const wcfactory_id = $('#tabBasic #wcfactory_id').val();
                 const routingId = this.jobres?.routing_id || $('#routing_id').val();
                 const materialId = $('#tabBasic #mat_pk').val();
                 const orderQty  = parseFloat($('#tabBasic #order_qty').val()) || 1;
@@ -1869,7 +1859,7 @@
 
                 // 1) 공정→워크센터
                 const wc = AjaxUtil.getSyncData('/api/definition/workcenter/of-process', {
-                    process_id: processId, routing_id: routingId
+                    process_id: processId, routing_id: routingId, factory_id: wcfactory_id
                 })?.data || {};
                 $('#tabBasic #workcenter_id').val(wc.workcenter_id || '');
                 $('#tabBasic #workcenter_name').val(wc.workcenter_nm || '');
@@ -1881,6 +1871,7 @@
                     order_qty: orderQty, prod_date: prodDate
                 })?.data || {};
                 $('#tabBasic #prod_mat_id').val(meta.pro_mat_id || '');
+                $('#tabBasic #prod_mat_nm').val(meta.pro_mat_nm || '');
                 $('#tabBasic #need_pro_mat_qty').val(meta.need_pro_mat_qty || '');
 
                 // PLAN/ACTUAL 판정
@@ -1914,9 +1905,7 @@
                         state:     (v) => (v == null || String(v).trim() === '' ? 'ordered' : v),
                     };
                     $('#job_state').val(def.job_state(child.job_state));
-                    console.log(' child.job_state', child.job_state);
                     $('#state').val(def.state(child.state));
-                    console.log('child.state', child.state);
                     if (child.shift_code) $('#shift_code').val(child.shift_code);
                     if (child.start_time) $('#start_time').val(child.start_time);
                     if (child.end_time)   $('#end_time').val(child.end_time);
@@ -1932,9 +1921,6 @@
                     // ---- PLAN
                     $('#tabBasic #id').val('');                 // 새 자식 생성 준비
                     $('#tabBasic #consumed_mode').val('PLAN');
-                    $('#tabBasic #start_time').val('');
-                    $('#tabBasic #end_time').val('');
-
 
                     // ★ parent는 현재 작지의 base 유지
                     $('#tabBasic #parent_jr_pk').val(baseId || '');
@@ -1949,8 +1935,6 @@
 
                 this.refreshProcessLists();
             }
-
-
 
             // 통합 헬퍼: 현재 공정의 자식 id로 리스트 갱신
             refreshProcessLists = () => {
@@ -1982,8 +1966,8 @@
                     if (res.success) {
                         Notify.success('저장되었습니다.');
                         _this.searchMainData();
-                        // _this.showBasicInfo(res.data.jr_pk);
-                        _this.showBasicInfo();
+                        _this.showBasicInfo(res.data.jr_pk);
+
                         setTimeout(() => {
                             _this.grid.select(previousIndex, 0);
                         }, 100);
@@ -2555,8 +2539,8 @@
 
 
                     // detail은 항상 최신 jr_pk로 갱신
-                    // _this.showBasicInfo(result.data.jr_pk);
-                    _this.showBasicInfo();
+                    _this.showBasicInfo(result.data.jr_pk);
+                    // _this.showBasicInfo();
                 };
                 let url = this.baseUrl + '/chasu_add';
                 AjaxUtil.postAsyncData(url, data, addChasuCallbackSuccess);
@@ -2596,8 +2580,8 @@
                             _this.grid.invalidate(); // 화면 다시 그림 (강제 새로고침 X)
                         }
 
-                        // _this.showBasicInfo(res.data.jr_pk);
-                        _this.showBasicInfo();
+                        _this.showBasicInfo(res.data.jr_pk);
+                        // _this.showBasicInfo();
 
                         // 변경 사항 반영
                         _this.chasuGrid.collectionView.refresh();
@@ -2660,8 +2644,8 @@
                         if (res.data && res.data.length > 0) {
                             last = res.data[res.data.length - 1];
                             _this.showChasuList(last.jr_pk);
-                            // _this.showBasicInfo(last.jr_pk);
-                            _this.showBasicInfo();
+                            _this.showBasicInfo(last.jr_pk);
+                            // _this.showBasicInfo();
                         }
 
                         // Wijmo Grid에서 해당 행 찾기
@@ -3385,8 +3369,8 @@
                             if (result.success) {
                                 Notify.success('재가동 처리되었습니다.');
                                 _this.searchMainData();
-                                // _this.showBasicInfo(item.id);
-                                _this.showBasicInfo();
+                                _this.showBasicInfo(item.id);
+                                // _this.showBasicInfo();
                                 setTimeout(() => {
                                     _this.grid.select(previousIndex, 0);
                                 }, 100);
@@ -3503,8 +3487,8 @@
                         if (result.success) {
                             $content.find('#modal-close-button').click();
                             _this.searchMainData();
-                            // _this.showBasicInfo(item.id);
-                            _this.showBasicInfo();
+                            _this.showBasicInfo(item.id);
+                            // _this.showBasicInfo();
                             setTimeout(() => {
                                 _this.grid.select(previousIndex, 0);
                             }, 100);

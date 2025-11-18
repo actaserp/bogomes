@@ -68,6 +68,8 @@ public class ShipmentInspecService {
 				where sh."OrderDate" between :date_from and :date_to
 				and c."Name" like :keyword
 				and sh."State" = 'ordered'
+				and jr."State" = 'finished'
+				AND (jr."Parent_id" IS NULL)
 				""";
 
 				if(StringUtils.isEmpty(state) == false){

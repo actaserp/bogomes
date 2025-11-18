@@ -147,8 +147,6 @@ public class ProdOrderEditController {
 		// 신규 or 수정 검증
 		JobRes header = new JobRes();
 
-		final boolean hasRouting = (routingPk != null);
-
 		// ===== 헤더 저장 =====
 		header.set_audit(user);
 		header.setProductionDate(prodDate);
@@ -162,13 +160,23 @@ public class ProdOrderEditController {
 		header.setSourceTableName("suju");
 		header.setSpjangcd(spjangcd);
 
+		// 라우팅 여부 판단
 		if (routingPk == null) {
-			result.success = false;
-			result.message = "등록된 라우팅 정보가 없습니다.";
+			// 🔹 라우팅 없음 → 전달받은 워크센터 사용
+			header.setRouting_id(null);
+			header.setProcessCount(1);
+			header.setWorkCenter_id(cboWorcenter);
+			header.setFirstWorkCenter_id(cboWorcenter);
+			header.setEquipment_id(cboEquipment);
+			header.setShiftCode(cboShiftCode);
+
+			header = jobResRepository.save(header);
+			result.success = true;
+			result.data = header;
 			return result;
 		}
 
-		// 라우팅 있음 → 공정 목록
+		// 🔹 라우팅 있음: 공정 목록 조회
 		List<RoutingProc> steps = routingProcRepository.findByRoutingIdOrderByProcessOrder(routingPk);
 		if (steps == null || steps.isEmpty()) {
 			result.success = false;
@@ -176,21 +184,20 @@ public class ProdOrderEditController {
 			return result;
 		}
 
-		// 첫번째 공정 = 헤더
-		RoutingProc first = steps.get(0);
-		Integer firstProcId = first.getProcessId();
-		Workcenter firstWc = workcenterRepository.findByProcessId(firstProcId);
-		Integer firstWcId = (firstWc != null ? firstWc.getId() : null);
+		// 🔹 마지막 공정의 워크센터 사용
+		RoutingProc last = steps.get(steps.size() - 1);
+		Integer lastProcId = last.getProcessId();
+		Workcenter lastWc = workcenterRepository.findByProcessId(lastProcId);
+		Integer lastWcId = (lastWc != null ? lastWc.getId() : null);
 
 		header.setRouting_id(routingPk);
-		header.setProcessCount(steps.size()); // 전체 공정 수
-		header.setWorkCenter_id(firstWcId);
-		header.setFirstWorkCenter_id(firstWcId);
-		header.setEquipment_id(cboEquipment);   // 설비/교대는 라우팅 있을 땐 화면값 미사용
+		header.setProcessCount(steps.size());
+		header.setWorkCenter_id(lastWcId);
+		header.setFirstWorkCenter_id(lastWcId);
+		header.setEquipment_id(cboEquipment);
 		header.setShiftCode(cboShiftCode);
 
-		header = jobResRepository.save(header); // 트리거가 헤더 번호 생성
-		
+		header = jobResRepository.save(header);
 		result.success = true;
 		result.data = header;
 		
