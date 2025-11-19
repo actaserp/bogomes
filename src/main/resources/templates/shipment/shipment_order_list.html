@@ -1,147 +1,156 @@
 <html layout:decorate="~{layout_page}">
 
 <head>
-<style id="print_css">
-
-    @page {
-        size: 7.5cm 5cm;
-        margin: 0;
-    }
-
-    @media print {
-        .pagebreak {
-            page-break-before: always;
+    <style id="print_css">
+        @media print {
+            .pagebreak {
+                page-break-before: always;
+            }
         }
-    }
 
-    .bg_gray {
-        background: #dedede;
-    }
+        .bg_gray {
+            background: #dedede;
+        }
 
-    .table_1 td.tar {
-        text-align: right;
-    }
+        .table_1 td.tar {
+            text-align: right;
+        }
 
-    .table_1 td.tal {
-        text-align: left;
-    }
+        .table_1 td.tal {
+            text-align: left;
+        }
 
-    .table_1 td.tac {
-        text-align: center;
-    }
+        .table_1 td.tac {
+            text-align: center;
+        }
 
-    .table_1 {
-        page-break-inside: avoid;     /* ✅ 인쇄 시 라벨이 중간에 잘리지 않도록 */
-    }
+        .table_1 {
+            page-break-inside: avoid;     /* ✅ 인쇄 시 라벨이 중간에 잘리지 않도록 */
+        }
 
-    .table_1 td {
-        vertical-align: middle;
-    }
+        .table_1 td {
+            vertical-align: middle;
+        }
 
-    .table_1 td.b2lr {
-        border-left: 2px solid #166614;
-        border-right: 2px solid #166614;
-    }
+        .table_1 td.b2lr {
+            border-left: 2px solid #166614;
+            border-right: 2px solid #166614;
+        }
 
-    .table_1 td.b2lbr {
-        border-left: 2px solid #166614;
-        border-right: 2px solid #166614;
-        border-bottom: 2px solid #166614;
-    }
+        .table_1 td.b2lbr {
+            border-left: 2px solid #166614;
+            border-right: 2px solid #166614;
+            border-bottom: 2px solid #166614;
+        }
 
-    .table_1 td.b2tr {
-        border-top: 2px solid #166614;
-        border-right: 2px solid #166614;
-    }
+        .table_1 td.b2tr {
+            border-top: 2px solid #166614;
+            border-right: 2px solid #166614;
+        }
 
-    .table_1 td.b2t {
-        border-top: 2px solid #166614;
-    }
+        .table_1 td.b2t {
+            border-top: 2px solid #166614;
+        }
 
-    .table_1 td.b2tb {
-        border-top: 2px solid #166614;
-        border-bottom: 2px solid #166614;
-    }
+        .table_1 td.b2tb {
+            border-top: 2px solid #166614;
+            border-bottom: 2px solid #166614;
+        }
 
-    .table_1 td.b2lt {
-        border-left: 2px solid #166614;
-        border-top: 2px solid #166614;
-    }
+        .table_1 td.b2lt {
+            border-left: 2px solid #166614;
+            border-top: 2px solid #166614;
+        }
 
-    .table_1 td.b2ltb {
-        border-left: 2px solid #166614;
-        border-top: 2px solid #166614;
-        border-bottom: 2px solid #166614;
-    }
+        .table_1 td.b2ltb {
+            border-left: 2px solid #166614;
+            border-top: 2px solid #166614;
+            border-bottom: 2px solid #166614;
+        }
 
-    .table_1 td.b2rtb {
-        border-right: 2px solid #166614;
-        border-top: 2px solid #166614;
-        border-bottom: 2px solid #166614;
-    }
+        .table_1 td.b2rtb {
+            border-right: 2px solid #166614;
+            border-top: 2px solid #166614;
+            border-bottom: 2px solid #166614;
+        }
 
-    .table_1 td.b2l {
-        border-left: 2px solid #166614;
-    }
+        .table_1 td.b2l {
+            border-left: 2px solid #166614;
+        }
 
-    .table_1 td.b2r {
-        border-right: 2px solid #166614;
-    }
+        .table_1 td.b2r {
+            border-right: 2px solid #166614;
+        }
 
-    .table_1 td.b2lb {
-        border-bottom: 2px solid #166614;
-        border-left: 2px solid #166614;
-    }
+        .table_1 td.b2lb {
+            border-bottom: 2px solid #166614;
+            border-left: 2px solid #166614;
+        }
 
-    .table_1 td.b2b {
-        border-bottom: 2px solid #166614;
-    }
+        .table_1 td.b2b {
+            border-bottom: 2px solid #166614;
+        }
 
-    .table_1 td.b2rb {
-        border-bottom: 2px solid #166614;
-        border-right: 2px solid #166614;
-    }
+        .table_1 td.b2rb {
+            border-bottom: 2px solid #166614;
+            border-right: 2px solid #166614;
+        }
 
-    .table_1 th, .table_1 td {
-        border: 1px solid black;
-        text-align: center;
-        padding-left: 3px;
-        padding-right: 3px;
-    }
+        .table_1 th, .table_1 td {
+            border: 1px solid black;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
 
-    .table_1 .line {
-        border: 1px solid #166614;
-        color: #166614;
-        font-size: 14px;
-    }
+        .table_1 .line {
+            border: 1px solid #166614;
+            color: #166614;
+            font-size: 14px;
+        }
 
-    .table_1 .line.clb {
-        color: black;
-        font-weight: 600;
-        font-size: 12px;
-        font-family: 휴먼고딕;
-    }
+        .table_1 .line.clb {
+            color: black;
+            font-weight: 600;
+            font-size: 12px;
+            font-family: 휴먼고딕;
+        }
 
-    .table_1 .line.clb.money {
-        font-size: 20px;
-    }
+        .table_1 .line.clb.money {
+            font-size: 20px;
+        }
 
-    .table_1 td > .ts {
-        font-size: 10px;
-    }
+        .table_1 td > .ts {
+            font-size: 10px;
+        }
 
-    .table_1 td > .ts2 {
-        font-size: 18px;
-        position: relative;
-        top: 10px;
-    }
+        .table_1 td > .ts2 {
+            font-size: 18px;
+            position: relative;
+            top: 10px;
+        }
 
-    .table_1 .title {
-        font-size: 24px;
-        font-weight: 600;
-        padding: 5px;
-    }
-</style>
+        .table_1 .title {
+            font-size: 24px;
+            font-weight: 600;
+            padding: 5px;
+        }
+
+        .material-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .barcode-wrapper {
+            margin-top: 15px;          /* ✅ 모든 라벨에 동일한 상단 여백 */
+            page-break-inside: avoid;  /* ✅ 인쇄 시 분리 금지 */
+        }
+        .barcode-wrapper:first-child {
+            margin-top: 0;             /* ✅ 첫 번째 라벨은 여백 없음 */
+        }
+    </style>
 </head>
 <th:block layout:fragment="content">
     <div class="layout-contents">
@@ -297,7 +306,7 @@
     <script type="text/x-tmpl" id="barcode_table_tmpl">
 
         <div class="barcode-wrapper">
-            <table class="table_1" style="width: 6.5cm; height: 4.5cm; border-collapse: collapse;">
+            <table class="table_1" style="width: 6.5cm; height: 4.5cm; border-collapse: collapse; border:none;">
                 <tr class="label-gap">
                   <td colspan="4" style="height: 0; border: none; padding: 0;"></td>
                 </tr>
@@ -307,7 +316,7 @@
                 </tr>
                 <tr>
                     <td class="tac">품명</td>
-                    <td colspan="3">{%=o.MaterialName%}</td>
+                    <td colspan="3" class="material-name">{%=o.MaterialName%}</td>
                 </tr>
                 <tr>
                     <td class="tac">LOT수량</td>
@@ -579,7 +588,7 @@
                 let content = tmpl('barcode_tmpl', {});
                 let $content = $(content);
                 let modalContainer = new PopupDraggable('바코드 출력');
-                modalContainer.open({width: 470, height: 700, $content});
+                modalContainer.open({width: 400, height: 700, $content});
                 let $barcodeDiv = $content.find('#barcodeDiv');
 
                 $.each(barcodeItems, function (idx, item) {

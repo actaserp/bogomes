@@ -725,14 +725,21 @@ public class MaterialInoutController {
 				this.matLotRepository.save(ml);
 			} else {
 				LotNumber = this.lotService.make_lot_in_number();
-				String effectiveDate = data.get(i).get("EffectiveDate").toString() + " 00:00:00";
+				Object effectiveDateObj = data.get(i).get("EffectiveDate");
+
+				Object effObj = data.get(i).get("EffectiveDate");
+
+				Timestamp effDate = null;
+				if (effObj != null && !effObj.toString().isEmpty()) {
+					effDate = Timestamp.valueOf(effObj.toString() + " 00:00:00");
+				}
 				ml = new MaterialLot();
 				ml.setLotNumber(LotNumber);
 				ml.setMaterialId(Integer.parseInt(materialId));
 				ml.setInputQty(Float.parseFloat(data.get(i).get("InputQty").toString()));
 				ml.setCurrentStock(Float.parseFloat(data.get(i).get("InputQty").toString()));
 				ml.setInputDateTime(today);
-				ml.setEffectiveDate(Timestamp.valueOf(effectiveDate));
+				ml.setEffectiveDate(effDate);
 				ml.setSourceTableName("mat_inout");
 				ml.setSourceDataPk(Integer.parseInt(mioId));
 				if (data.get(i).get("Description") != null) {

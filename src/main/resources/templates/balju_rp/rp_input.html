@@ -876,44 +876,30 @@
                             </tr>
                             <tr>
                                 <th style="text-align: center">
-                                    <label for="ValidDays">기본유효일</label>
-                                </th>
-                                <td>
-                                    <input class="form-control2 tac" type="text" id="ValidDays" name="ValidDays" readonly />
-                                </td>
-                                <th style="text-align: center">
                                     <label for="StoreHouseName">입고창고</label>
                                 </th>
                                 <td>
                                     <input class="form-control2" id="StoreHouseName" name="StoreHouseName" readonly />
                                 </td>
-                            </tr>
-                            <tr>
                                 <th style="text-align: center">
                                     <label for="UnitName">단위</label>
                                 </th>
                                 <td>
                                     <input class="form-control2 tac" type="text" id='UnitName' name="UnitName" readonly />
                                 </td>
+                            </tr>
+                            <tr>
                                 <th style="text-align: center">
                                     <label for="InputQty">입고수량</label>
                                 </th>
                                 <td>
                                     <input class="form-control2 tar" type="number" id='InputQty' name="InputQty" />
                                 </td>
-                            </tr>
-                            <tr>
                                 <th style="text-align: center">
-                                    <label for="EffectiveDate">유효일시</label>
+                                    <label for="LotSize">로트당 수량</label>
                                 </th>
                                 <td>
-                                    <input type="date" id="EffectiveDate" name="EffectiveDate">
-                                </td>
-                                <th style="text-align: center">
-                                    <label for="LotSize">로트당수량</label>
-                                </th>
-                                <td>
-                                    <input class="form-control2 tar" type="number" id='LotSize' name="LotSize" />
+                                    <input class="form-control2 tar" type="number" id='LotSize' name="LotSize"  />
                                 </td>
                             </tr>
                             <tr>
@@ -932,14 +918,14 @@
                 </form>
             </div>
             <div class="grid_box" style="margin-top: 5px;">
-                <div id="mat-lot-grid" style="height: 200px;"></div>
+                <div id="mat-lot-grid" style="height: 300px;"></div>
             </div>
 
             <div class="popup-button">
+            <button type="button" class="btn-popup y_write_auth" id="btnLotSave"><span data-labelCd="로트저장">로트저장</span></button>
                 <button type="button" class="btn-popup" id="modal-close-button"><span data-labelCd="닫기">닫기</span></button>
-                <button type="button" class="btn-popup" id="btnLotRefresh"><span data-labelCd="새로고침">새로고침</span></button>
-                <button type="button" class="btn-popup y_write_auth" id="btnLotSave"><span data-labelCd="로트저장">로트저장</span></button>
-                <button type="button" class="btn-popup" id="btnBarcordPrint"><span data-labelCd="바코드출력">바코드출력</span></button>
+<!--                <button type="button" class="btn-popup" id="btnLotRefresh"><span data-labelCd="새로고침">새로고침</span></button>-->
+<!--                <button type="button" class="btn-popup" id="btnBarcordPrint"><span data-labelCd="바코드출력">바코드출력</span></button>-->
             </div>
         </div>
 
@@ -1392,6 +1378,7 @@
                         $content.find('#cboMaterialGroupName').val(items.group_name)
                         $content.find('#Material_id').val(items.id)
                         $content.find('#Material_name').val(items.Name)
+                        $content.find('#StoreHouse_id').val(items.StoreHouse_id)
                     };
 
                     let poppage = new PopupMaterialPage('single');
@@ -1996,7 +1983,7 @@
                         if (result.data !== null) {
                             result.data.forEach(item => {
                                 if (!item.StoreHouse_id) {
-                                    item.StoreHouse_id = _this.storeHouseOptions[5].value; // 첫 번째 옵션의 value
+                                    item.StoreHouse_id = _this.storeHouseOptions[1].value; // 첫 번째 옵션의 value
                                 }
                             });
                             _this.baljuInputGrid.itemsSource = new wijmo.collections.CollectionView(result.data);
@@ -2152,7 +2139,7 @@
                         {binding: 'LotNumber', header: '로트번호', width: 180, align: 'center', isReadOnly: true},
                         {binding: 'UnitName', header: '단위', width: 70, align: 'center', isReadOnly: true},
                         {binding: 'InputDateTime', header: '입고일시', width: 150, align: 'center', isReadOnly: true},
-                        {binding: 'EffectiveDate', header: '유효일시', width: 150, align: 'center', isReadOnly: true},
+                        // {binding: 'EffectiveDate', header: '유효일시', width: 150, align: 'center', isReadOnly: true},
                         {binding: 'InputQty', header: '수량', width: 100, align: 'right', isReadOnly: true},
                         {binding: 'Description', header: '비고', width: 200, align: 'left', isReadOnly: false}
                     ],
@@ -2180,7 +2167,7 @@
                 $MaterialName.val(item.material_name);
                 $mio_pk.val(item.mio_pk);
                 $UnitName.val(item.unit_name);
-                $LotSize.val(item.PackingUnitQty);
+                $LotSize.val(item.PackingUnitQty ?? 1);
                 $StoreHouseName.val(item.store_house_name);
                 $InputQty.val(item.InputQty);
                 $ValidDays.val(item.ValidDays);
@@ -2211,11 +2198,11 @@
                 $btnLotCalc.click(function (e) {
                     _this.matLotGrid.itemsSource.sourceCollection = [];
 
-                    if ($EffectiveDate.val() === '' || $EffectiveDate.val() == null) {
-                        Alert.alert('로트저장', '유효 일시를 입력해주세요.', function () {
-                        });
-                        return;
-                    }
+                    // if ($EffectiveDate.val() === '' || $EffectiveDate.val() == null) {
+                    //     Alert.alert('로트저장', '유효 일시를 입력해주세요.', function () {
+                    //     });
+                    //     return;
+                    // }
 
                     let inputQty = $InputQty.val();
                     let lotSize = $LotSize.val();
@@ -2228,13 +2215,13 @@
                     }
                     if (lotSize === '' || lotSize === 0) {
                         // alert(2);
-                        Alert.alert('로트당수량', '로트당 수량을 입력해주세요.');
+                        Alert.alert('로트당 수량', '로트당 수량을 입력해주세요.');
                         return;
                     }
                     let lotCount = (inputQty / lotSize);
                     if (lotCount < 1) {
                         // alert(3);
-                        Alert.alert('', '입고수량과 로트당수량을 확인해주세요.');
+                        Alert.alert('', '입고수량과 로트당 수량을 확인해주세요.');
                         return;
                     }
                     lotCount = Math.ceil(lotCount);
@@ -2292,11 +2279,11 @@
                         return;
                     }
 
-                    if ($EffectiveDate.val() === '' || $EffectiveDate.val() == null) {
-                        Alert.alert('로트저장', '유효 일시를 입력해주세요.', function () {
-                        });
-                        return;
-                    }
+                    // if ($EffectiveDate.val() === '' || $EffectiveDate.val() == null) {
+                    //     Alert.alert('로트저장', '유효 일시를 입력해주세요.', function () {
+                    //     });
+                    //     return;
+                    // }
                     let qty = Number($InputQty.val());
                     let strLots = JSON.stringify(lotItems);
                     let url = _this.url + '/lot_save';

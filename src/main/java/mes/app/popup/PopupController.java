@@ -57,6 +57,7 @@ public class PopupController {
 				, m."Equipment_id"
 				, m."VatExemptionYN"
 				, m."Standard1" as "Spec"
+				, m."StoreHouse_id"
 	            from material m
 	            left join unit u on m."Unit_id" = u.id
 	            left join mat_grp mg on m."MaterialGroup_id" = mg.id
