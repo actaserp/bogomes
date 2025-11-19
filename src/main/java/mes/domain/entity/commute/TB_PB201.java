@@ -115,4 +115,8 @@ public class TB_PB201 {
 
     @Column(name = "\"JumunNumber\"")
     String jumunNum;
+
+    @Column(name = "\"JobResId\"")
+    Integer jobResId;
+
 }

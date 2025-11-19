@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface TB_PB201Repository extends JpaRepository<TB_PB201, Long> {
 
+    int countByJobResIdAndWorkcd(Integer JobResId, String workcd);
+
 }

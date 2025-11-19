@@ -20,7 +20,7 @@
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
                 <li>기준정보</li>
-                <li>근무조</li>
+                <li>작업정보</li>
             </ul>
         </div>
 
@@ -30,7 +30,7 @@
                     <div class="search-wrap">
                         <dl>
                             <dt>
-                                <label>근무조명</label>
+                                <label>프로젝트명</label>
                             </dt>
                             <dd>
                                 <div class="srch-box">
@@ -108,33 +108,46 @@
                                 <col class="wp20">
                                 <col class="wp80">
                             </colgroup>
-                            <!--<input type="hidden" id="id" name="id"/>-->
                             <tbody>
                             <tr>
                                 <th>
-                                    <label for="id">번호</label>
+                                    <label>작업지시 선택</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="id" name="id" style="width: 100%;" readonly disabled>
+                                    <input type="text" id="work_order" name="work_order" readonly>
+                                    <input type="hidden" id="jumun_num" name="jumun_num" readonly>
+                                    <input type="hidden" id="job_res_id" name="job_res_id" readonly>
                                 </td>
 
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Code"><span class="eq">*</span>근무조코드</label>
+                                    <label><span class="eq">*</span>프로젝트명</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="Code" name="Code" style="width: 100%;">
+                                    <input type="text" id="ProjectName" name="ProjectName" style="width: 100%;">
                                 </td>
 
 
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="Name"><span class="eq">*</span>근무조명</label>
+                                    <label><span class="eq">*</span>근무구분</label>
                                 </th>
                                 <td>
-                                    <input type="text" style="width: 100%;" id="Name" name="Name">
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <!-- UI 태그 표시 영역 -->
+                                        <div id="work_type_tags"
+                                             style="flex:1; min-height:32px; border:1px solid #ccc; padding:6px; display:flex; flex-wrap:wrap; gap:4px;">
+                                        </div>
+
+                                        <!-- 실제 저장될 값 -->
+                                        <input type="hidden" id="work_type_json" name="work_type_json">
+                                        <!-- + 버튼 -->
+                                        <button type="button"
+                                                onclick="openWorkTypeModal()"
+                                                style="padding:4px 10px; cursor:pointer;">+</button>
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -142,7 +155,7 @@
                                     <label for="StartTime"><span class="eq">*</span>근무시작시간</label>
                                 </th>
                                 <td>
-                                    <input type="time" style="width: 100%;" id="StartTime" name="StartTime" value="00:00">
+                                    <input type="time" style="width: 100%;" id="StartTime" name="StartTime" value="09:00">
                                 </td>
 
                             </tr>
@@ -151,7 +164,7 @@
                                     <label for="EndTime"><span class="eq">*</span>근무종료시간</label>
                                 </th>
                                 <td>
-                                    <input type="time" style="width: 100%;" id="EndTime" name="EndTime" value="12:00">
+                                    <input type="time" style="width: 100%;" id="EndTime" name="EndTime" value="18:00">
                                 </td>
                             </tr>
                             <tr>
@@ -171,10 +184,103 @@
         </div>
     </div> <!--//layout-contents end -->
 
+    <!-- 모달 -->
+    <div id="workTypeModal"
+         style="display:none; position:fixed; left:0; top:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
+
+        <div style="background:white; padding:20px; width:300px; border-radius:6px;">
+            <h3>근무구분 추가</h3>
+
+            <label>코드</label>
+            <input type="text" id="modal_code" style="width:100%; margin-bottom:10px;">
+
+            <label>코드명</label>
+            <input type="text" id="modal_name" style="width:100%; margin-bottom:10px;">
+
+            <div style="text-align:center; margin-top:10px;">
+                <button onclick="addWorkType()" style="padding:4px 10px; background-color: rgb(51, 122, 183); color: white">추가</button>
+                <button onclick="closeWorkTypeModal()" style="padding:4px 10px; background-color: rgb(51, 122, 183); color: white">닫기</button>
+            </div>
+
+        </div>
+    </div>
+
     <footer style="margin-top: 24px;">
         <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
     </footer>
 
+
+    <script type="text/x-tmpl" id="TestDailySaveTemplate">
+        <style>
+            input[readonly] {
+              background-color: #EDEFF5 !important;
+              cursor: not-allowed;
+            }
+        </style>
+         <div class="content_wrap popup" id="div_excel_upload">
+        <div class="table-wrap">
+          <form id="TestDailyReportAddNewForm">
+
+          <section class="section">
+                <div class="section-top">
+                    <div class="search-wrap">
+                        <dl>
+                            <dt style='text-align : left'>
+                                <label>납기일</label>
+                            </dt>
+                            <dd>
+                                <ul class="date-box">
+                                  <li>
+                                    <input type="date" id="date_from" name="date_from">
+                                    <label for="date_from" class="hide">시작일</label>
+                                  </li>
+                                  <li>
+                                    <input type="date" id="date_to" name="date_to">
+                                    <label for="date_to" class="hide">종료일</label>
+                                  </li>
+                                </ul>
+                            </dd>
+                        </dl>
+
+                        <dl>
+                            <dt><span class="eq"></span></dt>
+                            <dd>
+                                <li>
+                                    <a class="btn btn-delete" title="검색" id="btnSearch_modal">
+                                        <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                        검색
+                                    </a>
+                                </li>
+                            </dd>
+                        </dl>
+                    </div>
+
+                    <div class="container-fluid" id="divList" style="padding: 10px 0px 10px 0px">
+                      <div class="container-fluid" id="div_suju" style="">
+                        <div id="theGrid2" style='height: 400px'></div>
+                      </div>
+                    </div>
+
+                </div> <!--//section-top end -->
+
+
+
+                <div class="btn-wrap">
+                </div>
+            </section>
+
+
+          </form>
+        </div>
+
+        <div class="popup-button" style='margin : 0px'>
+          <!--<button type="button" class="btn-popup y_write_auth" id="btnPopTestDailySave">저장</button>
+          <button type="button" class="btn-popup y_write_auth" id="btnDelete" style="backgroundcolor:red;">삭제</button>
+          -->
+          <button type="button" class="btn-popup" id="modal-close-button">닫기</button>
+        </div>
+    </script>
 </th:block>
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/approve_box :: approve_box"></th:block>
@@ -184,20 +290,118 @@
 
     <script type="text/javascript">
 
+        let isEditMode = false;      // false = 추가, true = 수정
+        let editTargetTag = null;    // 수정할 태그 저장
+
         var theGrid;
-        var viewdata;
+
+        let EditFlag = false; //본문 수정 여부
+
+        let grid2 = null;
+        let viewData = new wijmo.collections.CollectionView([]);
+        let viewData_main = new wijmo.collections.CollectionView([]);
+
+        const spjangcd = sessionStorage.getItem('spjangcd');
+        let nowDate = CommonUtil.getYYYYMMDD();
 
         let columns = [
-            {binding: 'id', header: '번호', width: 100, align: 'center'},
-            {binding: 'shift_code', header: '근무조코드', width: 150, align: 'left'},
-            {binding: 'shifht_name', header: '근무조명', width: 200, align: 'left'},
-            {binding: 'start_time', header: '시작시간', width: 150, align: 'left'},
-            {binding: 'end_time', header: '종료시간', width: 150, align: 'left'},
-            {binding: 'description', header: '비고', width: 500, align: 'left'},
-            {binding: '', header: '', width: "*", align: 'left'},
+            {binding: 'project_name', header: '프로젝트명', width: 200, align: 'left'},
+            {binding: 'start_time', header: '근무시작시간', width: 100, align: 'center'},
+            {binding: 'end_time', header: '근무종료시간', width: 100, align: 'center'},
+            {binding: 'job_res_id', header: '작업아이디', width: 120, align: 'center'},
+            {binding: 'job_res_num', header: '작업지시번호', width: 120, align: 'center'},
+            {binding: 'jumun_num', header: '수주번호', width: 120, align: 'center'},
+            {binding: 'description', header: '비고', width: '*', align: 'left'},
+
         ];
 
         document.readyState === 'complete' ? init() : window.onload = init;
+
+        function showTestAddNewForm(data){
+            let content = tmpl('TestDailySaveTemplate', data);
+            let $content = $(content);
+            let csrfToken = $("[name=_csrf]").val();
+            let modalContainer = null;
+
+            if (data.mode === 'new') {
+                modalContainer = new PopupDraggable('작업정보 등록');
+                //$btnDelete.hide();
+            } else {
+                modalContainer = new PopupDraggable('작업정보 수정');
+                //$btnDelete.show();
+            }
+
+            //모달 크기
+            modalContainer.open({width: 950, height: 590, $content});
+
+            //팝업타이틀 설정
+            let $popTitle = $content.find('#popTitle');
+            if (data.mode === 'new') {
+                $popTitle.text('작업정보 등록');
+            } else {
+                $popTitle.text('작업정보 수정');
+            }
+
+            $('#date_from').val(CommonUtil.getYYYYMMDD(-7));
+            $('#date_to').val(CommonUtil.getYYYYMMDD(+10));
+
+            grid2 = new wijmo.grid.FlexGrid('#theGrid2', {
+                autoGenerateColumns: false,
+                showMarquee: true,
+                headersVisibility: wijmo.grid.HeadersVisibility.Column,
+                allowSorting: 'MultiColumn',
+                selectionMode: wijmo.grid.SelectionMode.Row,
+                isReadOnly: false,
+                columns: [
+                    {binding: 'id', header: '아이디', width: 130, align: 'center', visible: false},
+                    {binding: 'work_number', header: '작지번호', width: 130, align: 'center', isReadOnly: true},
+                    {binding: 'jumun_number', header: '수주번호', width: 130, align: 'center', isReadOnly: true},
+                    {binding: 'due_date', header: '납기일', width: 100, align: 'center', isReadOnly: true},
+                    {binding: 'company_name', header: '판매처', width: '*', align: 'center', isReadOnly: true},
+                    {binding: 'mat_type_name', header: '제품구분', width: 90, align: 'center', isReadOnly: true},
+                    {binding: 'mat_code', header: '제품코드', width: 90, align: 'center', isReadOnly: true},
+                    {binding: 'mat_name', header: '제품명', width: '*', align: 'center', isReadOnly: true},
+                    {binding: 'work_group', header: '근무조', width: 90, align: 'center', isReadOnly: true},
+                    {binding: 'WorkcenterName', header: '워크센터', width: 90, align: 'center', isReadOnly: true},
+                ],
+                itemsSource: viewData,
+            });
+
+            grid2.hostElement.addEventListener('dblclick', function(e){
+                const ht = grid2.hitTest(e);
+                if (ht.panel === grid2.cells) {
+                    const item = grid2.rows[ht.row]?.dataItem;
+
+                    let jumun_num = item.jumun_number;
+                    let job_res_num = item.work_number;
+                    let job_res_id = item.id;
+                    $('#work_order').val(job_res_num);
+                    $('#jumun_num').val(jumun_num);
+                    $('#job_res_id').val(job_res_id);
+                    modalContainer.close();
+                }
+            })
+
+            const loadList = () => {
+                let param = {
+                    'date_from' : $('#date_from').val(),
+                    'date_to' : $('#date_to').val(),
+                }
+
+                let result = AjaxUtil.getSyncData('/api/system/shift/job_res_list', param);
+                if (result && result.data) {
+                    viewData.sourceCollection = result.data;
+                } else {
+                    viewData.sourceCollection = [];
+                }
+            }
+            loadList();
+
+            //검색
+            $('#btnSearch_modal').on('click', function(){
+                loadList();
+            })
+        }
 
         function init() {
             let data2 = [];
@@ -213,29 +417,38 @@
                 },
                 async: false,
                 success: function (data) {
-                    data2 = data.data;
+                    viewData_main = data.data;
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.error('Error fetching log_count data:', textStatus, errorThrown);
                 }
             })
 
-            viewdata = new wijmo.collections.CollectionView(data2);
 
             theGrid = new wijmo.grid.FlexGrid('#theGrid', {
                 autoGenerateColumns: false,
                 showMarquee: true,
                 columns: columns,
                 isReadOnly: true,
-                itemsSource: viewdata
+                itemsSource: viewData_main
             });
 
 
-            theGrid.hostElement.addEventListener('dblclick', function (e) {
+            theGrid.hostElement.addEventListener('click', function (e) {
+
+                EditFlag = true;
+
                 let selectedItem = theGrid.selectedItems[0];
-                document.getElementById('id').value = selectedItem.id;
-                document.getElementById('Code').value = selectedItem.shift_code;
-                document.getElementById('Name').value = selectedItem.shifht_name;
+
+
+
+                searchDetailData(selectedItem.job_res_id);
+
+                document.getElementById('job_res_id').value = selectedItem.job_res_id;
+                document.getElementById('work_order').value = selectedItem.job_res_num;
+                document.getElementById('jumun_num').value = selectedItem.jumun_num;
+                document.getElementById('ProjectName').value = selectedItem.project_name;
+
                 document.getElementById('StartTime').value = selectedItem.start_time;
                 document.getElementById('EndTime').value = selectedItem.end_time;
                 document.getElementById('Description').value = selectedItem.description;
@@ -249,10 +462,41 @@
 
         }
 
+        function searchDetailData(job_res_id){
+
+            $.ajax({
+                url: '/api/system/shift/detail',
+                type: 'GET',
+                data: {
+                    'job_res_id': job_res_id,
+                    spjangcd: sessionStorage.getItem('spjangcd'),
+                },
+                async: false,
+                success: function (result) {
+                    if (result.success) {
+
+
+                        const list = result.data;
+                        // === 1) hidden JSON 세팅 ===
+                        $('#work_type_json').val(JSON.stringify(list));
+
+                        // === 2) 태그(해시태그) UI 렌더링 ===
+                        renderWorkTypeTags(list);
+
+                    } else {
+                        Alert.alert('', '에러가 발생하였습니다.');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('Error fetching log_list data:', textStatus, errorThrown);
+                }
+            });
+        }
+
 
         // 버튼 활성화 설정
         function setButtonState() {
-            let pk = $('#id').val();
+            let pk = $('#job_res_id').val();
             $('#btnNew').prop('disabled', false);
             $('#btnSave').prop('disabled', false);
             if (pk) {
@@ -275,7 +519,9 @@
                 async: false,
                 success: function (result) {
                     if (result.success) {
-                        grid_binding(result.data);
+
+                        viewData_main = result.data;
+                        theGrid.itemsSource = viewData_main
                     } else {
                         console.log("Error occurred");
                     }
@@ -286,32 +532,25 @@
                 }
             });
 
-            $('#shiftForm')[0].reset();
-            $('#shiftForm').find('#id').val('');
-
-            $('#detail_box').find('input, textarea').each(function () {
-                if (!$(this).is(':disabled')) {
-                    $(this).attr('disabled', 'disabled');
-                }
-            });
+            $('#btnNew').click();
 
             setButtonState();
         }
 
-        function grid_binding(data) {
+        /*function grid_binding(data) {
             if (!Array.isArray(data)) {
                 console.error('데이터가 배열 형식이 아닙니다:', data);
                 return;
             }
 
             let menulogData = data.map(item => ({
-                id: item.id,
-                shift_code: item.shift_code,
-                shifht_name: item.shifht_name,
+                project_name: item.project_name,
                 start_time: item.start_time,
                 end_time: item.end_time,
-                description: item.description
-
+                job_res_num : item.job_res_num,
+                jumun_num : item.jumun_num,
+                description: item.description,
+                job_res_id: item.job_res_id
             }));
 
             if (typeof theGrid === 'undefined' || typeof viewdata === 'undefined') {
@@ -337,22 +576,32 @@
 
             theGrid.itemsSource = viewdata;
             theGrid.refresh();
-        }
+        }*/
 
         function saveShift() {
             let url = '/api/system/shift';
 
             let data = FormUtil.extractForm($('#shiftForm'));
 
-            if (!data.Code) {
-                Alert.alert('', '근무조코드를 입력해주세요')
-                $('#shiftForm #Code').focus();
-                return false;
+            const project_name = data.ProjectName;
+            const jumun_num = data.jumun_num;
+            const work_order = data.work_order;
+            const workJson = data.work_type_json;
+            const saveFlag = EditFlag;
+
+            if(!jumun_num || !work_order){
+                Alert.alert('', '작업지시를 선택해주세요.')
+                return;
             }
-            if (!data.Name) {
-                Alert.alert('', '근무조명을 입력해주세요')
-                $('#shiftForm #Name').focus();
-                return false;
+
+            if(!project_name){
+                Alert.alert('', '프로젝트명을 입력해주세요.')
+                $('#ProjectName').focus();
+                return;
+            }
+            if (!workJson || workJson === "[]" || JSON.parse(workJson).length === 0) {
+                Alert.alert('', '근무구분을 한 개 이상 입력해주세요.');
+                return;
             }
             if (!data.StartTime) {
                 Alert.alert('', '시작시간을 입력해주세요')
@@ -364,8 +613,8 @@
                 $('#shiftForm #EndTime').focus();
                 return false;
             }
-
-            data.spjangcd= sessionStorage.getItem('spjangcd');
+            data.spjangcd= spjangcd;
+            data.save_flag = saveFlag;
 
             let fnSuccess = function (result) {
                 if (result.success) {
@@ -382,12 +631,14 @@
 
         function deleteShift() {
             let url = '/api/system/shift';
-            let id = $('#shiftForm').find('#id').val();
-            let data = {'id': id};
+            let job_res_id = $('#shiftForm').find('#job_res_id').val();
+            let data = {'job_res_id': job_res_id};
             let fnSuccess = function (res) {
                 if (res.success) {
                     Alert.alert('', '삭제되었습니다');
+                    $('#btnNew').click();
                     searchMainData();
+
                 } else {
                     Alert.alert('삭제 실패', res.message);
                     console.error('삭제 실패:', res.message);
@@ -397,34 +648,183 @@
             AjaxUtil.postAsyncData(url + "/delete", data, fnSuccess);
         }
 
+        // 모달 열기
+        function openWorkTypeModal() {
+            isEditMode = false;
+            editTargetTag = null;
+
+            document.getElementById("modal_code").value = "";
+            document.getElementById("modal_name").value = "";
+
+            document.getElementById("workTypeModal").style.display = "flex";
+        }
+
+        // 태그 클릭 -> 수정
+        function openEditWorkTypeModal(tag) {
+            isEditMode = true;  // 수정 모드 활성화
+            editTargetTag = tag;
+
+            document.getElementById("modal_code").value = tag.dataset.code;
+            document.getElementById("modal_name").value = tag.dataset.name;
+
+            document.getElementById("workTypeModal").style.display = "flex";
+        }
+
+        // 모달 닫기
+        function closeWorkTypeModal() {
+            document.getElementById("workTypeModal").style.display = "none";
+
+            // 모달 닫을 때 모드 초기화
+            isEditMode = false;
+            editTargetTag = null;
+        }
+
+        // 태그 추가
+        function addWorkType() {
+
+            const code = document.getElementById("modal_code").value.trim();
+            const name = document.getElementById("modal_name").value.trim();
+
+            if (!code || !name) {
+                Alert.alert('', "코드와 코드명을 입력하세요.");
+                return;
+            }
+
+            const tags = document.querySelectorAll(".work-tag");
+
+            // === ✔ 중복 체크 (본인 제외) ===
+            for (let tag of tags) {
+                if (tag !== editTargetTag && tag.dataset.code === code) {
+                    Alert.alert('', "이미 존재하는 코드입니다.");
+                    return;
+                }
+                if (tag !== editTargetTag && tag.dataset.name === name) {
+                    alert("이미 존재하는 코드명입니다.");
+                    return;
+                }
+            }
+
+            if (!isEditMode) {
+                // 추가 모드
+                const newTag = createTagElement(code, name);
+                document.getElementById("work_type_tags").appendChild(newTag);
+            }
+            else {
+                // 수정 모드
+                const updatedTag = createTagElement(code, name);
+
+                // 기존 태그를 이걸로 교체
+                editTargetTag.replaceWith(updatedTag);
+                editTargetTag = null;
+            }
+
+            updateWorkTypeValue();
+            closeWorkTypeModal();
+        }
+
+        function removeTag(el) {
+            el.parentElement.remove();
+            updateWorkTypeValue();
+        }
+
+        function createTagElement(code, name) {
+            const tag = document.createElement("span");
+            tag.classList.add("work-tag");
+            tag.dataset.code = code;
+            tag.dataset.name = name;
+
+            tag.style.cssText = `
+        background:#d9edf7;
+        border:1px solid #bcdff1;
+        padding:3px 6px;
+        border-radius:4px;
+        margin-right:4px;
+        cursor:pointer;
+        display:inline-flex;
+        align-items:center;
+        gap:4px;
+    `;
+
+            // 텍스트 노드
+            const text = document.createTextNode(`#${name}`);
+            tag.appendChild(text);
+
+            // 삭제 버튼
+            const removeBtn = document.createElement("span");
+            removeBtn.textContent = "x";
+            removeBtn.style.cssText = "color:red; cursor:pointer; font-weight:bold;";
+            removeBtn.classList.add("tag-remove");
+
+            removeBtn.onclick = function(e) {
+                e.stopPropagation(); // 삭제 클릭 시 수정모달 열리는 것 방지
+                tag.remove();
+                updateWorkTypeValue();
+            };
+
+            tag.appendChild(removeBtn);
+
+            // 태그 클릭 시 수정 활성화
+            tag.onclick = function() {
+                openEditWorkTypeModal(tag);
+            };
+
+            return tag;
+        }
+
+        function updateWorkTypeValue() {
+            const tags = document.querySelectorAll(".work-tag");
+
+            const list = [];
+
+            tags.forEach(tag => {
+                list.push({
+                    code: tag.dataset.code,
+                    name: tag.dataset.name
+                });
+            });
+
+            document.getElementById("work_type_json").value = JSON.stringify(list);
+        }
+
+        function renderWorkTypeTags(workList) {
+            const tagContainer = document.getElementById("work_type_tags");
+            tagContainer.innerHTML = ""; // 초기화
+
+            workList.forEach(item => {
+                const tag = createTagElement(item.code, item.name);
+                tagContainer.appendChild(tag);
+            });
+
+            updateWorkTypeValue(); // JSON 값 반영
+        }
+
 
         $(document.body).ready(function (e) {
+
+            $('#work_order').on('click', function(){
+
+                if (EditFlag) {
+                    return;  // 아무 것도 안함
+                }
+
+                let defaultData = {
+                    id: '',
+                    mode: 'new',
+                    InspectionDate: nowDate,
+                    spjangcd: spjangcd
+                };
+
+                if ($('.popup:visible').length > 0) {
+                    return; // 이미 열려있다면 중복으로 열지 않음
+                }
+                showTestAddNewForm(defaultData);
+            })
 
             $('#txtShiftName').on('keypress', function (e) {
                 if (event.keyCode == 13) {
                     searchMainData();
                 }
             });
-
-            /*   // StartTime과 EndTime의 기본값 설정
-               const startTime = '00:00'; // 오전 12시
-               const endTime = '12:00'; // 오후 12시
-               // StartTime input에 기본값 설정
-               $('#StartTime').val(startTime);
-               $('#EndTime').val(endTime);*/
-
-
-            /* $('#StartTime').timepicker({
-                 show2400: true,
-                 timeFormat: 'H:i'
-             }).val('00:00');
-             $('#EndTime').timepicker({
-                 show2400: true,
-                 timeFormat: 'H:i'
-             }).val('00:00');*/
-            //$('#EndTime').blur(function (event) {
-            //        DataValidation.validateTime(event.target);
-            //  });
 
 
             // 검색버튼
@@ -444,10 +844,14 @@
                     }
                 });
 
-                $('#StartTime').val(startTime);
-                $('#EndTime').val(endTime);
+                $('#work_type_tags').empty();
+                $('#work_type_json').val("[]");
 
+                $('#jumun_num').val('');
+                $('#job_res_id').val('');
                 setButtonState();
+
+                EditFlag = false;
             });
 
             // 저장버튼

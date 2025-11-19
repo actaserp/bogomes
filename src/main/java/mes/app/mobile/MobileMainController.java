@@ -7,10 +7,12 @@ import mes.app.production.service.ProductionResultService;
 import mes.app.transaction.service.MonthlyPurchaseListService;
 import mes.domain.entity.SystemCode;
 import mes.domain.entity.User;
+import mes.domain.entity.WorkCategory;
 import mes.domain.entity.commute.TB_PB201;
 import mes.domain.entity.commute.TB_PB201_PK;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.SysCodeRepository;
+import mes.domain.repository.WorkCategoryRepository;
 import mes.domain.repository.commute.TB_PB201Repository;
 import mes.domain.services.SqlRunner;
 import org.apache.coyote.Request;
@@ -55,6 +57,8 @@ public class MobileMainController {
     SysCodeRepository sysCodeRepository;
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    @Autowired
+    private WorkCategoryRepository workCategoryRepository;
 
     // 사용자 정보 조회(부서 이름 출근여부)
     @GetMapping("/read_userInfo")
@@ -395,10 +399,11 @@ public class MobileMainController {
     @PostMapping("/save")
     public AjaxResult saveManage(
             @RequestParam(value = "searchDate", required = false) String inspectionDate,
-            @RequestParam(value = "searchFromTime", required = false) String saveStartTime,
-            @RequestParam(value = "searchToTime", required = false) String saveEndTime,
+            //@RequestParam(value = "searchFromTime", required = false) String saveStartTime,
+            //@RequestParam(value = "searchToTime", required = false) String saveEndTime,
             @RequestParam(value = "workcd", required = false) String workCode,
-            @RequestParam String job_res_id,
+            @RequestParam int job_res_id,
+            @RequestParam String job_res_num,
             @RequestParam String jumun_number,
             Authentication auth) {
 
@@ -406,25 +411,38 @@ public class MobileMainController {
 
         User user = (User) auth.getPrincipal();
 
+        //TODO : 근무시간 추출 searchFromTime, searchToTime
+        List<WorkCategory> project = workCategoryRepository.findByIdJobResId(job_res_id);
+
+        if(project.isEmpty()){
+            result.success = false;
+            result.message = "유효한 프로젝트가 아닙니다.";
+            return result;
+        }
+
+        String searchFromTime = project.get(0).getStartTime();
+        String searchToTime = project.get(0).getEndTime();
+
         // === 기존 PK 대신 일반 컬럼으로 세팅 ===
         TB_PB201 entity = new TB_PB201();
 
-        entity.setJobresNum(job_res_id);
+        entity.setJobresNum(job_res_num);
         entity.setJumunNum(jumun_number);
+        entity.setJobResId(job_res_id);
         entity.setSpjangcd(user.getSpjangcd());
         entity.setWorkym(inspectionDate.replace("-", "").substring(0, 6)); // YYYYMM
         entity.setWorkday(inspectionDate.replace("-", "").substring(6, 8)); // DD
         entity.setPersonid(user.getPersonid());
 
-        entity.setStarttime(saveStartTime);
-        entity.setEndtime(saveEndTime);
+        entity.setStarttime(searchFromTime);
+        entity.setEndtime(searchToTime);
         entity.setWorkcd(workCode);
 
         // === 근무시간 계산 ===
-        if (saveStartTime != null && saveEndTime != null) {
+        if (searchFromTime != null && searchToTime != null) {
             try {
-                LocalTime startTime = LocalTime.parse(saveStartTime); // 예: 08:30
-                LocalTime endTime   = LocalTime.parse(saveEndTime);   // 예: 17:15
+                LocalTime startTime = LocalTime.parse(searchFromTime); // 예: 08:30
+                LocalTime endTime   = LocalTime.parse(searchToTime);   // 예: 17:15
 
                 // 종료 시간이 시작보다 빠르면 +24h (야간 근무 보정)
                 if (endTime.isBefore(startTime)) {
@@ -470,20 +488,11 @@ public class MobileMainController {
 
 
     @GetMapping("/work_order")
-    public AjaxResult workOrderBySuJu(@RequestParam String dateFrom,
-                                      @RequestParam String dateTo,
-                                      @RequestParam String isIncludeComp,
+    public AjaxResult workOrderBySuJu(@RequestParam(required = false) String project_name,
                                       @RequestParam String spjangcd){
         AjaxResult result = new AjaxResult();
 
-        if(dateFrom.isEmpty() || dateTo.isEmpty()){
-            return result;
-        }
-
-        //생산 실적 입력(LOT)에서 가져온거임
-        List<Map<String, Object>> items = this.productionResultService.getProdResult(dateFrom, dateTo, isIncludeComp, spjangcd, "");
-
-        result.data = items;
+        result.data = mobileMainService.getShiftList(project_name, spjangcd);
 
         return result;
     }
@@ -554,4 +563,15 @@ public class MobileMainController {
         return result;
     }
 
+    @GetMapping("/work_combo")
+    public AjaxResult getWorkCodeList(
+            @RequestParam("job_res_id") int job_res_id,
+            HttpServletRequest request) {
+
+        AjaxResult result = new AjaxResult();
+
+        result.data = mobileMainService.findByIdJobResId(job_res_id);
+
+        return result;
+    }
 }

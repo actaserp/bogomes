@@ -110,4 +110,57 @@ public class MobileMainService {
 
         return item;
     }
+
+    public List<Map<String, Object>> getShiftList( String shift_name, String spjangcd) {
+        MapSqlParameterSource dicParam = new MapSqlParameterSource();
+
+        dicParam.addValue("spjangcd", spjangcd);
+        dicParam.addValue("shift_name", "%" + shift_name + "%");
+
+        String sql = """
+				select
+				 "StartTime" as start_time
+				 ,"EndTime" as end_time
+				 ,"JobResId" as job_res_id
+				 ,"JobResNum" as job_res_num
+				 ,"JumunNum" as jumun_num
+				 ,"Desciption" as description
+				 ,"ProjectName" as project_name
+				 from work_category
+				 where spjangcd = :spjangcd
+				 """;
+
+        if(!shift_name.isEmpty()){
+            sql += """
+					and "ProjectName" like :shift_name
+					""";
+        }
+
+        sql += """ 
+				  group by
+				 "StartTime"
+				 ,"EndTime"
+				 ,"JobResId"
+				 ,"JobResNum"
+				 ,"JumunNum"
+				 ,"Desciption"
+				 ,"ProjectName"
+				 order by "JobResNum" desc
+            """;
+
+        List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
+        return items;
+    }
+
+    public List<Map<String, Object>> findByIdJobResId(int job_res_id){
+        MapSqlParameterSource dicParam = new MapSqlParameterSource();
+
+        dicParam.addValue("job_res_id", job_res_id);
+
+        String sql = """
+				select "WorkName" as name, "WorkCode" as code from work_category where "JobResId" = :job_res_id;
+				""";
+        List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
+        return items;
+    }
 }

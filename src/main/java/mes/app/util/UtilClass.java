@@ -1,5 +1,7 @@
 package mes.app.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import mes.Encryption.EncryptionKeyProvider;
 import mes.Encryption.EncryptionUtil;
@@ -202,6 +204,18 @@ public class UtilClass {
         }
         int visibleLength = input.length() - maskLength;
         return input.substring(0, visibleLength) + "⋆".repeat(maskLength);
+    }
+
+    /**
+     * json 파싱 함수 : json -> List<Map<String, String>
+     * **/
+    public static List<Map<String, String>> parseWorkTypeJson(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(json, new TypeReference<List<Map<String, String>>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("work_type_json 파싱 실패: " + json, e);
+        }
     }
 
 }

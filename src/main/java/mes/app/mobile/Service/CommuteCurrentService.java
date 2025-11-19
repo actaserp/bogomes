@@ -62,17 +62,19 @@ public class CommuteCurrentService {
                 t."JumunNumber" as jumun_number,
                 t."JobResNumber" as job_res_num,
                 TRIM(BOTH ', ' FROM (
-                  CASE WHEN t.jitime = 1 THEN '지각, ' ELSE '' END ||
-                  CASE WHEN t.jotime = 1 THEN '조퇴, ' ELSE '' END ||
-                  CASE WHEN t.yuntime = 1 THEN '연차, ' ELSE '' END ||
-                  CASE WHEN t.abtime = 1 THEN '결근, ' ELSE '' END ||
-                  CASE WHEN t.bantime = 1 THEN '반차, ' ELSE '' END
-                )) AS status_text
-            FROM tb_pb201 t
-            LEFT JOIN auth_user a ON a.personid = t.personid
-            LEFT JOIN person p ON p.id = a.personid
-            LEFT JOIN sys_code sc ON t.workcd = sc."Code" AND sc."CodeType" = 'class_work'
-            WHERE 1=1
+                        CASE WHEN t.jitime = 1 THEN '지각, ' ELSE '' END ||
+                        CASE WHEN t.jotime = 1 THEN '조퇴, ' ELSE '' END ||
+                        CASE WHEN t.yuntime = 1 THEN '연차, ' ELSE '' END ||
+                        CASE WHEN t.abtime = 1 THEN '결근, ' ELSE '' END ||
+                        CASE WHEN t.bantime = 1 THEN '반차, ' ELSE '' END
+                      )) AS status_text
+                	,wc."ProjectName" as project_name
+                  FROM tb_pb201 t
+                  LEFT JOIN auth_user a ON a.personid = t.personid
+                  LEFT JOIN person p ON p.id = a.personid
+                  LEFT JOIN sys_code sc ON t.workcd = sc."Code" AND sc."CodeType" = 'class_work'
+                LEFT JOIN work_category wc ON t.workcd = wc."WorkCode" and t."JobResId" = wc."JobResId"
+                WHERE 1=1
               AND a.username = :username
         		""";
 
