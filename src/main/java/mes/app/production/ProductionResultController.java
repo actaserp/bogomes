@@ -254,7 +254,6 @@ public class ProductionResultController {
 
         AjaxResult result = new AjaxResult();
         result.data = items;
-        System.out.println(items);
         return result;
     }
 
