@@ -14,6 +14,11 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +28,7 @@ import javax.transaction.Transactional;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -607,5 +613,179 @@ public class BaljuOrderController {
     sheet.addMergedRegion(newRegion);
   }
 
+  // 발주내역서 미리보기 파일 return 메서드
+  @PostMapping("/previewBalJuMail")
+  public AjaxResult previewBalJuMail(@RequestBody Map<String, Object> payload, Authentication auth) {
+    AjaxResult result = new AjaxResult();
+    try {
+      Integer bhId = (Integer) payload.get("bhId");
+      User user = (User) auth.getPrincipal();
+      String userid = user.getUsername();
 
+      Map<String, Object> baljuData = baljuOrderService.getBaljuDetail(bhId);
+      Map<String, Object> senderInfo = baljuOrderService.getSenderInfo(userid);
+      Map<String, Object> receiverInfo = baljuOrderService.getReceiverInfo((Integer) baljuData.get("Company_id"));
+
+      String jumun = (String) baljuData.get("JumunNumber");
+      String comp = ((String) baljuData.get("CompanyName")).replaceAll("[\\\\/:*?\"<>|]", "");
+      String excelFile = jumun + "_" + comp + "_발주서.xlsx";
+      String pdfFile = excelFile.replace(".xlsx", ".pdf");
+
+      Path excelPath = Paths.get("C:/Temp/mes21/" + excelFile);
+      Path pdfPath = Paths.get("C:/Temp/mes21/" + pdfFile);
+
+      Files.createDirectories(excelPath.getParent());
+      Files.deleteIfExists(excelPath);
+      Files.deleteIfExists(pdfPath);
+
+      createBaljuExcel(baljuData, senderInfo, receiverInfo, excelPath);
+
+      String sofficePath = System.getProperty("os.name").toLowerCase().contains("win")
+              ? "C:\\Program Files\\LibreOffice\\program\\soffice.exe"
+              : "/usr/bin/soffice";
+
+      ProcessBuilder pb = new ProcessBuilder(
+              sofficePath, "--headless",
+              "--convert-to", "pdf", "--outdir", "C:/Temp/mes21/", excelPath.toString()
+      );
+      pb.redirectErrorStream(true);
+      Process p = pb.start();
+      p.waitFor();
+
+      if (!Files.exists(pdfPath))
+        throw new RuntimeException("PDF 변환 실패");
+
+      Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+        try {
+          Files.deleteIfExists(pdfPath);
+          Files.deleteIfExists(excelPath);
+        } catch (IOException ignored) {}
+      }, 5, TimeUnit.MINUTES);
+
+      String pdfUrl = "/api/balju/balju_order/viewPdfPreview?file=" + URLEncoder.encode(pdfFile, "UTF-8");
+      result.success = true;
+      result.data = Map.of("pdfUrl", pdfUrl, "fileName", pdfFile);
+      return result;
+
+    } catch (Exception e) {
+      result.success = false;
+      result.message = "PDF 생성 실패: " + e.getMessage();
+      return result;
+    }
+  }
+
+  // 미리보기 pdf파일 생성 메서드
+  private void createBaljuExcel(Map<String, Object> baljuData,
+                                Map<String, Object> senderInfo,
+                                Map<String, Object> receiverInfo,
+                                Path outputPath) throws IOException {
+
+    // 1️⃣ 엑셀 템플릿 로드
+    try (FileInputStream fis = new FileInputStream("C:/Temp/mes21/문서/BaljuTemplate.xlsx");
+         Workbook workbook = new XSSFWorkbook(fis);
+         FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
+
+      Sheet sheet = workbook.getSheetAt(0);
+      workbook.setSheetName(workbook.getSheetIndex(sheet), "발주서");
+
+      Map<String, Object> header = baljuData;
+      @SuppressWarnings("unchecked")
+      List<Map<String, Object>> items = (List<Map<String, Object>>) header.get("items");
+
+      // 수신자
+      safeAddMergedRegion(sheet, 2, 2, 1, 2);
+      setCell(sheet, 2, 1, (String) receiverInfo.get("company_name"));
+      safeAddMergedRegion(sheet, 4, 4, 1, 3);
+      setCell(sheet, 4, 1, (String) receiverInfo.get("tel"));
+      safeAddMergedRegion(sheet, 5, 6, 1, 3);
+      setCell(sheet, 5, 1, (String) receiverInfo.get("address"));
+
+      // 발신자
+      safeAddMergedRegion(sheet, 2, 2, 5, 6);
+      setCell(sheet, 2, 5, (String) senderInfo.get("spjangnm"));
+      safeAddMergedRegion(sheet, 4, 4, 5, 6);
+      setCell(sheet, 4, 5, (String) senderInfo.get("tel1"));
+      safeAddMergedRegion(sheet, 5, 6, 5, 7);
+      setCell(sheet, 5, 5, (String) senderInfo.get("adresa"));
+
+      // 날짜
+      String rawDate = String.valueOf(baljuData.get("JumunDate"));
+      LocalDate date = LocalDate.parse(rawDate);
+      String formattedDate = date.format(DateTimeFormatter.ofPattern("yy.MM.dd"));
+      setCell(sheet, 11, 3, formattedDate);
+
+      // 품목 데이터
+      int startRow = 14;
+      Row styleTemplateRow = sheet.getRow(startRow);
+      CellStyle[] cachedStyles = new CellStyle[7];
+
+      for (int i = 0; i < items.size(); i++) {
+        Map<String, Object> item = items.get(i);
+        int rowIdx = startRow + i;
+        Row row = sheet.getRow(rowIdx);
+        if (row == null) row = sheet.createRow(rowIdx);
+
+        for (int col = 1; col <= 6; col++) {
+          Cell cell = row.getCell(col);
+          if (cell == null) cell = row.createCell(col);
+          if (styleTemplateRow != null && styleTemplateRow.getCell(col) != null) {
+            CellStyle base = styleTemplateRow.getCell(col).getCellStyle();
+            if (cachedStyles[col] == null) {
+              CellStyle s = workbook.createCellStyle();
+              s.cloneStyleFrom(base);
+              cachedStyles[col] = s;
+            }
+            cell.setCellStyle(cachedStyles[col]);
+          }
+        }
+
+        safeAddMergedRegion(sheet, rowIdx, rowIdx, 2, 3);
+        row.getCell(1).setCellValue(i + 1);
+        row.getCell(2).setCellValue((String) item.get("product_name"));
+        row.getCell(4).setCellValue(((Number) item.get("quantity")).doubleValue());
+        row.getCell(5).setCellValue(((Number) item.get("unit_price")).doubleValue());
+        row.getCell(6).setCellValue((String) item.get("description"));
+      }
+
+      // 특이사항
+      int lastItemRow = startRow + items.size();
+      int noteRow = Math.max(lastItemRow + 2, 22);
+      safeAddMergedRegion(sheet, noteRow, noteRow + 2, 1, 6);
+      Row row = sheet.getRow(noteRow);
+      if (row == null) row = sheet.createRow(noteRow);
+      Cell cell = row.createCell(1);
+      cell.setCellValue("***특이사항 : " + header.getOrDefault("special_note", "-"));
+
+      workbook.write(fos);
+    }
+  }
+
+
+  // 미리보기 파일 불러오기 메서드
+  @GetMapping("/viewPdfPreview")
+  public ResponseEntity<Resource> viewPdfPreview(@RequestParam("file") String file) throws IOException {
+    Path path = Paths.get("C:/Temp/mes21/" + file);
+    if (!Files.exists(path)) return ResponseEntity.notFound().build();
+    Resource res = new FileSystemResource(path);
+    HttpHeaders h = new HttpHeaders();
+    h.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+    return new ResponseEntity<>(res, h, HttpStatus.OK);
+  }
+
+
+  // 실제 파일 다운로드 엔드포인트
+  @GetMapping("/downloadPreview")
+  public ResponseEntity<Resource> downloadPreview(@RequestParam("file") String fileName) throws IOException {
+    Path filePath = Paths.get("C:/Temp/mes21/" + fileName);
+    if (!Files.exists(filePath)) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Resource resource = new FileSystemResource(filePath);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+    headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+  }
 }

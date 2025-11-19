@@ -153,12 +153,13 @@
                     isReadOnly: true,
                     columns: [
                         {binding: 'id', header: '출고지시번호', width: 110, align: 'center'},  // width: 40
-                        {binding: 'company_name', header: '판매처', width: 280, align: 'left'},
+                        {binding: 'company_name', header: '판매처', width: 180, align: 'left'},
                         //{ key: 'address', label: '<span style="color:orange">주소</span>', width: 0, align: 'left' },  // width: 400
-                        {binding: 'ship_date', header: '출고일', width: 200, align: 'center'},
+                        {binding: 'mat_name', header: '품목명', width: 200, align: 'left'},
+                        {binding: 'ship_date', header: '출고일', width: 150, align: 'center'},
                         {binding: 'total_qty', header: '총수량', width: 80, align: 'right'},
                         //{ key: 'product_cnt', label: '제품수', width: 80, align: 'right'},
-                        {binding: 'description', header: '비고', width: '*', align: 'left'},
+                        {binding: 'description', header: '비고', width: 200, align: 'left'},
                     ],
                     itemsSource: this.viewData,
                     formatItem: function (s, e) {

@@ -274,6 +274,11 @@ public class BomController {
 	            , mg."Name" as group_name
 	            , m."Name" as mat_name
 	            , m."Code" as mat_code
+	            , m."Standard1"
+	            , m."Standard2"
+	            , m."Class1"
+	            , m."Class2"
+	            , m."UnitPrice"
 	            , bc."Amount"
 	            , bc."Material_id" as mat_id
 	            , m."Unit_id"

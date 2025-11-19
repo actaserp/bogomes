@@ -43,8 +43,11 @@ public class ShipmentListService {
                 , sh."StatementIssuedYN" as issue_yn
                 , sh."StatementNumber" as stmt_number 
                 , sh."IssueDate" as issue_date
+                , m."Name" as mat_name
                 from shipment_head sh 
                 join company c on c.id = sh."Company_id"   
+                left join shipment s on s."ShipmentHead_id" = sh.id
+                left join material m on m.id = s."Material_id"
                 where sh."ShipDate"  between cast(:dateFrom as date) and cast(:dateTo as date)
 				""";
 		

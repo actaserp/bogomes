@@ -664,16 +664,42 @@
                         }
                     },
                     columns: [
-                        {binding: 'mat_name', header: '품목명', width: 350, align: 'left'},
+                        {binding: 'mat_name', header: '품목명', width: 250, align: 'left'},
                         {binding: 'Amount', header: '필요수량', width: 70, align: 'right'},
+                        {binding: 'Standard1', header: '규격1', width: 200, align: 'left'},
+                        {binding: 'Standard2', header: '규격2', width: 100, align: 'left'},
+                        {binding: 'Class1', header: '분류1', width: 100, align: 'left'},
+                        {binding: 'Class2', header: '분류2', width: 100, align: 'left'},
+                        {binding: 'UnitPrice', header: '평균단가', width: 100, align: 'left'},
                         {binding: 'Description', header: '비고', width: 300, align: 'left'},
                         // {binding: 'mat_code', header: '품목코드', width: 150, align: 'center'},
-                        {binding: 'unit', header: '단위', width: 100, align: 'center'},
+
                         // {binding: 'mat_type', header: '품목구분', width: 120, align: 'center'},
                     ],
                     itemsSource: this.viewData2, // 데이터를 설정할 배열
                 });
+                // ✅ Footer 패널 사용 설정
+                this.grid2.columnFooters.rows.push(new wijmo.grid.Row());
+                this.grid2.bottomLeftCells.setCellData(0, 0, '총합');
 
+                // ✅ Footer 합계 값 설정 (수동)
+                this.grid2.loadedRows.addHandler(() => {
+                    const rows = this.grid2.rows;
+                    const footer = this.grid2.columnFooters.rows[0];
+
+                    // 특정 컬럼 필드별 합계 계산 함수
+                    const getSum = (field) =>
+                        rows.map(r => +r.dataItem?.[field] || 0).reduce((a, b) => a + b, 0);
+
+                    // 합계를 표시할 열 인덱스 찾아서 직접 표시
+                    const colIndex = this.grid2.columns.map(c => c.binding).indexOf('UnitPrice');
+                    if (colIndex >= 0) {
+                        this.grid2.columnFooters.setCellData(0, colIndex, getSum('UnitPrice').toLocaleString());
+                    }
+
+                    // 맨 왼쪽 셀에 '총합' 표시
+                    this.grid2.bottomLeftCells.setCellData(0, 0, '총합');
+                });
                 new FlexGridContextMenu(this.grid2);
                 this.grid2.downloadFileName = '1레벨';
 
