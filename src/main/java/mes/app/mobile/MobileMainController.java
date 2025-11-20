@@ -492,6 +492,10 @@ public class MobileMainController {
                                       @RequestParam String spjangcd){
         AjaxResult result = new AjaxResult();
 
+        if(spjangcd == null || spjangcd.isEmpty()){
+            spjangcd = "ZZ";
+        }
+
         result.data = mobileMainService.getShiftList(project_name, spjangcd);
 
         return result;
@@ -518,6 +522,10 @@ public class MobileMainController {
             Authentication auth
     ){
         User user = (User) auth.getPrincipal();
+
+        if(spjangcd == null || spjangcd.isEmpty()){
+            spjangcd = "ZZ";
+        }
 
         SystemCode s = null;
         String message = "";
@@ -555,6 +563,10 @@ public class MobileMainController {
                                  @RequestParam String spjangcd
     ){
         AjaxResult result = new AjaxResult();
+
+        if(spjangcd == null || spjangcd.isEmpty()){
+            spjangcd = "ZZ";
+        }
 
         sysCodeRepository.deleteByCodeTypeAndCodeAndSpjangcd("class_work", code, spjangcd);
 

@@ -672,7 +672,7 @@
       type: 'GET',
       data: {
         'job_res_id': job_res_id,
-        spjangcd: sessionStorage.getItem('spjangcd'),
+        'spjangcd' : 'ZZ'
       },
       async: false,
       success: function (result) {
@@ -705,7 +705,8 @@
   function search_work_order() {
 
     let param = {
-      'project_name' : $('#project_name').val()
+      'project_name' : $('#project_name').val(),
+      'spjangcd' : 'ZZ'
     }
 
     let result = AjaxUtil.getSyncData('/api/mobile_main/work_order', param);
