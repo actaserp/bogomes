@@ -810,7 +810,7 @@
           data: JSON.stringify({ bhId }),
           success: function (res) {
             if (res.success) {
-              iframe.src = res.data.pdfUrl;
+              iframe.src = res.data.pdfUrl + "#toolbar=0&navpanes=0&scrollbar=0";
               $content.find('#btnDownloadBalJu').off('click').on('click', () => {
                 window.open(res.data.pdfUrl, '_blank');
               });

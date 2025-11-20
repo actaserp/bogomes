@@ -655,6 +655,7 @@ public class BaljuOrderController {
       if (!Files.exists(pdfPath))
         throw new RuntimeException("PDF 변환 실패");
 
+      // 파일 삭제 예약
       Executors.newSingleThreadScheduledExecutor().schedule(() -> {
         try {
           Files.deleteIfExists(pdfPath);

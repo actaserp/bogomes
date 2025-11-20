@@ -195,7 +195,7 @@ public class ConsumablesService {
 		dicParam.addValue("factoryId", CommonUtil.tryIntNull(data.getFirst("Factory_id")));
 		dicParam.addValue("workcenterId", CommonUtil.tryIntNull(data.getFirst("WorkCenter_id")));
 		dicParam.addValue("equipmentId", CommonUtil.tryIntNull(data.getFirst("Equipment_id")));
-		dicParam.addValue("storeHouseId", CommonUtil.tryIntNull(data.getFirst("StoreHouse_id")));
+		dicParam.addValue("storeHouseId", 3);
 		dicParam.addValue("storeHouseLoc", CommonUtil.tryString(data.getFirst("StoreHouseLoc")));
 		dicParam.addValue("managementLevel", CommonUtil.tryString(data.getFirst("ManagementLevel")));
 		dicParam.addValue("spjangcd", CommonUtil.tryString(data.getFirst("spjangcd")));
@@ -252,7 +252,6 @@ public class ConsumablesService {
 		dicParam.addValue("purchaseOrderStandard", CommonUtil.tryString(data.getFirst("PurchaseOrderStandard")));
 		dicParam.addValue("vatExemptionYN", CommonUtil.tryString(data.getFirst("VatExemptionYN")));
 
-		dicParam.addValue("routingId", CommonUtil.tryIntNull(data.getFirst("Routing_id")));
 		dicParam.addValue("unitPrice", CommonUtil.tryFloatNull(data.getFirst("UnitPrice")));
 		dicParam.addValue("user_id", CommonUtil.tryIntNull(data.getFirst("user_id").toString()));
 		dicParam.addValue("fouraxis", CommonUtil.tryIntNull(data.getFirst("fouraxis")));
@@ -311,7 +310,6 @@ public class ConsumablesService {
 						, "InputManHour" 
 						, "PurchaseOrderStandard" 
 						, "VatExemptionYN" 
-						, "Routing_id" 
 						, "UnitPrice"
 						 , "Mtyn"
 						 , "Useyn"
@@ -368,7 +366,6 @@ public class ConsumablesService {
 						, :inputManHour
 						, :purchaseOrderStandard
 						, :vatExemptionYN
-						, :routingId
 						, :unitPrice
 						, :mtyn
 						, :useyn
@@ -428,7 +425,6 @@ public class ConsumablesService {
 					, "InputManHour" = :inputManHour
 					, "PurchaseOrderStandard" = :purchaseOrderStandard
 					, "VatExemptionYN" = :vatExemptionYN 
-					, "Routing_id" = :routingId
 					, "UnitPrice" = :unitPrice
 					, "Mtyn" = :mtyn
 					, "Useyn" = :useyn
