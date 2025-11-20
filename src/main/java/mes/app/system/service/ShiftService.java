@@ -29,33 +29,38 @@ public class ShiftService {
 
         String sql = """
 				select
-				 "StartTime" as start_time
-				 ,"EndTime" as end_time
-				 ,"JobResId" as job_res_id
-				 ,"JobResNum" as job_res_num
-				 ,"JumunNum" as jumun_num
-				 ,"Desciption" as description
-				 ,"ProjectName" as project_name
-				 from work_category
-				 where spjangcd = :spjangcd
+				 w."StartTime" as start_time
+				 ,w."EndTime" as end_time
+				 ,w."JobResId" as job_res_id
+				 ,w."JobResNum" as job_res_num
+				 ,w."JumunNum" as jumun_num
+				 ,w."Desciption" as description
+				 ,w."ProjectName" as project_name
+				 ,c."Name" as company_name
+				 ,w.company_id as company_id
+				 from work_category w
+				 left join company c on c.id = w.company_id  
+				 where w.spjangcd = :spjangcd
 				 """;
 
 		if(!shift_name.isEmpty()){
 			sql += """
-					and "ProjectName" like :shift_name
+					and w."ProjectName" like :shift_name
 					""";
 		}
 
 		sql += """ 
 				  group by
-				 "StartTime"
-				 ,"EndTime"
-				 ,"JobResId"
-				 ,"JobResNum"
-				 ,"JumunNum"
-				 ,"Desciption"
-				 ,"ProjectName"
-				 order by "JobResNum" desc
+				 w."StartTime"
+				 ,w."EndTime"
+				 ,w."JobResId"
+				 ,w."JobResNum"
+				 ,w."JumunNum"
+				 ,w."Desciption"
+				 ,w."ProjectName"
+				 ,c."Name"
+				 ,w.company_id
+				 order by w."JobResNum" desc
             """;
 
         List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
@@ -92,7 +97,7 @@ public class ShiftService {
 				, jr."WorkOrderNumber" as work_number --작지번호
 				, su."JumunNumber" jumun_number --수주번호 (주문번호)
 				, su."DueDate" as due_date --납기일
-				, su."Company_id" -- 판매처 id
+				, su."Company_id" as company_id -- 판매처 id
 				, c."Name" as company_name --판매처
 				, fn_code_name('mat_type', mg."MaterialType") as mat_type_name --제품구분
 				, m."Code" as mat_code  --제품코드
@@ -157,6 +162,22 @@ public class ShiftService {
 
 		String sql = """
 				select "WorkName" as name, "WorkCode" as code from work_category where "JobResId" = :job_res_id;
+				""";
+		List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
+		return items;
+
+	}
+
+	public List<Map<String, Object>> getCodeInWorkLog(int job_res_id){
+		MapSqlParameterSource dicParam = new MapSqlParameterSource();
+
+		dicParam.addValue("job_id", job_res_id);
+
+		String sql = """
+				select workcd as code from
+				tb_pb201 pb2
+				inner join work_category wc on wc."WorkCode" = pb2.workcd and wc."JobResId" = pb2."JobResId"
+				where pb2."JobResId" = :job_id
 				""";
 		List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
 		return items;

@@ -111,7 +111,7 @@
                             <tbody>
                             <tr>
                                 <th>
-                                    <label>작업지시 선택</label>
+                                    <label><span class="eq">*</span>작업지시 선택</label>
                                 </th>
                                 <td>
                                     <input type="text" id="work_order" name="work_order" readonly>
@@ -119,6 +119,15 @@
                                     <input type="hidden" id="job_res_id" name="job_res_id" readonly>
                                 </td>
 
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label><span class="eq">*</span>판매처</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="company_name" name="company_name" readonly>
+                                    <input type="hidden" id="company_id" name="company_id" readonly>
+                                </td>
                             </tr>
                             <tr>
                                 <th>
@@ -305,14 +314,17 @@
         let nowDate = CommonUtil.getYYYYMMDD();
 
         let columns = [
+            {binding: 'job_res_id', header: '작업아이디', width: 120, align: 'center'},
             {binding: 'project_name', header: '프로젝트명', width: 200, align: 'left'},
+            {binding: 'company_name', header: '판매처', width: 200, align: 'left'},
             {binding: 'start_time', header: '근무시작시간', width: 100, align: 'center'},
             {binding: 'end_time', header: '근무종료시간', width: 100, align: 'center'},
-            {binding: 'job_res_id', header: '작업아이디', width: 120, align: 'center'},
+            /*
             {binding: 'job_res_num', header: '작업지시번호', width: 120, align: 'center'},
             {binding: 'jumun_num', header: '수주번호', width: 120, align: 'center'},
-            {binding: 'description', header: '비고', width: '*', align: 'left'},
+            */
 
+            {binding: 'description', header: '비고', width: 200, align: 'left'},
         ];
 
         document.readyState === 'complete' ? init() : window.onload = init;
@@ -347,20 +359,29 @@
 
             grid2 = new wijmo.grid.FlexGrid('#theGrid2', {
                 autoGenerateColumns: false,
-                showMarquee: true,
+                showMarquee: false,
                 headersVisibility: wijmo.grid.HeadersVisibility.Column,
                 allowSorting: 'MultiColumn',
                 selectionMode: wijmo.grid.SelectionMode.Row,
-                isReadOnly: false,
+                isReadOnly: true,
+                formatItem: (s, e) => {
+                    if (e.panel.cellType === wijmo.grid.CellType.Cell) {
+                        let col = s.columns[e.col];
+                        if (col.align) {
+                            e.cell.style.textAlign = col.align;
+                        }
+                    }
+                },
                 columns: [
                     {binding: 'id', header: '아이디', width: 130, align: 'center', visible: false},
-                    {binding: 'work_number', header: '작지번호', width: 130, align: 'center', isReadOnly: true},
-                    {binding: 'jumun_number', header: '수주번호', width: 130, align: 'center', isReadOnly: true},
+                    {binding: 'work_number', header: '작지번호', width: 130, align: 'center', isReadOnly: true, visible: false},
+                    {binding: 'jumun_number', header: '수주번호', width: 130, align: 'center', isReadOnly: true, visible: false},
                     {binding: 'due_date', header: '납기일', width: 100, align: 'center', isReadOnly: true},
-                    {binding: 'company_name', header: '판매처', width: '*', align: 'center', isReadOnly: true},
+                    {binding: 'company_id', header: '판매처코드', width: 200, align: 'left', isReadOnly: true, visible: false},
+                    {binding: 'company_name', header: '판매처', width: 200, align: 'left', isReadOnly: true},
                     {binding: 'mat_type_name', header: '제품구분', width: 90, align: 'center', isReadOnly: true},
-                    {binding: 'mat_code', header: '제품코드', width: 90, align: 'center', isReadOnly: true},
-                    {binding: 'mat_name', header: '제품명', width: '*', align: 'center', isReadOnly: true},
+                    {binding: 'mat_code', header: '제품코드', width: 90, align: 'center', isReadOnly: true, visible: false},
+                    {binding: 'mat_name', header: '제품명', width: '*', align: 'left', isReadOnly: true},
                     {binding: 'work_group', header: '근무조', width: 90, align: 'center', isReadOnly: true},
                     {binding: 'WorkcenterName', header: '워크센터', width: 90, align: 'center', isReadOnly: true},
                 ],
@@ -375,9 +396,17 @@
                     let jumun_num = item.jumun_number;
                     let job_res_num = item.work_number;
                     let job_res_id = item.id;
+                    let company_id = item.company_id;
+                    let company_name = item.company_name;
+                    let mat_name = item.mat_name;
+
                     $('#work_order').val(job_res_num);
                     $('#jumun_num').val(jumun_num);
                     $('#job_res_id').val(job_res_id);
+                    $('#company_name').val(company_name);
+                    $('#company_id').val(company_id);
+                    $('#ProjectName').val(mat_name);
+
                     modalContainer.close();
                 }
             })
@@ -452,6 +481,8 @@
                 document.getElementById('StartTime').value = selectedItem.start_time;
                 document.getElementById('EndTime').value = selectedItem.end_time;
                 document.getElementById('Description').value = selectedItem.description;
+                document.getElementById('company_name').value = selectedItem.company_name;
+                document.getElementById('company_id').value = selectedItem.company_id;
 
 
                 setButtonState();

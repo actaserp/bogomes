@@ -82,6 +82,7 @@ public class ShiftController {
 			@RequestParam(value="EndTime") String EndTime,
 			@RequestParam(value="Description", required=false) String Description,
 			@RequestParam(value ="spjangcd") String spjangcd,
+			@RequestParam(value ="company_id") Integer company_id,
 			@RequestParam(value ="save_flag") boolean save_flag,
 			HttpServletRequest request,
 			Authentication auth) {
@@ -128,6 +129,7 @@ public class ShiftController {
 				entity.setDescription(Description);
 				entity.setProjectName(ProjectName);
 				entity.setSpjangcd(spjangcd);
+				entity.setCompany_id(company_id);
 
 				workCategoryRepository.save(entity);
 			}
@@ -207,6 +209,7 @@ public class ShiftController {
 				entity.setJumunNum(jumun_num);
 				entity.setDescription(Description);
 				entity.setProjectName(ProjectName);
+				entity.setCompany_id(company_id);
 				entity.setSpjangcd(spjangcd);
 
 				workCategoryRepository.save(entity);
@@ -222,9 +225,21 @@ public class ShiftController {
 	@PostMapping("/delete")
 	@Transactional
 	public AjaxResult deleteShift(@RequestParam("job_res_id") int job_res_id) {
-		this.workCategoryRepository.deleteByJobResId(job_res_id);
+
 		AjaxResult result = new AjaxResult();
-		
+
+		//해당 코드로 근무등록 흔적있으면 노 삭제
+		List<Map<String, Object>> codeInWorkLog = shiftService.getCodeInWorkLog(job_res_id);
+
+		if(!codeInWorkLog.isEmpty()){
+			String code = (String) codeInWorkLog.get(0).get("code");
+			result.success = false;
+            result.message = "근무코드 '" + code + "' 는 근무일지에 사용 중이므로 삭제할 수 없습니다.";
+			return result;
+		}
+
+		this.workCategoryRepository.deleteByJobResId(job_res_id);
+
 		return result;
 	}
 

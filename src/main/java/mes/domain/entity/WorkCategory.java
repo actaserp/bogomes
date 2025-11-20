@@ -52,4 +52,7 @@ public class WorkCategory {
     @Column(name = "spjangcd")
     private String spjangcd;
 
+    @Column(name = "company_id")
+    private Integer company_id;
+
 }

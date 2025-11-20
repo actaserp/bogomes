@@ -69,6 +69,7 @@ public class CommuteCurrentService {
                         CASE WHEN t.bantime = 1 THEN '반차, ' ELSE '' END
                       )) AS status_text
                 	,wc."ProjectName" as project_name
+                	,wc."WorkName" as worknm
                   FROM tb_pb201 t
                   LEFT JOIN auth_user a ON a.personid = t.personid
                   LEFT JOIN person p ON p.id = a.personid

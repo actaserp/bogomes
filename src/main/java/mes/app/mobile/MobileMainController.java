@@ -496,8 +496,9 @@ public class MobileMainController {
             spjangcd = "ZZ";
         }
 
-        result.data = mobileMainService.getShiftList(project_name, spjangcd);
+        List<Map<String, Object>> shiftList = mobileMainService.getShiftList(project_name, spjangcd);
 
+        result.data = shiftList;
         return result;
     }
 
