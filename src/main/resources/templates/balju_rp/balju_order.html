@@ -247,16 +247,16 @@
           </tr>
           <tr>
             <th style="text-align: center">
-              <label for="cboCompany">구매처*</label>
+              <label for="cboCompany">매입처*</label>
             </th>
             <td colspan="3">
               <input id="cboCompany" name="Company_id" type="hidden">
               <input class="form-control2" type="text" id="CompanyName" name="CompanyName"
-                     placeholder="검색버튼을 클릭하여 구매처를 검색하세요" readonly/>
+                     placeholder="검색버튼을 클릭하여 매입처를 검색하세요" readonly/>
               &nbsp;
-              <a class="btn btn-delete" title="구매처검색" id="btnCompanySearch">
+              <a class="btn btn-delete" title="매입처검색" id="btnCompanySearch">
                 <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
-                구매처 검색
+                매입처 검색
               </a>
             </td>
           </tr>
@@ -639,7 +639,7 @@
           },
           columns: [
             {binding: 'bh_id', header: 'bh_id', width: 150, visible: false},
-            {binding: 'CompanyName', header: '구매처', width: 150},
+            {binding: 'CompanyName', header: '매입처', width: 150},
             {binding: 'BaljuTypeName', header: '구분', width: 70, align: 'center'},
             {binding: 'JumunDate', header: '발주일', width: 120, align: 'center'},
             {binding: 'MaterialGroupName', header: '제품그룹', width: 120},
@@ -1125,7 +1125,7 @@
           });
 
           if (!formData.Company_id || itemRows.length === 0) {
-            Alert.alert('', '구매처 및 품목을 입력하세요.');
+            Alert.alert('', '매입처 및 품목을 입력하세요.');
             return;
           }
 

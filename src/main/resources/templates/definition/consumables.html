@@ -178,6 +178,12 @@
             <div class="button-wrap button-list" style="margin: 5px 0 5px 0">
               <ul>
                 <li>
+                  <button type="button" class="btn-excellt" id="btnPic" name="btnPic"
+                          style="width: 100px; height: 36px;">
+                    사진첨부
+                  </button>
+                </li>
+                <li>
                   <button type="button" class="btn-excellt btn-default" id="btnNew" name="btnNew"
                           style="width: 115px; height: 36px;">
                     <i class="fas fa-plus"></i>신규등록
@@ -479,7 +485,19 @@
   </div>
 
 
+  <script type="text/x-tmpl" id="uploadTmpl">
+    <div class="content_wrap popup">
+        <div class="table-wrap">
+            <input type="hidden" id="id" name="id" value="{%=o.id%}">
+            <div class="grid_box" id='image_upload'></div>
+        </div>
 
+        <div class="popup-button">
+<!--              <button type="button" class="btn-popup y_write_auth" id="btn_modal_save" ><span data-labelCd="저장">저장</span></button>-->
+          <button type="button" class="btn-popup" id="modal-close-button"><span data-labelCd="닫기">닫기</span></button>
+        </div>
+    </div>
+  </script>
 
 </th:block>
 
@@ -838,6 +856,14 @@
             }
           });
 
+          // 단가정보 리셋
+          $('#companyPriceForm')[0].reset();
+          $('#companyPriceForm').find('#price_id').val('');
+          $('#companyPriceForm').find('input, select').each(function () {
+            if (!$(this).is(':disabled')) {
+              $(this).attr('disabled', 'disabled');
+            }
+          });
         }
 
         //this.setButtonDisable(false, true, true);
@@ -1068,6 +1094,14 @@
           _this.viewData2.sortDescriptions.push(new wijmo.collections.SortDescription('CompanyName', true));      // 업체명 A → Z
           _this.viewData2.sortDescriptions.push(new wijmo.collections.SortDescription('sortFlag', true));         // 2100-12-31 우선
           _this.viewData2.sortDescriptions.push(new wijmo.collections.SortDescription('ApplyEndDateObj', false)); // 최신 날짜 우선
+
+          $('#companyPriceForm')[0].reset();
+          $('#companyPriceForm').find('#price_id').val('');
+          $('#companyPriceForm').find('input, select').each(function () {
+            if (!$(this).is(':disabled')) {
+              $(this).attr('disabled', 'disabled');
+            }
+          });
 
           _this.setPriceButtonState();
         }
@@ -1849,6 +1883,69 @@
 
       page.searchDataBind();
     });
+
+    // 사진첨부버튼 클릭 이벤트
+    $('#btnPic').on('click', function() {
+      let id = $('#matBasicForm').find('#id').val();
+
+      if (!id || id.trim() === '') {
+        Alert.alert('', '업로드할 품목을 선택해주세요.');
+        return;
+      }
+
+      let data = {
+        'id': '',
+      };
+      showUploadEdit(data);
+      setUploader(id);
+    });
+
+    function showUploadEdit(data) {
+      let _this = this;
+      let content = tmpl('uploadTmpl', data);
+      let $content = $(content);
+      let modalContainer;
+      if (!data.id) {	//if (!data.id) {
+        modalContainer = new PopupDraggable('사진 첨부');
+      } else {
+        modalContainer = new PopupDraggable('사진 첨부');
+      }
+      modalContainer.open({width: 600, height: 400, $content});
+
+    }
+
+    function setUploader(id) {
+      let _this = this;
+      // 파일 업로드에 관련된 권한처리는 나중에 적용
+      $('#addFile').prop('disabled', false);
+
+      let accept_files = 'jpg,jpeg,gif,mbp,png,pdf';
+      let accept = '.' + accept_files.split(',').join(',.');
+
+      let uploader = new ax5FileUploadClass('image_upload', id,
+              {
+                table_name: 'MATERIAL',
+                attach_name: 'basic',
+                accept_files: accept_files,
+                multiple: true,
+                max_count: 5,
+                file_size: 500,
+                upload_callback: function (param) {
+                  // uploader.showLastImage('imgPhoto');
+                  return;
+                },
+                delete_callback: function (param) {
+                  //  $('#imgPhoto').attr('src', '');
+                  return;
+                },
+                file_click_callback: function (file_id) {
+                  // uploader.showImage('imgPhoto', file_id);
+                  return;
+                },
+                can_write: userinfo.can_write(),
+              });
+      _this.uploader = uploader;
+    }
   </script>
 
 </th:block>

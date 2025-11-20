@@ -1128,8 +1128,10 @@
 							const unit = num($scope.find('input[name="UnitPrice"]').val());       // 기본가격
 							const opts = num($scope.find('input[name="TotalOptPrice"]').val());   // 옵션가격(합계)
 							const dc = num($scope.find('input[name="dcPrice"]').val());         // D/C
+                          const qty = num($scope.find('input[name="quantity"]').val());         // 대수
 
-							const price = unit + opts - dc;  // 총가격
+                          const subtotal = (unit + opts) * (qty || 1);
+                          const price = subtotal - dc;   // 총가격 : 대수 * (기본가격 + 옵션가격)
 							// const price = unit + opts;
 							const contract = price - dc;   // 계약가격
 
@@ -1203,8 +1205,8 @@
 
 							// 상단 입력값 변화 시 총/계약가격 재계산
 							$scope
-								.off('input.head change.head', 'input[name="UnitPrice"], input[name="TotalOptPrice"], input[name="dcPrice"]')
-								.on('input.head change.head', 'input[name="UnitPrice"], input[name="TotalOptPrice"], input[name="dcPrice"]', function () {
+								.off('input.head change.head', 'input[name="UnitPrice"], input[name="TotalOptPrice"], input[name="dcPrice"], input[name="quantity"]')
+								.on('input.head change.head', 'input[name="UnitPrice"], input[name="TotalOptPrice"], input[name="dcPrice"], input[name="quantity"]', function () {
 									recalcHeaderTotals();
 								});
 						}
