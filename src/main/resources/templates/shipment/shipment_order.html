@@ -3,7 +3,7 @@
     <div class="layout-contents">
         <div class="page-title-wrap">
             <div class="left">
-                <h2>출고 지시 등록</h2>
+                <h2>출하 지시 등록</h2>
                 <a title="북마크" class="bookmark toggle">
                     내 메뉴
                 </a>
@@ -11,7 +11,7 @@
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
                 <li>영업관리</li>
-                <li>출고지시등록</li>
+                <li>출하지시등록</li>
             </ul>
         </div>
         <div style="display: flex; gap: 5px;">
@@ -184,8 +184,8 @@
                             <li>
                                 <a class="btn btn-edit"
                                    style="border: 1px solid dodgerblue; color: dodgerblue"
-                                   title="출고 지시 저장" id="btnSaveShipOrder">
-                                    출고 지시 저장
+                                   title="출하 지시 저장" id="btnSaveShipOrder">
+                                    출하 지시 저장
                                 </a>
                             </li>
                         </ul>
@@ -648,7 +648,7 @@
                 let fnSuccess = function (res) {
                     if (res.success) {
 
-                        Notify.success('출고 지시 완료.');
+                        Notify.success('출하 지시 완료.');
 
                         $('#description').val('');
 
@@ -656,10 +656,10 @@
 
                         $('#company_id option:eq(0)').prop('selected', true);
 
-                        Alert.alert('', "출고 지시가 완료되었습니다.");
+                        Alert.alert('', "출하 지시가 완료되었습니다.");
                         page.searchMain();
                     } else {
-                        const message = res.message ?? '출고 지시 실패';
+                        const message = res.message ?? '출하 지시 실패';
                         Alert.alert('', message);
                     }
                 }
@@ -773,7 +773,7 @@
             $('#btnSaveShipOrder').click(function (e) {
                 if (page.beforeSave()) {
                     let $form = $('#matBasicForm');
-                    Alert.confirm('', "출고 지시하시겠습니까?",
+                    Alert.confirm('', "출하 지시하시겠습니까?",
                         function () {
                             page.saveShipOrder($form);
                         },
