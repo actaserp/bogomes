@@ -57,7 +57,7 @@
     <div class="layout-contents">
         <div class="page-title-wrap">
             <div class="left">
-                <h2>품목 정보</h2>
+                <h2>제품 관리</h2>
                 <a title="북마크" class="bookmark toggle">
                     내 메뉴
                 </a>
@@ -65,7 +65,7 @@
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
                 <li>기준정보</li>
-                <li>품목정보</li>
+                <li>제품관리</li>
             </ul>
         </div>
 
@@ -1347,7 +1347,7 @@
 
 
                 // filter dropdown load
-                AjaxUtil.fillSelectOptions($('#cboMaterialType'), 'system_code', '', false, 'mat_type', '');
+                AjaxUtil.fillSelectOptions($('#cboMaterialType'), 'system_code', '', false, 'mat_type', 'product');
                 AjaxUtil.fillSelectOptions($('#cboMaterialGroup'), 'material_group', 'all', false, 'product');
 
                 $('#cboMaterialType').on('change', function (e) {
@@ -1394,7 +1394,10 @@
             // 탭 내부 dropdown load
             initForm() {
                 AjaxUtil.fillSelectOptions($('#MaterialGroup_id'), 'material_group', '', false, 'product'); // 품목그룹
-                AjaxUtil.fillSelectOptions($('#StoreHouse_id'), 'store_house', '', false); // 창고
+                AjaxUtil.fillSelectOptions($('#StoreHouse_id'), 'store_house', '', 4); // 창고
+                setTimeout(() => {
+                    $('#StoreHouse_id').val('4').trigger('change');
+                }, 200);
                 AjaxUtil.fillSelectOptions($('#WorkCenter_id'), 'workcenter', '', false); // 워크센터
 
 
