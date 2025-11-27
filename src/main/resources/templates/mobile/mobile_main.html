@@ -395,6 +395,18 @@
                 </div>
               </dd>
             </dl>
+            <dl>
+              <h3>근무설비</h3>
+              <dd>
+                <div style="display: flex; gap: 10px">
+                  <div class="typeInput" style="width: 100%">
+                    <select id="selectFac" style="font-size: x-large;">
+                      <option value="">전체</option>
+                    </select>
+                  </div>
+                </div>
+              </dd>
+            </dl>
           </div>
 
           <!--<div>
@@ -538,7 +550,7 @@
 
 
 
-    //AjaxUtil.fillSelectOptions($('#selectWorkcd'), 'system_code', 'choose', false, 'class_work', '');
+    AjaxUtil.fillSelectOptions($('#selectFac'), 'equipment', 'choose', false, '');
 
 
     //let date_from = CommonUtil.getYYYYMMDD();
@@ -835,6 +847,7 @@
         let job_res_num = document.getElementById('work_order').value;
         let jumun_num  = document.getElementById('jumun_num').value;
         let job_res_id  = document.getElementById('job_res_id').value;
+        let selectFac  = document.getElementById('selectFac').value;
 
         if(!job_res_num || job_res_num.trim() === ''){
           Alert.alert('', '프로젝트를 선택하세요.');
@@ -852,7 +865,8 @@
           'workcd': document.getElementById('selectWorkcd').value,
           'job_res_id' : job_res_id,
           'job_res_num': job_res_num,
-          'jumun_number' : jumun_num
+          'jumun_number' : jumun_num,
+          'selectFac' : selectFac
         }
 
         let fnsuccess = function (result) {

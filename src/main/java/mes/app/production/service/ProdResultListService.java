@@ -81,38 +81,48 @@ public class ProdResultListService {
 		dicParam.addValue("mp_pk", mp_pk);
 		
 		String sql = """
-			select jr.id
-                 , jr."WorkOrderNumber" as order_num
-                 , mp."LotNumber" as lot_num
-                 , jr."State" as state
-                 , fn_code_name('job_state', jr."State") as job_state
-                 , jr."WorkIndex" as work_idx
-                 , m.id as mat_pk, m."Code" as mat_code, m."Name" as mat_name
-                 , m."LotSize"  as lot_size
-                 , u."Name" as unit
-                 , jr."OrderQty" as order_qty
-                 , mp."GoodQty" as good_qty
-                 , mp."DefectQty" as defect_qty
-                 , mp."LossQty" as loss_qty
-                 , mp."ScrapQty" as scrap_qty
-                 , to_char(jr."ProductionDate", 'yyyy-mm-dd') as prod_date
-                 , to_char(jr."StartTime", 'hh24:mi') as start_time
-                 , to_char(jr."EndTime", 'yyyy-mm-dd') as end_date
-                 , to_char(jr."EndTime", 'hh24:mi') as end_time
-                 , jr."ShiftCode" as shift_code, sh."Name" as shift_name
-                 , wc.id as workcenter_id, wc."Name" as workcenter_name
-                 , p.id as process_id, p."Name" as process_name
-                 , e.id as equipment_id, e."Name" as equipment_name
-                 , jr."Description" as description 
-	          from mat_produce mp 
-              inner join job_res jr on jr.id = mp."JobResponse_id"
-	          left join material m on m.id = jr."Material_id"
-	          left join unit u on u.id = m."Unit_id"
-	          left join work_center wc on wc.id = jr."WorkCenter_id"
-              left join process p on p.id = wc."Process_id" 
-	          left join equ e on e.id = mp."Equipment_id"
-              left join shift sh on sh."Code" = jr."ShiftCode"
-             where mp.id = :mp_pk
+				select jr.id
+						 , jr."WorkOrderNumber" as order_num
+						 , mp."LotNumber" as lot_num
+						 , jr."State" as state
+						 , fn_code_name('job_state', jr."State") as job_state
+						 , jr."WorkIndex" as work_idx
+						 , m.id as mat_pk, m."Code" as mat_code, m."Name" as mat_name
+						 , m."LotSize"  as lot_size
+						 , u."Name" as unit
+						 , jr."OrderQty" as order_qty
+						 , mp."GoodQty" as good_qty
+						 , mp."DefectQty" as defect_qty
+						 , mp."LossQty" as loss_qty
+						 , mp."ScrapQty" as scrap_qty
+						 , to_char(jr."ProductionDate", 'yyyy-mm-dd') as prod_date
+						 , to_char(jr."StartTime", 'hh24:mi') as start_time
+						 , to_char(jr."EndTime", 'yyyy-mm-dd') as end_date
+						 , to_char(jr."EndTime", 'hh24:mi') as end_time
+						 , jr."ShiftCode" as shift_code, sh."Name" as shift_name
+						 , wc.id as workcenter_id, wc."Name" as workcenter_name
+						 , p.id as process_id, p."Name" as process_name
+						 , e.id as equipment_id, e."Name" as equipment_name
+						 , jr."Description" as description
+						 , per."Name" as worker
+					  from mat_produce mp
+					  inner join job_res jr on jr.id = mp."JobResponse_id"
+					  left join material m on m.id = jr."Material_id"
+					  left join unit u on u.id = m."Unit_id"
+					  left join work_center wc on wc.id = jr."WorkCenter_id"
+					  left join process p on p.id = wc."Process_id"
+					  left join equ e on e.id = mp."Equipment_id"
+					  left join shift sh on sh."Code" = jr."ShiftCode"
+					  left join tb_pb201 pb
+							on trim(pb.address)::int = e.id
+							and (pb.workym || lpad(pb.workday, 2, '0')) = to_char(jr."ProductionDate", 'YYYYMMDD')
+							and (
+								(jr."StartTime"::time between trim(pb.starttime)::time and trim(pb.endtime)::time)
+								or (jr."EndTime"::time between trim(pb.starttime)::time and trim(pb.endtime)::time)
+								or (trim(pb.starttime)::time <= jr."StartTime"::time and trim(pb.endtime)::time >= jr."EndTime"::time)
+							)
+						left join person per on per.id = pb.personid
+					 where mp.id = :mp_pk
 			""";
 		
 		Map<String, Object> item = this.sqlRunner.getRow(sql, dicParam);

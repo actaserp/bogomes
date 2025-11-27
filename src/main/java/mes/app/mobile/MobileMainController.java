@@ -396,6 +396,7 @@ public class MobileMainController {
         }
         return BigDecimal.ZERO;
     }
+    // 근무등록
     @PostMapping("/save")
     public AjaxResult saveManage(
             @RequestParam(value = "searchDate", required = false) String inspectionDate,
@@ -405,6 +406,7 @@ public class MobileMainController {
             @RequestParam int job_res_id,
             @RequestParam String job_res_num,
             @RequestParam String jumun_number,
+            @RequestParam(value = "selectFac", required = false) String selectFac,
             Authentication auth) {
 
         AjaxResult result = new AjaxResult();
@@ -433,6 +435,7 @@ public class MobileMainController {
         entity.setWorkym(inspectionDate.replace("-", "").substring(0, 6)); // YYYYMM
         entity.setWorkday(inspectionDate.replace("-", "").substring(6, 8)); // DD
         entity.setPersonid(user.getPersonid());
+        entity.setAddress(selectFac);
 
         entity.setStarttime(searchFromTime);
         entity.setEndtime(searchToTime);
